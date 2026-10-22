@@ -1,5 +1,16 @@
 # Журнал изменений
 
+## 2026-10-22 — Этап 0: среда и версии (завершён)
+
+- Стенд поднят: 15 контейнеров (full-профиль), `make smoke` 8/8.
+- `src/capl/main.py`: passthrough-прокси с логом commit-заголовков (X-CAPL-Slot/Writer/Run).
+- `scripts/smoke.py`: автоматические тесты 0.4–0.8 (S3, каталог, прокси, заголовки слотов, Flink).
+- `infra/.env`: все VERIFY-метки закрыты; версии зафиксированы.
+- ADR-001: `CATALOG_FIXTURE_TAG=latest` вместо `iceberg-rest-fixture:1.12.0` (нет на Docker Hub).
+- ADR-002: SQLite в `/tmp/catalog.db` — пользователь `iceberg` не имеет прав на `catalog-data` volume.
+- ADR-003: SeaweedFS 3.97 → 4.48 — версия 3.97 сохраняет aws-chunked тела как есть, ломая JSON Iceberg.
+- `docs/stage-0-report.md`: отчёт по шаблону.
+
 ## 2026-10-22 — контрольные точки и документирование
 
 - Добавлены контрольные точки G1 (предпосылки, после этапа 1) и G2 (go/no-go, после этапа 4) с порогами и вариантами GO / CORRECT / PIVOT; агент останавливается на них до решения автора.

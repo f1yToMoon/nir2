@@ -3,7 +3,14 @@
 # Использование: bash scripts/versions_check.sh infra/.env
 set -uo pipefail
 ENV_FILE="${1:-infra/.env}"
-set -a; source "$ENV_FILE"; set +a
+# Use env -a safe parsing to avoid word-splitting on values with spaces
+while IFS='=' read -r key value; do
+  [[ "$key" =~ ^[[:space:]]*# ]] && continue
+  [[ -z "$key" ]] && continue
+  value="${value%\"}"
+  value="${value#\"}"
+  export "$key"="$value" 2>/dev/null || true
+done < "$ENV_FILE"
 MAVEN=https://repo1.maven.org/maven2
 fail=0
 
@@ -18,7 +25,7 @@ check_jar() {
 check_image "chrislusf/seaweedfs:${SEAWEEDFS_VERSION}"
 check_image "amazon/aws-cli:${AWSCLI_VERSION}"
 check_image "ghcr.io/shopify/toxiproxy:${TOXIPROXY_VERSION}"
-check_image "apache/iceberg-rest-fixture:${ICEBERG_VERSION}"
+check_image "apache/iceberg-rest-fixture:${CATALOG_FIXTURE_TAG:-latest}"
 check_image "quay.io/lakekeeper/catalog:${LAKEKEEPER_VERSION}"
 check_image "${SPARK_IMAGE}"
 check_image "${FLINK_IMAGE}"

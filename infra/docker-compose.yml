@@ -74,7 +74,7 @@ services:
 
   # ---------------------------------------------------------------- catalogs
   catalog:
-    image: apache/iceberg-rest-fixture:${ICEBERG_VERSION}
+    image: apache/iceberg-rest-fixture:${CATALOG_FIXTURE_TAG:-latest}
     depends_on:
       s3-init: {condition: service_completed_successfully}
       toxiproxy: {condition: service_started}
@@ -84,12 +84,12 @@ services:
       CATALOG_IO__IMPL: org.apache.iceberg.aws.s3.S3FileIO
       CATALOG_S3_ENDPOINT: http://toxiproxy:18333
       CATALOG_S3_PATH__STYLE__ACCESS: "true"
-      # Персистентный JdbcCatalog на SQLite-файле (VERIFY: путь доступен на запись пользователю образа)
-      CATALOG_URI: jdbc:sqlite:file:/var/lib/iceberg-catalog/catalog.db
+      # SQLite в /tmp — всегда доступен на запись пользователю iceberg (ADR-002).
+      # Данные каталога не персистируются при рестарте контейнера: make seed
+      # воссоздаёт схему перед каждым прогоном; данные лежат в S3 (SeaweedFS).
+      CATALOG_URI: jdbc:sqlite:file:/tmp/catalog.db
       CATALOG_JDBC_USER: user
       CATALOG_JDBC_PASSWORD: password
-    volumes:
-      - catalog-data:/var/lib/iceberg-catalog
     ports:
       - "8181:8181"
     healthcheck:
@@ -230,7 +230,7 @@ services:
       spark-master: {condition: service_started}
     environment:
       <<: *aws-env
-      PYTHONPATH: /workspace/src
+      PYTHONPATH: /workspace/src:/opt/spark/python/lib/pyspark.zip:/opt/spark/python/lib/py4j-0.10.9.9-src.zip
       CATALOG_ROUTING: ${CATALOG_ROUTING}
       CATALOG_IMPL: ${CATALOG_IMPL}
       CAPL_PROXY_URI: http://capl:8180
@@ -394,7 +394,6 @@ services:
 
 volumes:
   s3-data:
-  catalog-data:
   kafka-data:
   flink-checkpoints:
   pg-data:

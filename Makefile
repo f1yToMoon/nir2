@@ -3,6 +3,7 @@ SHELL := /bin/bash
 COMPOSE := docker compose --env-file infra/.env -f infra/docker-compose.yml
 RUNNER  := $(COMPOSE) exec -T runner
 PY      := python3
+RUNNER_PY := python3
 
 SCENARIO ?= S2_compaction_vs_cdc_merge
 POLICY   ?= P0
@@ -51,7 +52,7 @@ versions-check: env ## Проверить доступность всех обр
 	bash scripts/versions_check.sh infra/.env
 
 smoke: ## Smoke-тест стенда (этап 0)
-	$(RUNNER) python -m scripts.smoke
+	$(RUNNER) python3 -m scripts.smoke
 
 validate-config: ## Валидация YAML сценариев и конфигураций
 	PYTHONPATH=src $(PY) -m runner.scenario --validate config/workloads config/experiments/matrix.yaml
