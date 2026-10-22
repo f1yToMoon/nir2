@@ -1,7 +1,8 @@
-"""Smoke tests for Stage 0 (runs inside runner container).
+"""Smoke tests (runs inside runner container).
 
 Checks:
-  0.4  S3 reachable via Toxiproxy
+  0.4a S3 reachable via Toxiproxy (HTTP status)
+  0.4b S3 PUT/GET object via Toxiproxy (PyArrow S3FileSystem)
   0.5  Catalog /v1/config reachable directly and via CAPL proxy
   0.6  Slot headers (X-CAPL-Slot) propagated by Iceberg REST client
   0.7  REST-client timeout property names (confirmed from HTTPClient.java 1.12.0)
@@ -94,12 +95,43 @@ def _make_spark(app_name: str):
 
 
 # ==========================================================================
-# 0.4  S3 via Toxiproxy
+# 0.4a  S3 via Toxiproxy — reachability
 # ==========================================================================
 def _check_s3():
     r = requests.get(f"{S3_URL}/", timeout=TIMEOUT)
     assert r.status_code in (200, 400, 403), f"unexpected status {r.status_code}"
     return f"status={r.status_code}"
+
+
+# ==========================================================================
+# 0.4b  S3 PUT/GET via Toxiproxy (PyArrow S3FileSystem)
+# ==========================================================================
+def _check_s3_put_get():
+    """PUT an object to S3 via Toxiproxy, GET it back, verify content, DELETE."""
+    import pyarrow.fs as pafs
+
+    endpoint = S3_URL.removeprefix("http://").removeprefix("https://")
+    scheme   = "http" if S3_URL.startswith("http://") else "https"
+    s3 = pafs.S3FileSystem(
+        access_key=os.environ.get("AWS_ACCESS_KEY_ID", "nir-access"),
+        secret_key=os.environ.get("AWS_SECRET_ACCESS_KEY", "nir-secret-change-me"),
+        endpoint_override=endpoint,
+        scheme=scheme,
+        region=os.environ.get("AWS_REGION", "us-east-1"),
+        force_virtual_addressing=False,
+    )
+    bucket = os.environ.get("S3_BUCKET", "warehouse")
+    key    = f"smoke-s3-put-get/{int(time.time())}.txt"
+    path   = f"{bucket}/{key}"
+    payload = b"capl-smoke-s3-put-get"
+
+    with s3.open_output_stream(path) as fh:
+        fh.write(payload)
+    with s3.open_input_file(path) as fh:
+        content = fh.read()
+    assert content == payload, f"content mismatch: {content!r} != {payload!r}"
+    s3.delete_file(path)
+    return f"PUT/GET {len(payload)}B to s3://{bucket}/{key} via Toxiproxy"
 
 
 # ==========================================================================
@@ -651,7 +683,8 @@ def main() -> None:
     print("=" * 60)
 
     print("\n[0.4] S3 via Toxiproxy")
-    check("s3_via_toxiproxy", _check_s3)
+    check("s3_reachable", _check_s3)
+    check("s3_put_get", _check_s3_put_get)
 
     print("\n[0.5] Catalog and proxy connectivity")
     check("catalog_direct", _check_catalog_direct)

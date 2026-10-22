@@ -1,8 +1,8 @@
-"""CAPL — Stage-0 minimal passthrough proxy.
+"""CAPL — Stage-0/1 proxy with hold mechanism.
 
 Ports:
   8180  catch-all reverse proxy → CAPL_UPSTREAM_URI (catalog)
-  8190  advisor stub: /healthz, /_capl/debug/last-commits
+  8190  advisor stub + debug endpoints (hold, last-commits)
   9101  Prometheus metrics stub
 """
 from __future__ import annotations
@@ -18,14 +18,16 @@ from typing import Any
 import httpx
 import structlog
 import uvicorn
-from fastapi import FastAPI, Request, Response
+from fastapi import FastAPI, HTTPException, Request, Response
+from pydantic import BaseModel
 
 # ---------- env / defaults -----------------------------------------------
-UPSTREAM_URI = os.environ.get("CAPL_UPSTREAM_URI", "http://catalog:8181")
-PROXY_PORT   = int(os.environ.get("CAPL_PROXY_PORT", "8180"))
-ADV_PORT     = int(os.environ.get("CAPL_ADV_PORT", "8190"))
-METRICS_PORT = int(os.environ.get("CAPL_METRICS_PORT", "9101"))
-LOG_LEVEL    = os.environ.get("CAPL_LOG_LEVEL", "INFO")
+UPSTREAM_URI  = os.environ.get("CAPL_UPSTREAM_URI", "http://catalog:8181")
+PROXY_PORT    = int(os.environ.get("CAPL_PROXY_PORT", "8180"))
+ADV_PORT      = int(os.environ.get("CAPL_ADV_PORT", "8190"))
+METRICS_PORT  = int(os.environ.get("CAPL_METRICS_PORT", "9101"))
+LOG_LEVEL     = os.environ.get("CAPL_LOG_LEVEL", "INFO")
+HOLD_MAX_S    = float(os.environ.get("CAPL_HOLD_MAX_MS", "30000")) / 1000.0
 
 # ---------- logging -------------------------------------------------------
 structlog.configure(
@@ -42,25 +44,22 @@ structlog.configure(
 log = structlog.get_logger("capl.proxy")
 
 # ---------- shared state --------------------------------------------------
-# Shared between proxy and advisor (same process, same event loop)
 _last_commits: deque[dict[str, Any]] = deque(maxlen=500)
 
-# HTTP client — initialised in main() before starting servers
+# slot → asyncio.Event; when event is set, the held commit is released
+_holds: dict[str, asyncio.Event] = {}
+
 _client: httpx.AsyncClient | None = None
 
-# commit patterns from capl.yaml
 COMMIT_RE     = re.compile(
     r"^/v1/(?:[^/]+/)?namespaces/[^/]+/tables/[^/]+$"
 )
 TXN_COMMIT_RE = re.compile(r"^/v1/(?:[^/]+/)?transactions/commit$")
 
-# headers not forwarded upstream (request)
 HOP_BY_HOP_REQ = frozenset([
     "connection", "keep-alive", "proxy-authenticate", "proxy-authorization",
     "te", "trailers", "transfer-encoding", "upgrade",
 ])
-# headers not forwarded downstream (response):
-# content-encoding removed because httpx decodes the body before we re-send it
 HOP_BY_HOP_RESP = HOP_BY_HOP_REQ | frozenset(["content-encoding"])
 
 # ---------- proxy app -----------------------------------------------------
@@ -86,7 +85,6 @@ async def proxy(request: Request, path: str) -> Response:
 
     body = await request.body()
 
-    # detect commit attempts and log slot header
     is_commit = request.method == "POST" and (
         COMMIT_RE.match("/" + path) or TXN_COMMIT_RE.match("/" + path)
     )
@@ -94,16 +92,17 @@ async def proxy(request: Request, path: str) -> Response:
         slot   = request.headers.get("X-CAPL-Slot", "")
         writer = request.headers.get("X-CAPL-Writer", "")
         run    = request.headers.get("X-CAPL-Run", "")
-        log.info(
-            "commit_attempt",
-            path="/" + path,
-            slot=slot,
-            writer=writer,
-            run=run,
-        )
+        log.info("commit_attempt", path="/" + path, slot=slot, writer=writer, run=run)
         _last_commits.append(
             {"path": "/" + path, "slot": slot, "writer": writer, "run": run}
         )
+        # Hold: if this slot is registered, wait until released or timeout
+        if slot in _holds:
+            evt = _holds[slot]
+            try:
+                await asyncio.wait_for(evt.wait(), timeout=HOLD_MAX_S)
+            except TimeoutError:
+                log.warning("hold_timeout", slot=slot, max_s=HOLD_MAX_S)
 
     upstream_resp = await _client.request(
         method=request.method,
@@ -124,19 +123,54 @@ async def proxy(request: Request, path: str) -> Response:
     )
 
 
-# ---------- advisor stub --------------------------------------------------
-advisor_app = FastAPI(title="CAPL Advisor (stage-0 stub)", docs_url=None)
+# ---------- advisor stub + debug ------------------------------------------
+advisor_app = FastAPI(title="CAPL Advisor (stage-0/1 stub)", docs_url=None)
 
 
 @advisor_app.get("/healthz")
 async def healthz() -> dict[str, str]:
-    return {"status": "ok", "stage": "0", "upstream": UPSTREAM_URI}
+    return {"status": "ok", "stage": "1", "upstream": UPSTREAM_URI}
 
 
 @advisor_app.get("/_capl/debug/last-commits")
 async def debug_last_commits() -> list[dict[str, Any]]:
-    """Returns last logged commit attempts (for smoke-test slot-header check)."""
     return list(_last_commits)
+
+
+class HoldRequest(BaseModel):
+    slot: str
+    max_ms: int = 30000
+
+
+@advisor_app.post("/v1/debug/hold")
+async def hold_start(req: HoldRequest) -> dict[str, Any]:
+    """Register a hold on the named slot.
+    Any commit from that slot will block at the proxy until released
+    or HOLD_MAX_S seconds elapse.
+    """
+    if req.slot in _holds:
+        # Reset: clear old event so a new hold starts fresh
+        _holds[req.slot].set()
+    evt = asyncio.Event()
+    _holds[req.slot] = evt
+    log.info("hold_registered", slot=req.slot, max_ms=req.max_ms)
+    return {"status": "held", "slot": req.slot}
+
+
+@advisor_app.delete("/v1/debug/hold/{slot}")
+async def hold_release(slot: str) -> dict[str, Any]:
+    """Release a held slot, allowing its pending commit to proceed."""
+    evt = _holds.pop(slot, None)
+    if evt is None:
+        raise HTTPException(status_code=404, detail=f"slot '{slot}' not held")
+    evt.set()
+    log.info("hold_released", slot=slot)
+    return {"status": "released", "slot": slot}
+
+
+@advisor_app.get("/v1/debug/holds")
+async def holds_list() -> dict[str, Any]:
+    return {"holds": list(_holds.keys())}
 
 
 # ---------- metrics stub --------------------------------------------------
@@ -147,7 +181,7 @@ _METRICS_BODY = (
     "capl_up 1\n"
     "# HELP capl_stage Stage number\n"
     "# TYPE capl_stage gauge\n"
-    "capl_stage 0\n"
+    "capl_stage 1\n"
 )
 
 
@@ -191,7 +225,7 @@ async def _run() -> None:
 
 def main() -> None:
     p = argparse.ArgumentParser(description="CAPL service")
-    p.add_argument("--config", default=None, help="path to capl.yaml (unused stage 0)")
+    p.add_argument("--config", default=None, help="path to capl.yaml (unused stage 0-1)")
     p.parse_args()
     asyncio.run(_run())
 

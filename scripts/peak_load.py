@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
-"""Concurrent load for peak memory measurement.
+"""Concurrent load for peak memory measurement — work profile.
 
-Runs Kafka→Flink→Iceberg streaming + heavy Spark cluster write (5M rows) concurrently.
-Phase 1: create target Iceberg table with local Spark, then stop session.
+Work config: executor.memory=2g, driver.memory=3g, cores.max=8 (from spark-defaults.conf).
+Workload: write 10 M rows PARTITIONED BY (bucket(8, id)) + MERGE on 1 M rows (shuffle),
+concurrent with Kafka→Flink→Iceberg streaming (3 checkpoints, 5 s interval).
+
+Phase 1: create target Iceberg tables with local Spark, then stop session.
 Phase 2: start Flink job in background thread (HTTP only, no Spark) +
-         write 5M rows via Spark cluster in main thread simultaneously.
+         write 10 M rows + MERGE via Spark cluster in main thread simultaneously.
 """
 from __future__ import annotations
 
@@ -231,11 +234,12 @@ def _run_spark_heavy() -> str:
         .config("spark.sql.catalog.smoke_cat.s3.endpoint", S3_URL)
         .config("spark.sql.catalog.smoke_cat.s3.path-style-access", "true")
         .config("spark.sql.catalog.smoke_cat.cache-enabled", "false")
-        .config("spark.driver.memory", "512m")
-        .config("spark.executor.memory", "512m")
+        .config("spark.driver.memory", "3g")
+        .config("spark.executor.memory", "2g")
+        .config("spark.cores.max", "8")
         .config("spark.ui.enabled", "true")
         .config("spark.ui.port", "4040")
-        .config("spark.sql.shuffle.partitions", "4")
+        .config("spark.sql.shuffle.partitions", "16")
         .getOrCreate()
     )
     try:
@@ -245,20 +249,26 @@ def _run_spark_heavy() -> str:
         spark.sql(f"DROP TABLE IF EXISTS smoke_cat.smoke.{TABLE_SPARK}")
         spark.sql(
             f"CREATE TABLE smoke_cat.smoke.{TABLE_SPARK} "
-            f"(id BIGINT, val STRING) USING iceberg"
+            f"(id BIGINT, val STRING) USING iceberg "
+            f"PARTITIONED BY (bucket(8, id))"
         )
+        # Write 10 M rows in 4 batches of 2.5 M
         for batch in range(4):
             (
-                spark.range(0, 1_250_000)
+                spark.range(0, 2_500_000)
                 .selectExpr("id", f"CONCAT('b{batch}-', CAST(id AS STRING)) AS val")
                 .writeTo(f"smoke_cat.smoke.{TABLE_SPARK}")
                 .append()
             )
+        # MERGE on 1 M rows (shuffle-heavy)
+        spark.createDataFrame(
+            [(i, f"upd-{i}") for i in range(0, 1_000_000)], ["id", "val"]
+        ).createOrReplaceTempView("merge_src")
         spark.sql(
-            f"CALL smoke_cat.system.rewrite_data_files("
-            f"  table => 'smoke_cat.smoke.{TABLE_SPARK}',"
-            f"  options => map('min-input-files', '1', 'target-file-size-bytes', '134217728')"
-            f")"
+            f"MERGE INTO smoke_cat.smoke.{TABLE_SPARK} t "
+            f"USING merge_src s ON t.id = s.id "
+            f"WHEN MATCHED THEN UPDATE SET t.val = s.val "
+            f"WHEN NOT MATCHED THEN INSERT *"
         )
         exec_r = requests.get(
             f"http://localhost:4040/api/v1/applications/{app_id}/executors",
@@ -267,7 +277,7 @@ def _run_spark_heavy() -> str:
         executors = exec_r.json() if exec_r.status_code == 200 else []
         workers = [e for e in executors if str(e.get("id")) != "driver"]
         total_tasks = sum(e.get("totalTasks", 0) for e in workers)
-        return f"5M rows written; workers={len(workers)}; tasks={total_tasks}"
+        return f"10M rows + MERGE 1M written; workers={len(workers)}; tasks={total_tasks}"
     finally:
         spark.stop()
 
