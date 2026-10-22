@@ -2,7 +2,7 @@
 id: ADR-001
 title: Образ apache/iceberg-rest-fixture использует тег latest вместо 1.12.0
 status: Принято
-date: 2026-11-02
+date: 2026-10-22
 ---
 
 ## Контекст

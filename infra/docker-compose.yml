@@ -73,9 +73,19 @@ services:
     logging: *default-logging
 
   # ---------------------------------------------------------------- catalogs
+  catalog-init:
+    image: alpine:3.20
+    user: root
+    command: ["sh", "-c", "mkdir -p /catalog-data && chown -R 1000:1000 /catalog-data"]
+    volumes:
+      - catalog-data:/catalog-data
+    restart: "no"
+    logging: *default-logging
+
   catalog:
-    image: apache/iceberg-rest-fixture:${CATALOG_FIXTURE_TAG:-latest}
+    image: apache/iceberg-rest-fixture:${CATALOG_FIXTURE_TAG:-latest}@${CATALOG_FIXTURE_DIGEST}
     depends_on:
+      catalog-init: {condition: service_completed_successfully}
       s3-init: {condition: service_completed_successfully}
       toxiproxy: {condition: service_started}
     environment:
@@ -84,12 +94,12 @@ services:
       CATALOG_IO__IMPL: org.apache.iceberg.aws.s3.S3FileIO
       CATALOG_S3_ENDPOINT: http://toxiproxy:18333
       CATALOG_S3_PATH__STYLE__ACCESS: "true"
-      # SQLite в /tmp — всегда доступен на запись пользователю iceberg (ADR-002).
-      # Данные каталога не персистируются при рестарте контейнера: make seed
-      # воссоздаёт схему перед каждым прогоном; данные лежат в S3 (SeaweedFS).
-      CATALOG_URI: jdbc:sqlite:file:/tmp/catalog.db
+      # Persistent volume; catalog-init chowns to uid=1000 (iceberg user) — ADR-002.
+      CATALOG_URI: jdbc:sqlite:file:/var/lib/iceberg-catalog/catalog.db
       CATALOG_JDBC_USER: user
       CATALOG_JDBC_PASSWORD: password
+    volumes:
+      - catalog-data:/var/lib/iceberg-catalog
     ports:
       - "8181:8181"
     healthcheck:
@@ -101,7 +111,7 @@ services:
     logging: *default-logging
 
   lakekeeper-migrate:
-    image: quay.io/lakekeeper/catalog:${LAKEKEEPER_VERSION}
+    image: quay.io/lakekeeper/catalog:${LAKEKEEPER_VERSION:-v0.14.0}
     profiles: ["lakekeeper"]
     command: ["migrate"]
     environment: &lakekeeper-env
@@ -115,7 +125,7 @@ services:
     logging: *default-logging
 
   lakekeeper:
-    image: quay.io/lakekeeper/catalog:${LAKEKEEPER_VERSION}
+    image: quay.io/lakekeeper/catalog:${LAKEKEEPER_VERSION:-v0.14.0}
     profiles: ["lakekeeper"]
     command: ["serve"]
     environment: *lakekeeper-env
@@ -284,6 +294,16 @@ services:
     mem_limit: 1280m
     logging: *default-logging
 
+  flink-init:
+    image: alpine:3.20
+    profiles: ["streaming"]
+    user: root
+    command: ["sh", "-c", "chown -R 9999:9999 /flink-checkpoints"]
+    volumes:
+      - flink-checkpoints:/flink-checkpoints
+    restart: "no"
+    logging: *default-logging
+
   flink-jobmanager:
     build: &flink-build
       context: ..
@@ -298,6 +318,8 @@ services:
     image: nir/flink:dev
     profiles: ["streaming"]
     command: jobmanager
+    depends_on:
+      flink-init: {condition: service_completed_successfully}
     environment: &flink-env
       <<: *aws-env
       FLINK_PROPERTIES: |
@@ -394,6 +416,7 @@ services:
 
 volumes:
   s3-data:
+  catalog-data:
   kafka-data:
   flink-checkpoints:
   pg-data:
