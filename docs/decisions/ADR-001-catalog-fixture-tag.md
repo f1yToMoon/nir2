@@ -20,36 +20,70 @@ no such manifest
 Тег `latest` содержит эндпоинты `/plan` и `/tasks`, добавленные в Iceberg 1.11+,
 что подтверждает версию ≥ 1.11.0.
 
+### Фактическая версия в образе
+
+Образ digest-пиннингован:
+
+```
+CATALOG_FIXTURE_DIGEST=sha256:db8de90b5b7693d4ac334c336f91d9bbe320d7b19f4f514d26de84cdfbcbfe8d
+```
+
+Jar `iceberg-rest-adapter.jar` внутри образа содержит `iceberg-build.properties`:
+
+```
+git.build.version=b0df3ca
+git.commit.id=b0df3ca01d61b2f7ae7143ac660c6b16e33b6e46
+git.commit.time=2026-04-29T02:05:57+0000
+git.closest.tag.name=          (пусто — нет числового релизного тега)
+```
+
+Образ собран из коммита `b0df3ca` ветки `main` (2026-04-29), **между** выпусками
+1.11.x и 1.12.0. Числовой релизный тег отсутствует. Формальная версия:
+`Apache Iceberg b0df3ca (commit b0df3ca01d61b2f7ae7143ac660c6b16e33b6e46)`.
+
 ## Решение
 
 Использовать `apache/iceberg-rest-fixture:latest` через переменную
-`CATALOG_FIXTURE_TAG` вместо `ICEBERG_VERSION`.
+`CATALOG_FIXTURE_TAG` вместо `ICEBERG_VERSION`. Образ закреплён по digest.
 
 - `ICEBERG_VERSION=1.12.0` управляет jar-артефактами (Spark/Flink runtime,
   AWS bundle), которые существуют на Maven Central.
-- `CATALOG_FIXTURE_TAG=latest` управляет только образом сервера каталога.
+- `CATALOG_FIXTURE_TAG=latest` + `CATALOG_FIXTURE_DIGEST` управляют образом
+  сервера каталога.
 
 Изменения:
-- `infra/.env.example`, `infra/.env`: добавлена переменная `CATALOG_FIXTURE_TAG=latest`.
+- `infra/.env.example`, `infra/.env`: добавлены переменные `CATALOG_FIXTURE_TAG=latest`
+  и `CATALOG_FIXTURE_DIGEST=sha256:db8de90b...`.
 - `infra/docker-compose.yml`: образ каталога изменён с
   `apache/iceberg-rest-fixture:${ICEBERG_VERSION}` на
-  `apache/iceberg-rest-fixture:${CATALOG_FIXTURE_TAG:-latest}`.
+  `apache/iceberg-rest-fixture:${CATALOG_FIXTURE_TAG:-latest}@${CATALOG_FIXTURE_DIGEST}`.
 - `scripts/versions_check.sh`: проверяет `CATALOG_FIXTURE_TAG`, а не `ICEBERG_VERSION`
   для образа каталога.
+
+## Почему допустимо
+
+REST Catalog API (v1) является версионированным протоколом. Все операции, задействованные
+в исследовании (commit, loadTable, listSnapshots), стабилизированы начиная с Iceberg 1.4
+и не менялись в 1.11–1.12.
+
+Критически важно: **детектирование конфликтов OCC (K1, K2) выполняется на стороне
+клиента** (библиотека Iceberg 1.12.0). Сервер каталога лишь хранит метаданные и
+выполняет CAS-операцию при коммите. Снимок `b0df3ca` (2026-04-29) из ветки `main`
+включает все изменения протокола 1.11 и предшествует только ещё не влитым патчам 1.12.0,
+которые не затрагивают CommitTable API.
 
 ## Последствия
 
 **Положительные:**
 - Стенд разворачивается без ручных модификаций Docker-образа.
-- REST Catalog API (v1) обратно совместим: клиент 1.12.0 работает с сервером ≥ 1.11.
-
+- Digest-пиннинг обеспечивает воспроизводимость: при pull всегда используется
+  один и тот же слой байтов.
 
 **Отрицательные / риски:**
-- Сервер каталога может содержать незначительные отличия в поведении валидаций
-  или ответах. Матрица конфликтов проверяется на этапе 1, что компенсирует этот риск.
-- Тег `latest` нестабилен. При повторном развёртывании в будущем версия может смениться.
-  Рекомендуется при выходе 1.12.0-образа закрепить тег и обновить ADR.
+- Сервер каталога собран из нерелизного снимка `main`. В теории возможна несовместимость
+  с финальным 1.12.0 в деталях ответов. Этап 1 (матрица конфликтов) проверяет
+  поведение на реальном стеке и компенсирует этот риск.
 
 **Действие:** При появлении `apache/iceberg-rest-fixture:1.12.0` на Docker Hub
-обновить `CATALOG_FIXTURE_TAG=1.12.0` и переопубликовать матрицу конфликтов
-при необходимости.
+обновить `CATALOG_FIXTURE_TAG=1.12.0`, пересчитать digest и переопубликовать
+матрицу конфликтов при необходимости.

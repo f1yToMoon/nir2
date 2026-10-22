@@ -5,8 +5,10 @@ Checks:
   0.5  Catalog /v1/config reachable directly and via CAPL proxy
   0.6  Slot headers (X-CAPL-Slot) propagated by Iceberg REST client
   0.7  REST-client timeout property names (confirmed from HTTPClient.java 1.12.0)
-  0.8  Flink SQL Gateway reachable; Kafka→Flink→Iceberg ≥3 commits with flink.job-id
-  0.9  rewrite_data_files with system.bucket(8, id) predicate
+  0.8  Flink SQL Gateway reachable; Kafka→Flink→Iceberg ≥3 commits, flink.job-id in all,
+       median snapshot interval 5 s ± 50 %
+  0.9  rewrite_data_files bucket(8,id)=1 predicate; file counts verified post-compaction
+  0.10 Spark cluster mode (spark://spark-master:7077): write + rewrite on workers
 
 Exit code 0 = all passed.
 """
@@ -15,6 +17,7 @@ from __future__ import annotations
 import json
 import os
 import sys
+import statistics
 import threading
 import time
 
@@ -54,6 +57,7 @@ FLINK_GW_URL    = os.environ.get("FLINK_SQL_GATEWAY",  "http://flink-sql-gateway
 FLINK_REST_URL  = os.environ.get("FLINK_REST",         "http://flink-jobmanager:8081")
 KAFKA_BOOTSTRAP = os.environ.get("KAFKA_BOOTSTRAP",    "kafka:9092")
 WAREHOUSE       = os.environ.get("WAREHOUSE",          "s3://warehouse/")
+SPARK_MASTER    = os.environ.get("SPARK_MASTER",       "spark://spark-master:7077")
 
 TIMEOUT = 10
 
@@ -358,7 +362,7 @@ def _check_kafka_flink_iceberg():
             f"  'io-impl' = 'org.apache.iceberg.aws.s3.S3FileIO',"
             f"  's3.endpoint' = '{S3_URL}',"
             f"  's3.path-style-access' = 'true',"
-            f"  'header.X-CAPL-Writer' = 'flink-stream'"
+            f"  'header.X-CAPL-Writer' = 'stream'"
             f")"
         )
         _sql("USE CATALOG smoke_cat")
@@ -451,7 +455,7 @@ def _check_kafka_flink_iceberg():
     )
     assert r.status_code == 200, f"table metadata fetch failed: {r.status_code}"
     snapshots = r.json().get("metadata", {}).get("snapshots", [])
-    assert snapshots, f"no snapshots in smoke.{table}"
+    assert len(snapshots) >= 3, f"expected ≥3 snapshots, got {len(snapshots)}"
 
     bad = [
         str(s.get("snapshot-id"))
@@ -460,8 +464,20 @@ def _check_kafka_flink_iceberg():
     ]
     assert not bad, f"flink.job-id missing in snapshot(s): {bad}"
 
+    timestamps_ms = sorted(s.get("timestamp-ms", 0) for s in snapshots)
+    intervals_s = [
+        (timestamps_ms[i + 1] - timestamps_ms[i]) / 1000.0
+        for i in range(len(timestamps_ms) - 1)
+    ]
+    med = statistics.median(intervals_s)
+    assert 2.5 <= med <= 7.5, (
+        f"median snapshot interval {med:.1f}s not in [2.5, 7.5]; "
+        f"intervals={[round(x, 1) for x in intervals_s]}"
+    )
+
     return (
         f"{len(snapshots)} snapshots, all have flink.job-id; "
+        f"median_interval={med:.1f}s; "
         f"checkpoints.completed={ckpt_counts.get('completed')}; "
         f"job={job_id[:8]}"
     )
@@ -508,10 +524,119 @@ def _check_rewrite_data_files_bucket():
         assert d.get("rewritten_data_files_count", 0) >= 1, (
             f"no files rewritten: {d}"
         )
+
+        # Verify per-bucket file counts: bucket 1 → 1 (compacted), others → 4 each
+        file_rows = spark.sql(
+            "SELECT partition FROM smoke_cat.smoke.rewrite_test.files"
+        ).collect()
+        bucket_counts: dict[int, int] = {}
+        for fr in file_rows:
+            part = fr["partition"]
+            bucket_val = int(part[0])
+            bucket_counts[bucket_val] = bucket_counts.get(bucket_val, 0) + 1
+        assert bucket_counts.get(1, 0) == 1, (
+            f"bucket 1 has {bucket_counts.get(1, 0)} files, expected 1; counts={bucket_counts}"
+        )
+        for b in range(8):
+            if b == 1:
+                continue
+            assert bucket_counts.get(b, 0) == 4, (
+                f"bucket {b} has {bucket_counts.get(b, 0)} files, expected 4; counts={bucket_counts}"
+            )
         return (
             f"bucket(8,id)=1 predicate accepted; "
             f"rewritten={d.get('rewritten_data_files_count')}, "
-            f"added={d.get('added_data_files_count')}"
+            f"added={d.get('added_data_files_count')}; "
+            f"file_counts={bucket_counts}"
+        )
+    finally:
+        spark.stop()
+
+
+# ==========================================================================
+# 0.10  Spark cluster mode: write + rewrite_data_files on workers
+# ==========================================================================
+def _check_spark_cluster():
+    """Write Iceberg table and run rewrite_data_files via Spark cluster
+    (spark://spark-master:7077, client mode). Verify workers handled tasks
+    via Spark driver REST API.
+    """
+    try:
+        from pyspark.sql import SparkSession
+    except ImportError as exc:
+        raise RuntimeError(f"PySpark not available: {exc}") from exc
+
+    spark = (
+        SparkSession.builder.appName("capl-smoke-cluster")
+        .master(SPARK_MASTER)
+        .config(
+            "spark.sql.extensions",
+            "org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions",
+        )
+        .config("spark.sql.catalog.smoke_cat", "org.apache.iceberg.spark.SparkCatalog")
+        .config("spark.sql.catalog.smoke_cat.type", "rest")
+        .config("spark.sql.catalog.smoke_cat.uri", PROXY_URL)
+        .config("spark.sql.catalog.smoke_cat.warehouse", WAREHOUSE)
+        .config(
+            "spark.sql.catalog.smoke_cat.io-impl",
+            "org.apache.iceberg.aws.s3.S3FileIO",
+        )
+        .config("spark.sql.catalog.smoke_cat.s3.endpoint", S3_URL)
+        .config("spark.sql.catalog.smoke_cat.s3.path-style-access", "true")
+        .config("spark.sql.catalog.smoke_cat.cache-enabled", "false")
+        .config("spark.driver.memory", "512m")
+        .config("spark.executor.memory", "512m")
+        .config("spark.ui.enabled", "true")
+        .config("spark.ui.port", "4040")
+        .config("spark.sql.shuffle.partitions", "4")
+        .getOrCreate()
+    )
+
+    try:
+        spark.sparkContext.setLogLevel("WARN")
+        app_id = spark.sparkContext.applicationId
+
+        spark.sql("CREATE NAMESPACE IF NOT EXISTS smoke_cat.smoke")
+        spark.sql("DROP TABLE IF EXISTS smoke_cat.smoke.cluster_test")
+        spark.sql(
+            "CREATE TABLE smoke_cat.smoke.cluster_test "
+            "(id BIGINT, val STRING) USING iceberg"
+        )
+
+        for batch in range(4):
+            (
+                spark.range(0, 500_000)
+                .selectExpr("id", f"CONCAT('b{batch}-', CAST(id AS STRING)) AS val")
+                .writeTo("smoke_cat.smoke.cluster_test")
+                .append()
+            )
+
+        spark.sql(
+            "CALL smoke_cat.system.rewrite_data_files("
+            "  table => 'smoke_cat.smoke.cluster_test',"
+            "  options => map('min-input-files', '1', 'target-file-size-bytes', '134217728')"
+            ")"
+        )
+
+        exec_r = requests.get(
+            f"http://localhost:4040/api/v1/applications/{app_id}/executors",
+            timeout=TIMEOUT,
+        )
+        assert exec_r.status_code == 200, (
+            f"Spark driver REST API failed: {exec_r.status_code} {exec_r.text[:200]}"
+        )
+        executors = exec_r.json()
+        workers = [e for e in executors if str(e.get("id")) != "driver"]
+        assert workers, (
+            f"no worker executors found; ids={[e.get('id') for e in executors]}"
+        )
+        total_tasks = sum(e.get("totalTasks", 0) for e in workers)
+        assert total_tasks > 0, f"workers had 0 tasks; details={workers}"
+
+        return (
+            f"master={SPARK_MASTER}; "
+            f"workers={len(workers)}; "
+            f"tasks_on_workers={total_tasks}"
         )
     finally:
         spark.stop()
@@ -545,6 +670,9 @@ def main() -> None:
 
     print("\n[0.9] rewrite_data_files bucket predicate")
     check("rewrite_data_files_bucket", _check_rewrite_data_files_bucket)
+
+    print("\n[0.10] Spark cluster mode (spark://spark-master:7077)")
+    check("spark_cluster", _check_spark_cluster)
 
     print("\n" + "=" * 60)
     print(f"PASSED: {len(PASSED)}  FAILED: {len(FAILED)}")
