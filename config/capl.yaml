@@ -1,0 +1,101 @@
+# Конфигурация сервиса CAPL (прокси + advisor + модели).
+
+service:
+  proxy_port: 8180
+  advisor_port: 8190
+  metrics_port: 9101
+  log_level: INFO
+  log_format: json
+
+proxy:
+  upstream_uri: ${CAPL_UPSTREAM_URI}          # http://catalog:8181 | http://lakekeeper:8181/catalog
+  connect_timeout_s: 5
+  read_timeout_s: 180                          # > hold.max_ms + время коммита каталога
+  max_connections: 200
+  commit_path_regex: '^/v1/(?:(?P<prefix>[^/]+)/)?namespaces/(?P<ns>[^/]+)/tables/(?P<table>[^/]+)$'
+  txn_commit_path_regex: '^/v1/(?:(?P<prefix>[^/]+)/)?transactions/commit$'
+  metrics_report_path_regex: '^/v1/(?:(?P<prefix>[^/]+)/)?namespaces/(?P<ns>[^/]+)/tables/(?P<table>[^/]+)/metrics$'
+  headers:
+    slot: X-CAPL-Slot
+    writer: X-CAPL-Writer
+    run: X-CAPL-Run
+  summary_op_id_key: capl.op-id
+  fail_open: true
+  advisor_call_timeout_ms: 20
+
+hold:
+  enabled: true                 # действует только для политик с поддержкой hold (P6)
+  max_ms: 60000                 # ≤ 0.5 * rest.client.socket-timeout-ms (Spark: 120000)
+  cost_ratio: 2.0               # κ: удерживать A, если cost(B) ≥ κ·cost(A)
+  eta_confidence: 0.8           # квантиль ETA конкурента, который должен уложиться в max_ms
+  never_hold_classes: [append, stream_upsert]
+
+enricher:
+  workers: 4
+  queue_max: 10000
+  read_deleted_paths_for: [cow_dml, mor_dml, rewrite_data, overwrite]
+  s3:
+    endpoint: ${CAPL_S3_ENDPOINT}
+    path_style: true
+    region: ${AWS_REGION}
+
+state:
+  ring_buffer_per_table: 50000          # последних commit_event в памяти
+  intensity_windows_s: [60, 300, 900]
+  intensity_weights: [0.5, 0.3, 0.2]
+  periodic_writer:
+    min_commits_for_period: 5
+    max_period_cv: 0.25                 # коэффициент вариации интервалов для признания периодичности
+    partition_history: 50
+  flush_interval_s: 2
+
+telemetry:
+  pg_dsn: ${CAPL_PG_DSN}
+  schema: stand
+  batch_size: 200
+
+models:
+  dir: ${CAPL_MODEL_DIR}
+  k2_model: k2_lgbm.txt
+  k1_model: k1_lgbm.txt
+  duration_model: dur_lgbm.txt
+  calibrator: k2_isotonic.joblib
+  fallback: analytic
+  inference_threads: 2
+
+analytic:
+  default_attempt_s: 1.5                 # длительность одной попытки коммита (до калибровки)
+  retry:                                 # должно совпадать с table properties сценария
+    num_retries: 4
+    min_wait_ms: 100
+    max_wait_ms: 60000
+    total_timeout_ms: 1800000
+  duration_fallback:                     # D = a + b * GB (до обучения модели длительности)
+    rewrite_data: {a_s: 20, b_s_per_gb: 90}
+    rewrite_deletes: {a_s: 15, b_s_per_gb: 60}
+    cow_dml: {a_s: 15, b_s_per_gb: 120}
+    mor_dml: {a_s: 10, b_s_per_gb: 40}
+    overwrite: {a_s: 10, b_s_per_gb: 60}
+  cost_fallback_cpu_s_per_gb:
+    rewrite_data: 300
+    rewrite_deletes: 200
+    cow_dml: 400
+    mor_dml: 150
+    overwrite: 200
+
+policy:
+  active: ${CAPL_POLICY}
+  delay_grid_s: [0, 15, 30, 60, 120, 300, 600]
+  max_deferrals: 6
+  mu_delay_cpu_s_per_s: 0.05            # штраф за секунду задержки (CPU-секунды)
+  benefit:
+    file_value_cpu_s: 0.5               # ценность устранения одного мелкого файла
+    target_file_mb: 128
+    small_file_mb: 32
+  debt:
+    metric: small_file_ratio
+    max: 0.6                             # при превышении задержка обслуживания запрещена
+  P2: {min_partition_age_days: 2}
+  P3: {window_period_s: 1800, window_length_s: 300}
+  P4: {recent_window_s: 120}
+  explore: {epsilon: 0.5}

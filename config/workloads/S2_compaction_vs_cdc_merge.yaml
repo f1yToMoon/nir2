@@ -1,0 +1,22 @@
+# S2. Компакция × CDC MERGE (copy-on-write) по пересекающимся недавним партициям.
+# Симметричный К2: проигрывает коммитящий вторым. Основной сценарий для hold-правила.
+extends: _base.yaml
+name: S2_compaction_vs_cdc_merge
+description: Компакция × пакетный CDC MERGE (CoW), пересечение по недавним партициям
+controlled_ops:
+  - id: compaction
+    type: rewrite_data
+    arrival: {process: fixed, interval_s: 150}
+    max_concurrent: 2
+    sla_s: 1800
+    narrowable: true
+    footprint: {selector: small_files_topn, top_n: 12, min_age_days: 0, min_files: 10}
+    params: {strategy: binpack, min_input_files: 5, partial_progress: false}
+  - id: cdc_merge
+    type: cow_dml
+    arrival: {process: poisson, interval_s: 60}
+    max_concurrent: 2
+    sla_s: 300
+    narrowable: false
+    footprint: {selector: recency_zipf, zipf_a: 1.3, days: 7, partitions_per_op: {min: 2, max: 10}, rows: 50000}
+    params: {statement: merge_upsert, update_fraction: 0.8}

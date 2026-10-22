@@ -1,0 +1,129 @@
+# Матрица экспериментов. Исполнитель: `python -m runner.batch --matrix config/experiments/matrix.yaml --series E3`.
+# run_id = {series}-{scenario}-{policy}-{concurrency}-s{seed}[-{variant}]
+# Сброс таблицы перед прогоном: DROP TABLE (без purge) + CALL system.register_table(golden metadata.json),
+# затем фоновая уборка файлов предыдущего прогона (см. 05_workloads_and_experiments.md §4).
+
+defaults:
+  catalog: rest_fixture          # rest_fixture | lakekeeper
+  routing: proxy                 # proxy | bypass
+  seeds: [11, 23, 37]
+  duration_s: null               # null = из сценария
+  model_version: current
+
+series:
+  E1_overhead:
+    goal: "AC-5 / H3: накладные расходы прокси и advisor"
+    scenarios: [S0_baseline]
+    runs:
+      - {policy: P0, routing: bypass}
+      - {policy: P0, routing: proxy}
+      - {policy: P6, routing: proxy}
+    concurrency: [low]
+    seeds: [11, 23, 37, 41, 53]
+
+  E2_data_collection:
+    goal: "Обучающая выборка для модели (stand) и калибровка симулятора"
+    scenarios: [S1_compaction_vs_stream_append, S2_compaction_vs_cdc_merge, S3_compaction_vs_mor_dml,
+                S4_merge_vs_stream_serializable, S5_compliance_delete]
+    runs:
+      - {policy: explore}
+      - {policy: P0}
+    concurrency: [mid, high]
+    seeds: [101, 102, 103, 104]
+
+  E3_main:
+    goal: "H2: сравнение политик"
+    scenarios: [S1_compaction_vs_stream_append, S2_compaction_vs_cdc_merge, S3_compaction_vs_mor_dml,
+                S4_merge_vs_stream_serializable, S5_compliance_delete]
+    runs:
+      - {policy: P0, concurrency: [mid, high]}
+      - {policy: P1, concurrency: [mid]}
+      - {policy: P2, concurrency: [mid, high]}
+      - {policy: P3, concurrency: [mid]}
+      - {policy: P4, concurrency: [mid, high]}
+      - {policy: P5, concurrency: [mid, high]}
+      - {policy: P6, concurrency: [mid, high]}
+    seeds: [11, 23, 37]
+
+  E3b_generalization:
+    goal: "H1/H2 на отложенном сценарии (модель не видела S6)"
+    scenarios: [S6_mixed_drift]
+    runs:
+      - {policy: P0}
+      - {policy: P4}
+      - {policy: P5}
+      - {policy: P6}
+    concurrency: [mid]
+    seeds: [11, 23, 37]
+
+  E4_ablation:
+    goal: "Вклад компонентов P6"
+    scenarios: [S2_compaction_vs_cdc_merge, S3_compaction_vs_mor_dml]
+    runs:
+      - {policy: P6, policy_params: {hold: {enabled: false}}, tag: no_hold}
+      - {policy: P6, policy_params: {narrowing: false}, tag: no_narrow}
+      - {policy: P6, policy_params: {features_exclude: [competitors]}, tag: no_competitors}
+      - {policy: P6, policy_params: {delay_grid_s: [0]}, tag: no_delay}
+    concurrency: [mid]
+    seeds: [11, 23, 37]
+
+  E5_format_v3:
+    goal: "Deletion vectors (Iceberg v3)"
+    scenarios: [S3_compaction_vs_mor_dml]
+    variant: v3_deletion_vectors
+    runs: [{policy: P0}, {policy: P4}, {policy: P6}]
+    concurrency: [mid]
+
+  E6_s3_latency:
+    goal: "Влияние задержки объектного хранилища (эмуляция облака)"
+    scenarios: [S2_compaction_vs_cdc_merge]
+    overrides: {s3_latency_ms: {mean: 40, jitter: 20}}
+    runs: [{policy: P0}, {policy: P6}]
+    concurrency: [mid]
+
+  E7_lakekeeper:
+    goal: "AC-7: неинвазивность на другом каталоге"
+    catalog: lakekeeper
+    scenarios: [S2_compaction_vs_cdc_merge, S4_merge_vs_stream_serializable]
+    runs: [{policy: P0}, {policy: P6}]
+    concurrency: [mid]
+
+  E8_isolation_variant:
+    goal: "Чувствительность к уровню изоляции"
+    scenarios: [S4_merge_vs_stream_serializable]
+    variant: snapshot_isolation
+    runs: [{policy: P0}, {policy: P6}]
+    concurrency: [mid]
+
+simulation:
+  SIM1_calibration_check:
+    goal: "AC-6: сим vs стенд на конфигурациях E2/E3 (P0, P4, P6)"
+    mirror_series: [E3_main]
+    policies: [P0, P4, P6]
+    seeds: 20
+  SIM2_production_scale:
+    goal: "Перенос выводов на промышленный масштаб"
+    scale_profile: production
+    scenarios: [S1_compaction_vs_stream_append, S2_compaction_vs_cdc_merge, S3_compaction_vs_mor_dml,
+                S4_merge_vs_stream_serializable, S5_compliance_delete, S6_mixed_drift]
+    policies: [P0, P1, P2, P3, P4, P5, P6, oracle]
+    sweep:
+      stream_period_s: [5, 15, 30, 60]
+      compaction_gb: [10, 50, 120]
+      dml_interval_s: [30, 120, 600]
+    seeds: 20
+    duration_s: 86400
+
+budget_estimate:
+  stand_run_minutes: 32           # 25 мин измерения + прогрев/охлаждение + сброс
+  stand_runs:
+    E1_overhead: 15
+    E2_data_collection: 80
+    E3_main: 180
+    E3b_generalization: 12
+    E4_ablation: 24
+    E5_format_v3: 9
+    E6_s3_latency: 6
+    E7_lakekeeper: 12
+    E8_isolation_variant: 6
+  stand_hours_total: 183          # ≈ 8 суток машинного времени, выполняется ночами и в выходные

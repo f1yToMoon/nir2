@@ -1,0 +1,401 @@
+# Стенд CAPL на одном ПК.
+# Запуск:   cd infra && cp .env.example .env && docker compose --profile streaming --profile observability up -d --build
+# Lite:     docker compose --profile observability up -d --build   (без Kafka/Flink)
+# Lakekeeper: добавить --profile lakekeeper и CAPL_UPSTREAM_URI=http://lakekeeper:8181/catalog
+#
+# Все клиенты Iceberg обращаются к каталогу через capl:8180 (CATALOG_ROUTING=proxy)
+# и к объектному хранилищу через toxiproxy:18333.
+
+name: ${COMPOSE_PROJECT_NAME:-nir}
+
+x-aws-env: &aws-env
+  AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+  AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+  AWS_REGION: ${AWS_REGION}
+
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "20m"
+    max-file: "3"
+
+services:
+
+  # ---------------------------------------------------------------- storage
+  s3:
+    image: chrislusf/seaweedfs:${SEAWEEDFS_VERSION}
+    command: >
+      server -dir=/data -ip=s3 -ip.bind=0.0.0.0
+      -master.volumeSizeLimitMB=1024 -volume.max=0
+      -s3 -s3.port=8333 -s3.config=/etc/seaweedfs/s3.json
+    volumes:
+      - s3-data:/data
+      - ./seaweedfs/s3.json:/etc/seaweedfs/s3.json:ro
+    ports:
+      - "8333:8333"
+      - "9333:9333"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:9333/cluster/status >/dev/null 2>&1"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+    mem_limit: 1g
+    logging: *default-logging
+
+  s3-init:
+    image: amazon/aws-cli:${AWSCLI_VERSION}
+    depends_on:
+      s3: {condition: service_healthy}
+    environment: *aws-env
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        for i in $$(seq 1 30); do
+          aws --endpoint-url http://s3:8333 s3api head-bucket --bucket ${S3_BUCKET} 2>/dev/null && exit 0
+          aws --endpoint-url http://s3:8333 s3 mb s3://${S3_BUCKET} && exit 0
+          sleep 2
+        done
+        exit 1
+    restart: "no"
+    logging: *default-logging
+
+  toxiproxy:
+    image: ghcr.io/shopify/toxiproxy:${TOXIPROXY_VERSION}
+    command: ["-host=0.0.0.0", "-config=/config/toxiproxy.json"]
+    volumes:
+      - ./toxiproxy/toxiproxy.json:/config/toxiproxy.json:ro
+    depends_on:
+      s3: {condition: service_healthy}
+    ports:
+      - "8474:8474"
+      - "18333:18333"
+    mem_limit: 128m
+    logging: *default-logging
+
+  # ---------------------------------------------------------------- catalogs
+  catalog:
+    image: apache/iceberg-rest-fixture:${ICEBERG_VERSION}
+    depends_on:
+      s3-init: {condition: service_completed_successfully}
+      toxiproxy: {condition: service_started}
+    environment:
+      <<: *aws-env
+      CATALOG_WAREHOUSE: ${WAREHOUSE}
+      CATALOG_IO__IMPL: org.apache.iceberg.aws.s3.S3FileIO
+      CATALOG_S3_ENDPOINT: http://toxiproxy:18333
+      CATALOG_S3_PATH__STYLE__ACCESS: "true"
+      # Персистентный JdbcCatalog на SQLite-файле (VERIFY: путь доступен на запись пользователю образа)
+      CATALOG_URI: jdbc:sqlite:file:/var/lib/iceberg-catalog/catalog.db
+      CATALOG_JDBC_USER: user
+      CATALOG_JDBC_PASSWORD: password
+    volumes:
+      - catalog-data:/var/lib/iceberg-catalog
+    ports:
+      - "8181:8181"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8181/v1/config >/dev/null || wget -qO- http://localhost:8181/v1/config >/dev/null"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+    mem_limit: 1g
+    logging: *default-logging
+
+  lakekeeper-migrate:
+    image: quay.io/lakekeeper/catalog:${LAKEKEEPER_VERSION}
+    profiles: ["lakekeeper"]
+    command: ["migrate"]
+    environment: &lakekeeper-env
+      LAKEKEEPER__PG_DATABASE_URL_READ: postgresql://lakekeeper:lakekeeper@postgres:5432/lakekeeper
+      LAKEKEEPER__PG_DATABASE_URL_WRITE: postgresql://lakekeeper:lakekeeper@postgres:5432/lakekeeper
+      LAKEKEEPER__PG_ENCRYPTION_KEY: ${LAKEKEEPER_PG_ENCRYPTION_KEY}
+      LAKEKEEPER__AUTHZ_BACKEND: allowall
+    depends_on:
+      postgres: {condition: service_healthy}
+    restart: "no"
+    logging: *default-logging
+
+  lakekeeper:
+    image: quay.io/lakekeeper/catalog:${LAKEKEEPER_VERSION}
+    profiles: ["lakekeeper"]
+    command: ["serve"]
+    environment: *lakekeeper-env
+    depends_on:
+      lakekeeper-migrate: {condition: service_completed_successfully}
+      s3-init: {condition: service_completed_successfully}
+    ports:
+      - "8182:8181"
+    mem_limit: 512m
+    logging: *default-logging
+
+  lakekeeper-bootstrap:
+    image: curlimages/curl:8.10.1
+    profiles: ["lakekeeper"]
+    depends_on:
+      lakekeeper: {condition: service_started}
+    environment:
+      <<: *aws-env
+      LAKEKEEPER_WAREHOUSE_NAME: ${LAKEKEEPER_WAREHOUSE_NAME}
+      S3_BUCKET: ${S3_BUCKET}
+    volumes:
+      - ./lakekeeper/bootstrap.sh:/bootstrap.sh:ro
+    entrypoint: ["/bin/sh", "/bootstrap.sh"]
+    restart: "no"
+    logging: *default-logging
+
+  # ---------------------------------------------------------------- CAPL (предмет работы)
+  capl:
+    build:
+      context: ..
+      dockerfile: infra/capl/Dockerfile
+      args:
+        PYTHON_IMAGE: ${PYTHON_IMAGE}
+    image: nir/capl:dev
+    depends_on:
+      postgres: {condition: service_healthy}
+      catalog: {condition: service_healthy}
+    environment:
+      <<: *aws-env
+      CAPL_CONFIG: /config/capl.yaml
+      CAPL_UPSTREAM_URI: ${CAPL_UPSTREAM_URI}
+      CAPL_PG_DSN: ${CAPL_PG_DSN}
+      CAPL_S3_ENDPOINT: ${CAPL_S3_ENDPOINT}
+      CAPL_POLICY: ${CAPL_POLICY}
+      CAPL_MODEL_DIR: ${CAPL_MODEL_DIR}
+    volumes:
+      - ../config:/config:ro
+      - ../models:/models
+    ports:
+      - "8180:8180"
+      - "8190:8190"
+      - "9101:9101"
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request;urllib.request.urlopen('http://localhost:8190/healthz')\""]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+    mem_limit: 1536m
+    logging: *default-logging
+
+  # ---------------------------------------------------------------- Spark
+  spark-master:
+    build: &spark-build
+      context: ..
+      dockerfile: infra/spark/Dockerfile
+      args:
+        SPARK_IMAGE: ${SPARK_IMAGE}
+        ICEBERG_VERSION: ${ICEBERG_VERSION}
+        ICEBERG_SPARK_RUNTIME_ARTIFACT: ${ICEBERG_SPARK_RUNTIME_ARTIFACT}
+    image: nir/spark:dev
+    command: ["/opt/spark/bin/spark-class", "org.apache.spark.deploy.master.Master", "--host", "spark-master"]
+    environment:
+      SPARK_NO_DAEMONIZE: "true"
+    ports:
+      - "8080:8080"
+      - "7077:7077"
+    mem_limit: 1g
+    logging: *default-logging
+
+  spark-worker-1: &spark-worker
+    image: nir/spark:dev
+    build: *spark-build
+    command: ["/opt/spark/bin/spark-class", "org.apache.spark.deploy.worker.Worker", "spark://spark-master:7077"]
+    depends_on: [spark-master]
+    environment:
+      <<: *aws-env
+      SPARK_NO_DAEMONIZE: "true"
+      SPARK_WORKER_CORES: ${SPARK_WORKER_CORES}
+      SPARK_WORKER_MEMORY: ${SPARK_WORKER_MEMORY}
+      SPARK_WORKER_WEBUI_PORT: "8081"
+    ports:
+      - "8081:8081"
+    mem_limit: 7g
+    logging: *default-logging
+
+  spark-worker-2:
+    <<: *spark-worker
+    environment:
+      <<: *aws-env
+      SPARK_NO_DAEMONIZE: "true"
+      SPARK_WORKER_CORES: ${SPARK_WORKER_CORES}
+      SPARK_WORKER_MEMORY: ${SPARK_WORKER_MEMORY}
+      SPARK_WORKER_WEBUI_PORT: "8082"
+    ports:
+      - "8082:8082"
+
+  runner:
+    image: nir/spark:dev
+    build: *spark-build
+    depends_on:
+      capl: {condition: service_healthy}
+      spark-master: {condition: service_started}
+    environment:
+      <<: *aws-env
+      PYTHONPATH: /workspace/src
+      CATALOG_ROUTING: ${CATALOG_ROUTING}
+      CATALOG_IMPL: ${CATALOG_IMPL}
+      CAPL_PROXY_URI: http://capl:8180
+      CAPL_ADVISOR_URI: http://capl:8190
+      CATALOG_DIRECT_URI: ${CAPL_UPSTREAM_URI}
+      WAREHOUSE: ${WAREHOUSE}
+      LAKEKEEPER_WAREHOUSE_NAME: ${LAKEKEEPER_WAREHOUSE_NAME}
+      S3_ENDPOINT: http://toxiproxy:18333
+      TOXIPROXY_API: http://toxiproxy:8474
+      SPARK_MASTER: spark://spark-master:7077
+      SPARK_DRIVER_MEMORY: ${SPARK_DRIVER_MEMORY}
+      SPARK_EXECUTOR_MEMORY: ${SPARK_EXECUTOR_MEMORY}
+      SPARK_EXECUTOR_CORES: ${SPARK_EXECUTOR_CORES}
+      SPARK_CORES_MAX: ${SPARK_CORES_MAX}
+      KAFKA_BOOTSTRAP: kafka:9092
+      FLINK_SQL_GATEWAY: http://flink-sql-gateway:8083
+      FLINK_REST: http://flink-jobmanager:8081
+      TELEMETRY_PG_DSN: ${CAPL_PG_DSN}
+    working_dir: /workspace
+    command: ["sleep", "infinity"]
+    volumes:
+      - ..:/workspace
+    ports:
+      - "4040:4040"
+    mem_limit: 5g
+    logging: *default-logging
+
+  # ---------------------------------------------------------------- streaming (profile)
+  kafka:
+    image: ${KAFKA_IMAGE}
+    profiles: ["streaming"]
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_NUM_PARTITIONS: 8
+      KAFKA_LOG_RETENTION_HOURS: 6
+      KAFKA_HEAP_OPTS: ${KAFKA_HEAP_OPTS}
+    ports:
+      - "9092:9092"
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+    mem_limit: 1280m
+    logging: *default-logging
+
+  flink-jobmanager:
+    build: &flink-build
+      context: ..
+      dockerfile: infra/flink/Dockerfile
+      args:
+        FLINK_IMAGE: ${FLINK_IMAGE}
+        FLINK_MINOR: ${FLINK_MINOR}
+        ICEBERG_VERSION: ${ICEBERG_VERSION}
+        ICEBERG_FLINK_RUNTIME_ARTIFACT: ${ICEBERG_FLINK_RUNTIME_ARTIFACT}
+        FLINK_KAFKA_CONNECTOR_VERSION: ${FLINK_KAFKA_CONNECTOR_VERSION}
+        HADOOP_CLIENT_VERSION: ${HADOOP_CLIENT_VERSION}
+    image: nir/flink:dev
+    profiles: ["streaming"]
+    command: jobmanager
+    environment: &flink-env
+      <<: *aws-env
+      FLINK_PROPERTIES: |
+        jobmanager.rpc.address: flink-jobmanager
+        rest.address: flink-jobmanager
+        rest.bind-address: 0.0.0.0
+        jobmanager.memory.process.size: 1024m
+        taskmanager.memory.process.size: ${FLINK_TM_PROCESS_MEMORY}
+        taskmanager.numberOfTaskSlots: ${FLINK_TM_SLOTS}
+        parallelism.default: 2
+        state.checkpoints.dir: file:///flink-checkpoints
+        execution.checkpointing.externalized-checkpoint-retention: RETAIN_ON_CANCELLATION
+        metrics.reporter.prom.factory.class: org.apache.flink.metrics.prometheus.PrometheusReporterFactory
+        metrics.reporter.prom.port: 9249
+    volumes:
+      - flink-checkpoints:/flink-checkpoints
+    ports:
+      - "8085:8081"
+    mem_limit: 1280m
+    logging: *default-logging
+
+  flink-taskmanager:
+    image: nir/flink:dev
+    build: *flink-build
+    profiles: ["streaming"]
+    command: taskmanager
+    depends_on: [flink-jobmanager]
+    environment: *flink-env
+    volumes:
+      - flink-checkpoints:/flink-checkpoints
+    mem_limit: 3g
+    logging: *default-logging
+
+  flink-sql-gateway:
+    image: nir/flink:dev
+    build: *flink-build
+    profiles: ["streaming"]
+    depends_on: [flink-jobmanager]
+    command: ["/opt/flink/bin/sql-gateway.sh", "start-foreground",
+              "-Dsql-gateway.endpoint.rest.address=0.0.0.0",
+              "-Dsql-gateway.endpoint.rest.port=8083"]
+    environment: *flink-env
+    ports:
+      - "8083:8083"
+    mem_limit: 1g
+    logging: *default-logging
+
+  # ---------------------------------------------------------------- telemetry & observability
+  postgres:
+    image: postgres:${POSTGRES_VERSION}
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+      - ./postgres/init:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d telemetry"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+    command: ["postgres", "-c", "shared_buffers=256MB", "-c", "max_connections=200", "-c", "synchronous_commit=off"]
+    mem_limit: 1g
+    logging: *default-logging
+
+  prometheus:
+    image: prom/prometheus:${PROMETHEUS_VERSION}
+    profiles: ["observability"]
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prom-data:/prometheus
+    ports:
+      - "9090:9090"
+    mem_limit: 512m
+    logging: *default-logging
+
+  grafana:
+    image: grafana/grafana:${GRAFANA_VERSION}
+    profiles: ["observability"]
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+    ports:
+      - "3000:3000"
+    depends_on: [prometheus]
+    mem_limit: 384m
+    logging: *default-logging
+
+volumes:
+  s3-data:
+  catalog-data:
+  kafka-data:
+  flink-checkpoints:
+  pg-data:
+  prom-data:

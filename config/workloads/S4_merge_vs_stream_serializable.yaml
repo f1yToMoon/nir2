@@ -1,0 +1,33 @@
+# S4. Пакетный MERGE/overwrite × потоковый append в те же партиции при serializable.
+# Асимметричный К2: проигрывает всегда MERGE. Рычаг — выбор момента запуска (фаза чекпойнта).
+extends: _base.yaml
+name: S4_merge_vs_stream_serializable
+description: Пакетный MERGE × потоковый append (поздние события) при serializable
+streams:
+  - id: ingest
+    engine: flink
+    mode: append
+    rate_events_per_s: 2000
+    commit_period_s: 15
+    partition_target: {hot_offset_days: 0, late_fraction: 0.15, late_max_days: 3}
+    keys: {dist: uniform}
+controlled_ops:
+  - id: batch_merge
+    type: cow_dml
+    arrival: {process: poisson, interval_s: 90}
+    max_concurrent: 2
+    sla_s: 600
+    narrowable: false
+    footprint: {selector: recency_zipf, zipf_a: 1.0, days: 5, partitions_per_op: {min: 2, max: 8}, rows: 100000}
+    params: {statement: merge_upsert, update_fraction: 0.5}
+  - id: reprocess_day
+    type: overwrite
+    arrival: {process: poisson, interval_s: 400}
+    max_concurrent: 1
+    sla_s: 900
+    narrowable: false
+    footprint: {selector: single_day, min_age_days: 1, max_age_days: 4}
+    params: {isolation_level_option: serializable}
+variants:
+  snapshot_isolation:
+    table: {properties: {write.merge.isolation-level: snapshot, write.update.isolation-level: snapshot, write.delete.isolation-level: snapshot}}

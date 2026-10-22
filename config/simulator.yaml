@@ -1,0 +1,46 @@
+# Параметры дискретно-событийного симулятора (src/sim).
+# Значения с пометкой calibrated заполняются скриптом `make calibrate` по трассам стенда.
+
+engine:
+  framework: simpy
+  time_unit: s
+  default_duration_s: 3600
+  warmup_s: 300
+
+catalog:
+  cas_service_time_s: {dist: lognormal, median: 0.08, sigma: 0.4}     # calibrated
+  load_table_time_s:  {dist: lognormal, median: 0.05, sigma: 0.4}     # calibrated
+
+client_commit:
+  attempt_time_s:     # запись манифестов + manifest list + metadata при повторе; calibrated
+    append:       {dist: lognormal, median: 0.6, sigma: 0.5}
+    cow_dml:      {dist: lognormal, median: 1.2, sigma: 0.5}
+    mor_dml:      {dist: lognormal, median: 0.9, sigma: 0.5}
+    rewrite_data: {dist: lognormal, median: 1.5, sigma: 0.5}
+  retry: {num_retries: 4, min_wait_ms: 100, max_wait_ms: 60000, total_timeout_ms: 1800000, jitter: true}
+
+durations:            # длительность до запроса коммита: D = a + b * GB * noise; calibrated
+  rewrite_data: {a_s: 20, b_s_per_gb: 90, noise_sigma: 0.25}
+  cow_dml:      {a_s: 15, b_s_per_gb: 120, noise_sigma: 0.3}
+  mor_dml:      {a_s: 10, b_s_per_gb: 40, noise_sigma: 0.3}
+  overwrite:    {a_s: 10, b_s_per_gb: 60, noise_sigma: 0.3}
+
+cluster:
+  model: shared_slots           # длительность растёт при одновременных операциях
+  slots: 8
+  slowdown_per_extra_op: 0.15   # calibrated
+
+table_model:
+  file_granularity: true        # хранить множества файлов в партициях (нужно для overlap=file)
+  dml_files_touched:            # число файлов партиции, затрагиваемых одним DML-коммитом; calibrated
+    dist: zipf
+    a: 1.6
+    max: 64
+
+scale_profiles:               # для переноса выводов на промышленный масштаб
+  stand:      {partitions: 240, files_per_partition: 40, compaction_gb: 1.5, stream_period_s: 10}
+  production: {partitions: 8760, files_per_partition: 400, compaction_gb: 120, stream_period_s: 30}
+
+validation:
+  target_rel_error: 0.10      # AC-6
+  metrics: [k2_rate, k1_fail_rate, wasted_cpu_share, commit_latency_p95]

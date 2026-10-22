@@ -1,0 +1,92 @@
+# Базовый сценарий: все сценарии S0–S6 наследуют эти значения (ключ extends) и переопределяют часть.
+# Загрузчик: src/runner/scenario.py (pydantic-модель Scenario; глубокое слияние словарей).
+# Время сценария — реальное (секунды стенда). «Логическая дата» партиций сдвигается
+# относительно logical_today.
+
+name: _base
+description: Базовые значения
+duration_s: 1500                 # длительность измеряемой части прогона
+warmup_s: 180                    # прогрев: потоки работают, управляемые операции не учитываются в метриках
+cooldown_s: 120                  # ожидание завершения операций после окончания
+seed: 0                          # переопределяется матрицей экспериментов
+
+profile:
+  size: full                     # full | lite (lite: ×0.3 данных, без Flink)
+
+table:
+  name: bench.events
+  format_version: 2
+  schema:
+    - {name: event_id, type: bigint, required: true}
+    - {name: key,      type: bigint, required: true}
+    - {name: dt,       type: date,   required: true}
+    - {name: event_ts, type: timestamp}
+    - {name: amount,   type: double}
+    - {name: status,   type: string}
+    - {name: version,  type: int}
+    - {name: payload,  type: string}            # ~200 байт случайного текста
+  partition_spec: ["dt", "bucket(8, key)"]
+  logical_days: 30
+  logical_today: "2026-11-30"
+  properties:
+    write.target-file-size-bytes: "134217728"
+    write.distribution-mode: hash
+    write.delete.mode: copy-on-write
+    write.update.mode: copy-on-write
+    write.merge.mode: copy-on-write
+    write.delete.isolation-level: serializable
+    write.update.isolation-level: serializable
+    write.merge.isolation-level: serializable
+    commit.retry.num-retries: "4"
+    commit.retry.min-wait-ms: "100"
+    commit.retry.max-wait-ms: "60000"
+    commit.retry.total-timeout-ms: "1800000"
+    history.expire.max-snapshot-age-ms: "86400000"
+
+seed_data:
+  rows_total: 30000000            # lite: 9 000 000
+  files_per_partition: 40          # намеренно мелкие файлы, чтобы компакции было что делать
+  key_cardinality: 5000000
+  payload_bytes: 200
+
+streams:                           # неуправляемые писатели
+  - id: ingest
+    engine: flink                  # flink | spark (в lite всегда spark)
+    mode: append                   # append | upsert (equality deletes)
+    rate_events_per_s: 2000
+    commit_period_s: 10            # Flink: execution.checkpointing.interval; Spark: trigger
+    partition_target:
+      hot_offset_days: 0           # основная доля — в logical_today
+      late_fraction: 0.05          # доля поздних событий
+      late_max_days: 2
+    keys: {dist: uniform}
+
+controlled_ops: []                 # переопределяется в сценариях; формат см. ниже
+# Формат элемента controlled_ops:
+#  - id: compaction
+#    type: rewrite_data | rewrite_deletes | cow_dml | mor_dml | overwrite | expire
+#    arrival: {process: poisson | fixed, interval_s: 120}
+#    max_concurrent: 2
+#    sla_s: 1800                   # крайний срок запуска от момента intent
+#    narrowable: true
+#    footprint:                    # генератор следа
+#      selector: small_files_topn | recency_zipf | keys_all_days | single_day
+#      ...
+#    params: {...}                 # параметры конкретной операции
+
+concurrency_levels:                # множители, выбираемые матрицей экспериментов
+  low:  {rate_mult: 0.5, max_concurrent_mult: 0.5, stream_rate_mult: 0.5}
+  mid:  {rate_mult: 1.0, max_concurrent_mult: 1.0, stream_rate_mult: 1.0}
+  high: {rate_mult: 2.0, max_concurrent_mult: 2.0, stream_rate_mult: 1.5}
+
+s3_latency_ms: {mean: 0, jitter: 0}  # toxiproxy; сценарии с эмуляцией облака: 40 ± 20
+
+runner:
+  n_slots: 8
+  heartbeat_interval_s: 5
+  health_sample_interval_s: 30
+  spark_pool_by_type: {rewrite_data: maintenance, rewrite_deletes: maintenance, cow_dml: dml, mor_dml: dml, overwrite: dml, expire: maintenance}
+
+invariants:
+  enabled: true
+  checks: [ledger_row_counts, no_duplicate_event_ids, committed_ops_in_lineage, aborted_ops_absent, version_monotonic]

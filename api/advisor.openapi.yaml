@@ -1,0 +1,274 @@
+openapi: 3.0.3
+info:
+  title: CAPL Advisor API
+  version: 0.1.0
+  description: |
+    Advisor сервиса CAPL (Conflict-Aware Planning Layer). Принимает намерения управляемых операций
+    над таблицами Iceberg и возвращает решения о запуске с учётом прогноза конфликтов.
+    Все времена — Unix epoch в секундах (float, UTC).
+servers:
+  - url: http://localhost:8190
+paths:
+  /v1/runs:
+    post:
+      summary: Начать прогон (сбрасывает состояние, задаёт политику)
+      operationId: startRun
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/RunStart'}
+      responses:
+        '201': {description: Прогон начат, content: {application/json: {schema: {$ref: '#/components/schemas/RunInfo'}}}}
+        '409': {description: Уже идёт другой прогон, content: {application/json: {schema: {$ref: '#/components/schemas/Error'}}}}
+  /v1/runs/{run_id}/finish:
+    post:
+      summary: Завершить прогон и сбросить буферы телеметрии
+      operationId: finishRun
+      parameters: [{$ref: '#/components/parameters/RunId'}]
+      responses:
+        '200': {description: OK, content: {application/json: {schema: {$ref: '#/components/schemas/RunInfo'}}}}
+  /v1/intents:
+    post:
+      summary: Зарегистрировать намерение управляемой операции и получить решение
+      operationId: createIntent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/IntentRequest'}
+      responses:
+        '201': {description: Решение, content: {application/json: {schema: {$ref: '#/components/schemas/Decision'}}}}
+        '400': {description: Некорректный intent, content: {application/json: {schema: {$ref: '#/components/schemas/Error'}}}}
+  /v1/intents/{intent_id}/reevaluate:
+    post:
+      summary: Повторно оценить отложенный intent
+      operationId: reevaluateIntent
+      parameters: [{$ref: '#/components/parameters/IntentId'}]
+      responses:
+        '200': {description: Новое решение, content: {application/json: {schema: {$ref: '#/components/schemas/Decision'}}}}
+        '404': {description: Не найден, content: {application/json: {schema: {$ref: '#/components/schemas/Error'}}}}
+  /v1/intents/{intent_id}/start:
+    post:
+      summary: Операция запущена на слоте
+      operationId: startIntent
+      parameters: [{$ref: '#/components/parameters/IntentId'}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/StartRequest'}
+      responses:
+        '200': {description: OK}
+        '409': {description: Слот занят другой операцией, content: {application/json: {schema: {$ref: '#/components/schemas/Error'}}}}
+  /v1/intents/{intent_id}/heartbeat:
+    post:
+      summary: Прогресс выполнения
+      operationId: heartbeatIntent
+      parameters: [{$ref: '#/components/parameters/IntentId'}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/Heartbeat'}
+      responses:
+        '204': {description: OK}
+  /v1/intents/{intent_id}/finish:
+    post:
+      summary: Исход и стоимость операции
+      operationId: finishIntent
+      parameters: [{$ref: '#/components/parameters/IntentId'}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/FinishRequest'}
+      responses:
+        '200': {description: OK}
+  /v1/risk/{namespace}/{table}:
+    get:
+      summary: Карта риска по партициям
+      operationId: getRisk
+      parameters:
+        - {name: namespace, in: path, required: true, schema: {type: string}}
+        - {name: table, in: path, required: true, schema: {type: string}}
+        - {name: op_type, in: query, required: false, schema: {$ref: '#/components/schemas/OpType'}}
+        - {name: duration_s, in: query, required: false, schema: {type: number, default: 300}}
+      responses:
+        '200': {description: OK, content: {application/json: {schema: {$ref: '#/components/schemas/RiskMap'}}}}
+  /v1/policy:
+    put:
+      summary: Сменить политику (только между прогонами)
+      operationId: setPolicy
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/PolicyConfig'}
+      responses:
+        '200': {description: OK}
+        '409': {description: Идёт прогон}
+  /v1/state:
+    get:
+      summary: Отладочный снимок состояния
+      operationId: getState
+      responses:
+        '200': {description: OK, content: {application/json: {schema: {type: object, additionalProperties: true}}}}
+  /healthz:
+    get:
+      summary: Проверка живости
+      responses:
+        '200': {description: OK}
+components:
+  parameters:
+    RunId: {name: run_id, in: path, required: true, schema: {type: string}}
+    IntentId: {name: intent_id, in: path, required: true, schema: {type: string}}
+  schemas:
+    OpType:
+      type: string
+      enum: [append, stream_upsert, overwrite, cow_dml, mor_dml, rewrite_data, rewrite_deletes, expire, orphan_cleanup]
+    Isolation:
+      type: string
+      enum: [serializable, snapshot]
+    PolicyName:
+      type: string
+      enum: [P0, P1, P2, P3, P4, P5, P6, explore]
+    RunStart:
+      type: object
+      required: [run_id, scenario, policy, seed]
+      properties:
+        run_id: {type: string, example: S2-P6-c2-seed3}
+        scenario: {type: string, example: S2_compaction_vs_cdc_merge}
+        policy: {$ref: '#/components/schemas/PolicyName'}
+        policy_params: {type: object, additionalProperties: true}
+        seed: {type: integer}
+        model_version: {type: string, nullable: true}
+        started_at: {type: number}
+    RunInfo:
+      type: object
+      properties:
+        run_id: {type: string}
+        policy: {$ref: '#/components/schemas/PolicyName'}
+        status: {type: string, enum: [running, finished]}
+    Footprint:
+      type: object
+      description: След операции. Указывается список партиций или предикат (тогда advisor сам перечисляет партиции по метаданным).
+      properties:
+        partitions:
+          type: array
+          items: {type: string, example: "dt=2026-11-01/key_bucket=3"}
+        predicate: {type: string, nullable: true, example: "dt >= '2026-11-01'"}
+        files_est: {type: integer, nullable: true}
+    IntentRequest:
+      type: object
+      required: [run_id, op_id, table, op_type, footprint]
+      properties:
+        run_id: {type: string}
+        op_id: {type: string, example: S2-r3-op-0147}
+        table: {type: string, example: bench.events}
+        op_type: {$ref: '#/components/schemas/OpType'}
+        mode: {type: string, enum: [copy-on-write, merge-on-read], nullable: true}
+        isolation: {$ref: '#/components/schemas/Isolation'}
+        footprint: {$ref: '#/components/schemas/Footprint'}
+        bytes_est: {type: integer, minimum: 0}
+        rows_est: {type: integer, minimum: 0}
+        narrowable: {type: boolean, default: false, description: Можно ли сужать след (только обслуживание)}
+        priority: {type: integer, default: 0}
+        sla_deadline: {type: number, description: Крайний момент запуска}
+        submitted_at: {type: number}
+    Candidate:
+      type: object
+      properties:
+        action: {type: string, enum: [run_now, delay, narrow]}
+        delay_s: {type: number}
+        partitions_kept: {type: integer}
+        p_k2: {type: number}
+        p_k1: {type: number}
+        dur_pred_s: {type: number}
+        cost_pred_cpu_s: {type: number}
+        benefit_cpu_s: {type: number}
+        score: {type: number}
+        feasible: {type: boolean}
+    Decision:
+      type: object
+      required: [intent_id, decision_id, action]
+      properties:
+        intent_id: {type: string}
+        decision_id: {type: string}
+        action: {type: string, enum: [run_now, delay, narrow, skip]}
+        retry_at: {type: number, nullable: true}
+        footprint: {$ref: '#/components/schemas/Footprint'}
+        p_k2: {type: number}
+        p_k1: {type: number}
+        p_k2_analytic: {type: number}
+        dur_pred_s: {type: number}
+        cost_pred_cpu_s: {type: number}
+        policy: {$ref: '#/components/schemas/PolicyName'}
+        model_version: {type: string, nullable: true}
+        propensity: {type: number, nullable: true, description: Для политики explore}
+        candidates:
+          type: array
+          items: {$ref: '#/components/schemas/Candidate'}
+        reason: {type: string}
+    StartRequest:
+      type: object
+      required: [slot, started_at]
+      properties:
+        slot: {type: string, example: s3}
+        started_at: {type: number}
+        footprint: {$ref: '#/components/schemas/Footprint'}
+        spark_job_group: {type: string}
+    Heartbeat:
+      type: object
+      required: [at, progress]
+      properties:
+        at: {type: number}
+        progress: {type: number, minimum: 0, maximum: 1}
+        tasks_done: {type: integer}
+        tasks_total: {type: integer}
+    FinishRequest:
+      type: object
+      required: [outcome, finished_at]
+      properties:
+        outcome:
+          type: string
+          enum: [committed, data_conflict, retry_exhausted, commit_unknown, error, skipped]
+        finished_at: {type: number}
+        commit_requested_at: {type: number, nullable: true}
+        attempts: {type: integer}
+        cpu_ms: {type: integer}
+        run_ms: {type: integer}
+        bytes_written: {type: integer}
+        snapshot_id: {type: integer, format: int64, nullable: true}
+        error_class: {type: string, nullable: true}
+        error_message: {type: string, nullable: true}
+    PartitionRisk:
+      type: object
+      properties:
+        partition: {type: string}
+        lambda_by_class: {type: object, additionalProperties: {type: number}}
+        p_k2: {type: number}
+        last_commit_at: {type: number}
+        files: {type: integer}
+        small_files: {type: integer}
+    RiskMap:
+      type: object
+      properties:
+        table: {type: string}
+        at: {type: number}
+        op_type: {$ref: '#/components/schemas/OpType'}
+        duration_s: {type: number}
+        partitions:
+          type: array
+          items: {$ref: '#/components/schemas/PartitionRisk'}
+    PolicyConfig:
+      type: object
+      required: [policy]
+      properties:
+        policy: {$ref: '#/components/schemas/PolicyName'}
+        params: {type: object, additionalProperties: true}
+    Error:
+      type: object
+      properties:
+        code: {type: string}
+        message: {type: string}

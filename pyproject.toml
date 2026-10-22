@@ -1,0 +1,81 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "capl-nir"
+version = "0.1.0"
+description = "CAPL: прогнозирование конфликтов OCC и конфликт-осведомлённое планирование операций в Data Lakehouse (Apache Iceberg)"
+requires-python = ">=3.11"
+readme = "README.md"
+dependencies = [
+  "pydantic>=2.7",
+  "pyyaml>=6.0",
+  "numpy>=1.26",
+  "pandas>=2.2",
+  "pyarrow>=16",
+  "structlog>=24.1",
+  "typer>=0.12",
+]
+
+[project.optional-dependencies]
+service = [
+  "fastapi>=0.115",
+  "uvicorn[standard]>=0.30",
+  "httpx>=0.27",
+  "asyncpg>=0.29",
+  "prometheus-client>=0.20",
+  "pyiceberg[pyarrow]>=0.10",
+  "fastavro>=1.9",
+  "lightgbm>=4.3",
+  "scikit-learn>=1.5",
+  "joblib>=1.4",
+]
+ml = [
+  "lightgbm>=4.3",
+  "scikit-learn>=1.5",
+  "optuna>=4.0",
+  "joblib>=1.4",
+  "shap>=0.45",
+  "lifelines>=0.29",
+  "psycopg[binary]>=3.2",
+]
+sim = [
+  "simpy>=4.1",
+  "scipy>=1.13",
+]
+analysis = [
+  "matplotlib>=3.9",
+  "scipy>=1.13",
+  "statsmodels>=0.14",
+  "psycopg[binary]>=3.2",
+]
+dev = [
+  "pytest>=8.2",
+  "pytest-asyncio>=0.23",
+  "hypothesis>=6.100",
+  "respx>=0.21",
+  "schemathesis>=3.30",
+  "ruff>=0.5",
+  "mypy>=1.10",
+  "types-PyYAML",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 110
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM", "RUF"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]

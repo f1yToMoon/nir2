@@ -1,0 +1,32 @@
+# S1. Компакция горячих партиций × частые потоковые append. Ожидается только К1;
+# потери возникают при исчерпании повторов (высокая частота коммитов таблицы).
+extends: _base.yaml
+name: S1_compaction_vs_stream_append
+description: Компакция × высокочастотный append (несколько писателей, период коммита 2–5 с)
+streams:
+  - id: ingest_flink
+    engine: flink
+    mode: append
+    rate_events_per_s: 3000
+    commit_period_s: 5
+    partition_target: {hot_offset_days: 0, late_fraction: 0.05, late_max_days: 2}
+    keys: {dist: uniform}
+  - id: agents
+    engine: spark            # набор лёгких append-писателей («агенты»), каждый коммитит раз в period
+    mode: append
+    writers: 6
+    rate_events_per_s: 200
+    commit_period_s: 3
+    partition_target: {hot_offset_days: 0, late_fraction: 0.2, late_max_days: 3}
+    keys: {dist: uniform}
+controlled_ops:
+  - id: compaction_hot
+    type: rewrite_data
+    arrival: {process: fixed, interval_s: 120}
+    max_concurrent: 2
+    sla_s: 1200
+    narrowable: true
+    footprint: {selector: small_files_topn, top_n: 16, min_age_days: 0, min_files: 10}
+    params: {strategy: binpack, min_input_files: 5, partial_progress: false}
+variants:
+  rewrite_partial_progress: {controlled_ops: [{id: compaction_hot, params: {partial_progress: true, partial_progress_max_commits: 10}}]}

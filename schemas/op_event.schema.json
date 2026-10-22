@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/f1yToMoon/nir/schemas/op_event.schema.json",
+  "title": "OpEvent",
+  "description": "Событие жизненного цикла управляемой операции (runner ↔ advisor).",
+  "type": "object",
+  "required": ["run_id", "op_id", "kind", "at"],
+  "properties": {
+    "run_id": {"type": "string"},
+    "op_id": {"type": "string"},
+    "kind": {"enum": ["intent", "decision", "start", "heartbeat", "commit_requested", "finish"]},
+    "at": {"type": "number"},
+    "table": {"type": "string"},
+    "op_type": {"enum": ["append", "stream_upsert", "overwrite", "cow_dml", "mor_dml", "rewrite_data", "rewrite_deletes", "expire", "orphan_cleanup"]},
+    "slot": {"type": ["string", "null"]},
+    "footprint": {"type": "array", "items": {"type": "string"}},
+    "decision": {
+      "type": "object",
+      "properties": {
+        "action": {"enum": ["run_now", "delay", "narrow", "skip"]},
+        "delay_s": {"type": "number"},
+        "p_k2": {"type": "number"},
+        "p_k1": {"type": "number"},
+        "policy": {"type": "string"}
+      }
+    },
+    "progress": {"type": "number", "minimum": 0, "maximum": 1},
+    "outcome": {"enum": ["committed", "data_conflict", "retry_exhausted", "commit_unknown", "error", "skipped"]},
+    "attempts": {"type": "integer"},
+    "cpu_ms": {"type": "integer"},
+    "run_ms": {"type": "integer"},
+    "bytes_written": {"type": "integer"},
+    "error_class": {"type": ["string", "null"]}
+  },
+  "allOf": [
+    {"if": {"properties": {"kind": {"const": "finish"}}}, "then": {"required": ["outcome"]}},
+    {"if": {"properties": {"kind": {"const": "start"}}}, "then": {"required": ["slot"]}}
+  ]
+}

@@ -1,0 +1,29 @@
+# S0. Низкая конкурентность, конфликтов почти нет. Цель: измерение накладных расходов CAPL (AC-5, H3).
+extends: _base.yaml
+name: S0_baseline
+description: Потоковый append + редкая компакция старых партиций; конфликты не ожидаются
+streams:
+  - id: ingest
+    engine: flink
+    mode: append
+    rate_events_per_s: 1000
+    commit_period_s: 10
+    partition_target: {hot_offset_days: 0, late_fraction: 0.0, late_max_days: 0}
+    keys: {dist: uniform}
+controlled_ops:
+  - id: compaction_cold
+    type: rewrite_data
+    arrival: {process: fixed, interval_s: 300}
+    max_concurrent: 1
+    sla_s: 1800
+    narrowable: true
+    footprint: {selector: small_files_topn, top_n: 8, min_age_days: 3, min_files: 10}
+    params: {strategy: binpack, min_input_files: 5, partial_progress: false}
+  - id: dml_cold
+    type: cow_dml
+    arrival: {process: poisson, interval_s: 240}
+    max_concurrent: 1
+    sla_s: 600
+    narrowable: false
+    footprint: {selector: single_day, min_age_days: 10, rows: 20000}
+    params: {statement: merge_update}

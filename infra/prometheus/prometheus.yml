@@ -1,0 +1,21 @@
+global:
+  scrape_interval: 5s
+  evaluation_interval: 5s
+
+scrape_configs:
+  - job_name: capl
+    static_configs:
+      - targets: ["capl:9101"]
+
+  - job_name: spark-driver
+    metrics_path: /metrics/prometheus
+    static_configs:
+      - targets: ["runner:4040"]
+
+  - job_name: flink
+    static_configs:
+      - targets: ["flink-jobmanager:9249", "flink-taskmanager:9249"]
+
+  - job_name: prometheus
+    static_configs:
+      - targets: ["localhost:9090"]

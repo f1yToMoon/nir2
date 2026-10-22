@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/f1yToMoon/nir/schemas/commit_event.schema.json",
+  "title": "CommitEvent",
+  "description": "Успешный коммит таблицы Iceberg с восстановленным по манифестам следом. Источник: capl.enricher.",
+  "type": "object",
+  "required": ["table", "snapshot_id", "committed_at", "iceberg_op", "op_class", "writer_class", "partitions"],
+  "properties": {
+    "run_id": {"type": ["string", "null"]},
+    "table": {"type": "string", "examples": ["bench.events"]},
+    "snapshot_id": {"type": "integer"},
+    "parent_snapshot_id": {"type": ["integer", "null"]},
+    "sequence_number": {"type": "integer"},
+    "committed_at": {"type": "number", "description": "Unix epoch, с (время ответа 200 каталога)"},
+    "iceberg_op": {"enum": ["append", "overwrite", "replace", "delete"]},
+    "op_class": {"enum": ["append", "stream_upsert", "overwrite", "cow_dml", "mor_dml", "rewrite_data", "rewrite_deletes", "expire", "unknown"]},
+    "op_id": {"type": ["string", "null"]},
+    "writer_class": {"enum": ["stream", "batch_dml", "maintenance", "user", "unknown"]},
+    "writer_id": {"type": ["string", "null"], "description": "flink.job-id, слот runner или spark.app.id"},
+    "attempts_seen": {"type": "integer", "description": "Число попыток коммита этой операции, видимых прокси"},
+    "totals": {
+      "type": "object",
+      "properties": {
+        "added_data_files": {"type": "integer"},
+        "deleted_data_files": {"type": "integer"},
+        "added_delete_files": {"type": "integer"},
+        "added_bytes": {"type": "integer"}
+      }
+    },
+    "partitions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["partition"],
+        "properties": {
+          "partition": {"type": "string", "examples": ["dt=2026-11-01/key_bucket=3"]},
+          "added_data_files": {"type": "integer"},
+          "deleted_data_files": {"type": "integer"},
+          "added_delete_files": {"type": "integer"},
+          "added_bytes": {"type": "integer"},
+          "deleted_file_paths": {"type": "array", "items": {"type": "string"}}
+        }
+      }
+    }
+  }
+}

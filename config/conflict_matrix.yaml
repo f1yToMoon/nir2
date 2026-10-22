@@ -1,0 +1,84 @@
+# Матрица конфликтов Iceberg (машиночитаемая).
+# Статус: ГИПОТЕЗА. Каждая пара проверяется на этапе 1 (tests/integration/test_conflict_matrix.py),
+# после чего поле `verified` заполняется версией Iceberg и числом повторов.
+#
+# Семантика записи: pending — операция, коммитящая позже; committed — операция, закоммиченная
+# после базового снапшота pending. outcome — исход для pending при пересечении следов (overlap).
+#   K1  — только конфликт каталога (повтор CAS, без потери работы)
+#   K2  — конфликт данных: pending получает ValidationException
+# overlap:
+#   none      — пересечение не требуется (конфликт определяется только фактом коммита)
+#   partition — пересечение партиций следа pending с партициями, затронутыми committed
+#   file      — пересечение множеств файлов (прочитанных/переписываемых pending и удалённых/
+#               получивших delete-файлы в committed)
+# symmetric: true — исход «первый закоммитивший выигрывает» в обе стороны (основа hold-правила)
+
+version: 1
+iceberg_version_assumed: "1.12.0"
+format_versions: [2, 3]
+defaults:
+  isolation: serializable
+  rewrite_use_starting_sequence_number: true
+
+op_classes:
+  append:          {iceberg_api: AppendFiles,       validates: false, controlled: false}
+  stream_upsert:   {iceberg_api: RowDelta-equality, validates: false, controlled: false}
+  overwrite:       {iceberg_api: ReplacePartitions, validates: by_write_option_isolation_level, controlled: true}
+  cow_dml:         {iceberg_api: OverwriteFiles,    validates: true, controlled: true}
+  mor_dml:         {iceberg_api: RowDelta-position, validates: true, controlled: true}
+  rewrite_data:    {iceberg_api: RewriteFiles,      validates: true, controlled: true, narrowable: true}
+  rewrite_deletes: {iceberg_api: RewriteFiles,      validates: true, controlled: true, narrowable: true}
+  expire:          {iceberg_api: ExpireSnapshots,   validates: false, controlled: true}
+
+rules:
+  # --- pending: append / stream_upsert — не валидируют данные ---
+  - {pending: append,        committed: "*",           outcome: K1, overlap: none}
+  - {pending: stream_upsert, committed: "*",           outcome: K1, overlap: none}
+
+  # --- pending: overwrite (ReplacePartitions) ---
+  - {pending: overwrite, committed: [append, stream_upsert, overwrite, cow_dml, mor_dml, rewrite_data],
+     outcome: K2, overlap: partition, when: {isolation: serializable}, note: "проверить поведение по умолчанию без опции isolation-level"}
+  - {pending: overwrite, committed: [append, stream_upsert],
+     outcome: K1, overlap: partition, when: {isolation: snapshot}}
+
+  # --- pending: cow_dml ---
+  - {pending: cow_dml, committed: [append, stream_upsert, overwrite],
+     outcome: K2, overlap: partition, when: {isolation: serializable}}
+  - {pending: cow_dml, committed: [append, stream_upsert],
+     outcome: K1, overlap: partition, when: {isolation: snapshot}}
+  - {pending: cow_dml, committed: [cow_dml, rewrite_data], outcome: K2, overlap: file, symmetric: true}
+  - {pending: cow_dml, committed: [mor_dml], outcome: K2, overlap: file,
+     note: "новые delete-файлы для прочитанных файлов"}
+
+  # --- pending: mor_dml ---
+  - {pending: mor_dml, committed: [append, stream_upsert, overwrite],
+     outcome: K2, overlap: partition, when: {isolation: serializable}}
+  - {pending: mor_dml, committed: [append, stream_upsert],
+     outcome: K1, overlap: partition, when: {isolation: snapshot}}
+  - {pending: mor_dml, committed: [cow_dml, rewrite_data], outcome: K2, overlap: file, symmetric: true,
+     note: "файлы, на которые ссылаются position deletes, удалены"}
+  - {pending: mor_dml, committed: [mor_dml], outcome: K2, overlap: file,
+     note: "v2: validateNoConflictingDeleteFiles; v3: один DV на data-файл"}
+
+  # --- pending: rewrite_data (компакция) ---
+  - {pending: rewrite_data, committed: [append], outcome: K1, overlap: none}
+  - {pending: rewrite_data, committed: [stream_upsert], outcome: K1, overlap: none,
+     when: {rewrite_use_starting_sequence_number: true}}
+  - {pending: rewrite_data, committed: [stream_upsert], outcome: K2, overlap: partition,
+     when: {rewrite_use_starting_sequence_number: false}}
+  - {pending: rewrite_data, committed: [overwrite, cow_dml, rewrite_data], outcome: K2, overlap: file, symmetric: true}
+  - {pending: rewrite_data, committed: [mor_dml], outcome: K2, overlap: file, symmetric: true,
+     note: "новые position deletes / DV для переписываемых файлов"}
+
+  # --- pending: rewrite_deletes ---
+  - {pending: rewrite_deletes, committed: [mor_dml, rewrite_data, cow_dml], outcome: K2, overlap: file}
+  - {pending: rewrite_deletes, committed: [append, stream_upsert], outcome: K1, overlap: none}
+
+  # --- pending: expire ---
+  - {pending: expire, committed: "*", outcome: K1, overlap: none,
+     note: "expire сам по себе не валидирует данные; опасность — для операций, планировавших от удалённых снапшотов (проверить)"}
+
+# Заполняется на этапе 1
+verified: []
+#  - {pending: cow_dml, committed: rewrite_data, isolation: serializable, format_version: 2,
+#     iceberg: "1.12.0", trials: 20, observed: {K2: 20}, matches: true, date: "2026-11-xx"}

@@ -1,0 +1,66 @@
+# Определения признаков. Реализация: src/capl/features.py.
+# Все признаки вычисляются на момент t (момент intent или кандидатного запуска t+Δ)
+# только по событиям с committed_at < t (point-in-time).
+# Обозначения: F — партиции следа; K — классы, конфликтующие с типом операции по conflict_matrix;
+# C — активные операции (intents в состоянии running) с пересекающимся следом.
+
+version: 1
+
+categorical:
+  - {name: op_type,        source: intent.op_type}
+  - {name: mode,           source: intent.mode, missing: none}
+  - {name: isolation,      source: intent.isolation}
+  - {name: format_version, source: table.format_version}
+
+numeric:
+  # --- операция ---
+  - {name: n_partitions,        expr: "len(F)"}
+  - {name: n_files_est,         expr: "intent.footprint.files_est or sum(table.files[p] for p in F)"}
+  - {name: bytes_est_log,       expr: "log1p(intent.bytes_est)"}
+  - {name: dur_pred_log,        expr: "log1p(models.duration(intent))"}
+  - {name: narrowed_fraction,   expr: "len(F) / len(F_requested)"}
+
+  # --- интенсивности конфликтующих классов в следе ---
+  - {name: "lam_{k}_{w}_sum",   for: {k: [append, stream_upsert, overwrite, cow_dml, mor_dml, rewrite_data], w: [60, 300, 900]},
+     expr: "sum(rate(k, p, window=w) for p in F)", unit: "commits/s"}
+  - {name: "lam_{w}_conflicting_sum", for: {w: [60, 300, 900]},
+     expr: "sum(rate(k, p, window=w) for p in F for k in K)"}
+  - {name: lam_conflicting_max_partition, expr: "max(rate(k, p, 300) for p in F for k in K)"}
+  - {name: periodic_commits_expected,     expr: "sum(expected_periodic_commits(wr, p, t, t + D_hat) for wr in periodic_writers for p in F if class(wr) in K)"}
+  - {name: table_commit_rate_60,          expr: "rate('*', '*', 60)"}
+
+  # --- время ---
+  - {name: secs_since_last_commit_in_F,       expr: "min(t - last_commit(p) for p in F)", cap: 3600}
+  - {name: secs_since_last_conflicting_in_F,  expr: "min(t - last_commit(p, classes=K) for p in F)", cap: 3600}
+
+  # --- конкуренты ---
+  - {name: n_active_overlapping,   expr: "len(C)"}
+  - {name: n_active_symmetric,     expr: "len([c for c in C if symmetric(intent.op_type, c.op_type)])"}
+  - {name: min_eta_competitor_s,   expr: "min(c.eta - t for c in C)", missing: 3600}
+  - {name: sum_cost_competitors,   expr: "sum(c.cost_pred for c in C)"}
+  - {name: overlap_ratio_max,      expr: "max(len(F & c.F) / len(F) for c in C)", missing: 0}
+
+  # --- история ---
+  - {name: k2_rate_F_3600,         expr: "k2_count(F, 3600) / max(1, ops_count(F, 3600))"}
+  - {name: k2_rate_type_3600,      expr: "k2_count(type=intent.op_type, window=3600) / max(1, ops_count(type=intent.op_type, window=3600))"}
+  - {name: avg_attempts_table_900, expr: "mean(attempts of commits in last 900s)"}
+
+  # --- состояние таблицы ---
+  - {name: avg_files_per_partition_F, expr: "mean(table.files[p] for p in F)"}
+  - {name: small_file_ratio_F,        expr: "sum(table.small_files[p] for p in F) / max(1, sum(table.files[p] for p in F))"}
+  - {name: delete_files_ratio_F,      expr: "sum(table.delete_files[p] for p in F) / max(1, sum(table.files[p] for p in F))"}
+
+  # --- аналитическая модель ---
+  - {name: lambda_bg,       expr: "analytic.lambda_bg(intent, t, D_hat)"}
+  - {name: p_k2_analytic,   expr: "analytic.p_k2(intent, t, D_hat)"}
+  - {name: p_k1_analytic,   expr: "analytic.p_k1(intent, t, D_hat)"}
+
+labels:
+  y_k2:  "outcome == 'data_conflict'"
+  y_k1:  "outcome == 'retry_exhausted'"
+  y_any: "outcome in ('data_conflict', 'retry_exhausted')"
+  y_dur: "commit_requested_at - started_at"
+
+exclusions:
+  - "outcome in ('error', 'skipped')"
+  - "controlled == false"

@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<!-- FAIR-пулы драйвера runner. Пул выбирается по типу операции (config/workloads/_base.yaml: runner.spark_pool_by_type). -->
+<allocations>
+  <pool name="streaming">
+    <schedulingMode>FAIR</schedulingMode>
+    <weight>3</weight>
+    <minShare>2</minShare>
+  </pool>
+  <pool name="dml">
+    <schedulingMode>FAIR</schedulingMode>
+    <weight>2</weight>
+    <minShare>2</minShare>
+  </pool>
+  <pool name="maintenance">
+    <schedulingMode>FAIR</schedulingMode>
+    <weight>1</weight>
+    <minShare>1</minShare>
+  </pool>
+  <pool name="admin">
+    <schedulingMode>FIFO</schedulingMode>
+    <weight>1</weight>
+    <minShare>0</minShare>
+  </pool>
+</allocations>

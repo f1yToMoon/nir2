@@ -1,0 +1,14 @@
+{
+  "identities": [
+    {
+      "name": "nir",
+      "credentials": [
+        {
+          "accessKey": "nir-access",
+          "secretKey": "nir-secret-change-me"
+        }
+      ],
+      "actions": ["Admin", "Read", "List", "Tagging", "Write"]
+    }
+  ]
+}

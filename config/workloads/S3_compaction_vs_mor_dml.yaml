@@ -1,0 +1,35 @@
+# S3. Компакция × MoR DELETE/UPDATE. Варианты: format v2 (position deletes) и v3 (deletion vectors).
+extends: _base.yaml
+name: S3_compaction_vs_mor_dml
+description: Компакция × DELETE/UPDATE в режиме merge-on-read
+table:
+  properties:
+    write.delete.mode: merge-on-read
+    write.update.mode: merge-on-read
+    write.merge.mode: merge-on-read
+controlled_ops:
+  - id: compaction
+    type: rewrite_data
+    arrival: {process: fixed, interval_s: 150}
+    max_concurrent: 2
+    sla_s: 1800
+    narrowable: true
+    footprint: {selector: small_files_topn, top_n: 12, min_age_days: 0, min_files: 10}
+    params: {strategy: binpack, min_input_files: 5, delete_file_threshold: 2}
+  - id: mor_updates
+    type: mor_dml
+    arrival: {process: poisson, interval_s: 45}
+    max_concurrent: 3
+    sla_s: 300
+    narrowable: false
+    footprint: {selector: recency_zipf, zipf_a: 1.2, days: 10, partitions_per_op: {min: 1, max: 6}, rows: 20000}
+    params: {statement: update_status}
+  - id: delete_rewrite
+    type: rewrite_deletes
+    arrival: {process: fixed, interval_s: 600}
+    max_concurrent: 1
+    sla_s: 1800
+    narrowable: true
+    footprint: {selector: delete_files_topn, top_n: 10}
+variants:
+  v3_deletion_vectors: {table: {format_version: 3}}
