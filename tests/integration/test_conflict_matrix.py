@@ -1,11 +1,16 @@
-"""Stage 1: Empirical verification of config/conflict_matrix.yaml.
+"""Stage 1 iteration 2: Empirical verification of config/conflict_matrix.yaml.
 
-Uses the CAPL hold mechanism to deterministically interleave pending x committed
-operations and record OCC outcomes.
-
-Each rule is tested with:
-  TRIALS_OVERLAP  = 20 repeats with data overlap (partition or file)
-  TRIALS_CONTROL  = 5  repeats without data overlap (control: expect K1 or success)
+Key changes vs iteration 1:
+  - Fresh data per trial (unique id ranges): no data exhaustion
+  - mor_dml split → mor_delete / mor_update / mor_merge subtypes
+  - overwrite_opts: with isolation-level + validate-from-snapshot-id options
+  - predicate overlap: committed inserts rows within pending DELETE/UPDATE predicate range
+  - Validity: snapshot summary check — both ops must change actual data
+  - conflictDetectionFilter: captured from snapshot summary after each op
+  - rewrite_data narrowed to bkt={bkt} (fixes k2_control bug)
+  - rewrite_deletes: prior position deletes created each trial
+  - Snapshot isolation: write.delete.isolation-level table property
+  - expire reverse: rewrite_data×expire, cow_dml×expire, mor_dml×expire
 
 Run:
   make matrix-verify
@@ -21,7 +26,7 @@ import sys
 import threading
 import time
 from collections import Counter
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 
 import pytest
@@ -47,11 +52,18 @@ PENDING_SLOT    = "matrix-pending"
 COMMITTED_SLOT  = "matrix-committed"
 NS              = "matrix_ns"
 
-# Catalog names configured in the SparkSession (see conftest / session fixture):
-#   cat_p  → PROXY_URL, header.X-CAPL-Slot=matrix-pending
-#   cat_c  → PROXY_URL, header.X-CAPL-Slot=matrix-committed
-CAT_P = "cat_p"
-CAT_C = "cat_c"
+CAT_P = "cat_p"   # pending catalog → proxy with PENDING_SLOT header
+CAT_C = "cat_c"   # committed catalog → proxy with COMMITTED_SLOT header
+
+# Per-trial data layout
+TRIAL_ROWS   = 50       # rows per trial per bucket
+TRIAL_STRIDE = 10_000   # id-space per trial seq number (seq * TRIAL_STRIDE)
+BKT_OFFSET   = 1_000_000  # id offset between bucket 0 and bucket 1
+
+# MoR op aliases (subtypes of mor_dml)
+_MOR_OPS     = {"mor_dml", "mor_delete", "mor_update", "mor_merge"}
+_COW_OPS     = {"cow_dml", "cow_update", "cow_merge"}
+_REWRITE_OPS = {"rewrite_data", "rewrite_deletes"}
 
 
 # ── test-case definition ─────────────────────────────────────────────────────
@@ -60,11 +72,13 @@ CAT_C = "cat_c"
 class Case:
     pending:   str
     committed: str
-    isolation: str    # "serializable" | "snapshot" | "default"
-    fmt_ver:   int    # 2 | 3
-    overlap:   str    # "none" | "partition" | "file"
-    expected:  str    # "K1" | "K2" | "success"
+    isolation: str   # "serializable" | "snapshot" | "default"
+    fmt_ver:   int   # 2 | 3
+    overlap:   str   # "none" | "partition" | "file" | "predicate"
+    expected:  str   # "K1" | "K2" | "success"
     note:      str = ""
+    # per-trial tracking
+    trial_details: list[dict] = field(default_factory=list, repr=False)
 
     @property
     def case_id(self) -> str:
@@ -75,7 +89,6 @@ class Case:
 
     @property
     def table_name(self) -> str:
-        # Stable table name reused across trials of the same case
         return f"t_{self.pending}_{self.committed}_{self.isolation}_v{self.fmt_ver}"
 
 
@@ -88,7 +101,7 @@ def _load_cases() -> list[Case]:
     fmt_versions: list[int] = (
         [int(x) for x in _fv_env.split(",") if x.strip()]
         if _fv_env
-        else mx.get("format_versions", [2, 3])
+        else mx.get("format_versions", [2])
     )
     default_iso = mx["defaults"].get("isolation", "serializable")
     cases: list[Case] = []
@@ -101,9 +114,9 @@ def _load_cases() -> list[Case]:
         when       = rule.get("when", {})
         note       = rule.get("note", "")
         isolation  = when.get("isolation", default_iso)
+        rule_fv    = when.get("format_version", None)
 
         if committed_ == "*":
-            # wildcard: test against a representative committed op
             committed_list = ["append"]
         elif isinstance(committed_, list):
             committed_list = committed_
@@ -111,9 +124,8 @@ def _load_cases() -> list[Case]:
             committed_list = [committed_]
 
         for committed in committed_list:
-            for fv in fmt_versions:
-                # rewrite_deletes needs delete files → only sensible for v2/v3
-                # expire has no format dependency
+            target_fvs = [rule_fv] if rule_fv is not None else fmt_versions
+            for fv in target_fvs:
                 cases.append(Case(
                     pending=pending,
                     committed=committed,
@@ -124,8 +136,7 @@ def _load_cases() -> list[Case]:
                     note=note,
                 ))
 
-    # Extra: overwrite without explicit isolation-level option (default behaviour)
-    # ADR-004: empirically K1 (ReplacePartitions never validates data), not K2
+    # Extra: overwrite without isolation-level option (baseline K1; iter1 confirmed)
     for fv in fmt_versions:
         cases.append(Case(
             pending="overwrite",
@@ -134,10 +145,9 @@ def _load_cases() -> list[Case]:
             fmt_ver=fv,
             overlap="none",
             expected="K1",
-            note="INSERT OVERWRITE без явной опции isolation-level; ADR-004: K1 не K2",
+            note="INSERT OVERWRITE без опций; iter1 подтверждено K1 20/20",
         ))
 
-    # Deduplicate (same case_id may arise from symmetric rules)
     seen: set[str] = set()
     unique: list[Case] = []
     for c in cases:
@@ -150,7 +160,7 @@ def _load_cases() -> list[Case]:
 CASES = _load_cases()
 
 
-# ── Spark session (module-scoped) ─────────────────────────────────────────────
+# ── Spark session ─────────────────────────────────────────────────────────────
 
 @pytest.fixture(scope="module")
 def spark():
@@ -171,7 +181,7 @@ def spark():
         }
 
     builder = (
-        SparkSession.builder.appName("matrix-verify")
+        SparkSession.builder.appName("matrix-verify-iter2")
         .master("local[4]")
         .config(
             "spark.sql.extensions",
@@ -189,83 +199,153 @@ def spark():
 
     session = builder.getOrCreate()
     session.sparkContext.setLogLevel("ERROR")
-
-    # Bootstrap namespace
     session.sql(f"CREATE NAMESPACE IF NOT EXISTS {CAT_P}.{NS}")
 
     yield session
     session.stop()
 
 
-# ── table lifecycle ──────────────────────────────────────────────────────────
+# ── table lifecycle ───────────────────────────────────────────────────────────
 
-def _tblprops(pending: str, committed: str, fmt_ver: int) -> str:
-    props = {
-        "format-version": str(fmt_ver),
-    }
-    ops = {pending, committed}
-    if "cow_dml" in ops:
+def _tblprops(case: Case) -> str:
+    props: dict[str, str] = {"format-version": str(case.fmt_ver)}
+    ops = {case.pending, case.committed}
+
+    if ops & _COW_OPS:
         props["write.update.mode"] = "copy-on-write"
         props["write.merge.mode"]  = "copy-on-write"
-    if "mor_dml" in ops:
+        props["write.delete.mode"] = "copy-on-write"
+
+    if ops & _MOR_OPS:
         props["write.delete.mode"] = "merge-on-read"
-        if "cow_dml" not in ops:
+        if not (ops & _COW_OPS):
             props["write.update.mode"] = "merge-on-read"
             props["write.merge.mode"]  = "merge-on-read"
+
+    if case.isolation == "snapshot":
+        props["write.delete.isolation-level"] = "snapshot"
+        props["write.update.isolation-level"] = "snapshot"
+        props["write.merge.isolation-level"]  = "snapshot"
+
     return ", ".join(f"'{k}' = '{v}'" for k, v in props.items())
 
 
-def _setup_table(spark: Any, case: Case, need_delete_files: bool = False) -> None:
-    """(Re)create table and insert base data for a test case."""
+def _setup_table(spark: Any, case: Case) -> None:
+    """Create empty table for the test case. Data is inserted per-trial."""
     full = f"{CAT_P}.{NS}.{case.table_name}"
     spark.sql(f"DROP TABLE IF EXISTS {full}")
-    tprops = _tblprops(case.pending, case.committed, case.fmt_ver)
+    tprops = _tblprops(case)
     spark.sql(f"""
         CREATE TABLE {full} (id INT, bkt INT, val STRING)
         USING iceberg PARTITIONED BY (bkt)
         TBLPROPERTIES ({tprops})
     """)
-    # Insert initial rows: 4 small files each if either op is compaction/rewrite
-    _rw_ops = {"rewrite_data", "rewrite_deletes"}
-    batches = 4 if (_rw_ops & {case.pending, case.committed}) else 1
-    for b in range(batches):
-        for bkt in (0, 1):
-            off = b * 100
+
+
+# ── per-trial data helpers ────────────────────────────────────────────────────
+
+def _trial_base(seq: int, bkt: int) -> int:
+    """Unique id base for (seq, bkt) — no overlap across trials."""
+    return seq * TRIAL_STRIDE + bkt * BKT_OFFSET
+
+
+def _insert_trial_data(spark: Any, full: str, case: Case, seq: int, bkt: int) -> int:
+    """Insert fresh rows for this trial's bucket. Returns base id."""
+    base = _trial_base(seq, bkt)
+    ops  = {case.pending, case.committed}
+    needs_multi = bool(ops & _REWRITE_OPS)
+
+    if needs_multi:
+        # 4 small files for compaction
+        chunk = TRIAL_ROWS // 4
+        for i in range(4):
+            off = base + i * chunk
             spark.sql(f"""
                 INSERT INTO {full}
-                SELECT (id + {off}) AS id, {bkt} AS bkt,
-                       CONCAT('init-{b}-', CAST(id + {off} AS STRING)) AS val
-                FROM RANGE(50)
+                SELECT ({off} + id) AS id, {bkt} AS bkt,
+                       CONCAT('t{seq}f{i}-', CAST(id AS STRING)) AS val
+                FROM RANGE({chunk})
             """)
-    if need_delete_files:
-        # Create position delete files needed for rewrite_deletes
-        spark.sql(f"DELETE FROM {full} WHERE bkt = 0 AND id < 10")
-
-
-# ── single-trial execution ────────────────────────────────────────────────────
-
-def _exec_op(
-    spark: Any,
-    op: str,
-    cat: str,
-    table: str,
-    bkt: int,
-    seq: int,
-) -> None:
-    full = f"{cat}.{NS}.{table}"
-
-    if op in ("append", "stream_upsert"):
-        off = 10000 + seq * 50
+    else:
         spark.sql(f"""
             INSERT INTO {full}
-            SELECT (id + {off}) AS id, {bkt} AS bkt,
-                   CONCAT('{op}-{seq}-', CAST(id + {off} AS STRING)) AS val
+            SELECT ({base} + id) AS id, {bkt} AS bkt,
+                   CONCAT('t{seq}-', CAST(id AS STRING)) AS val
+            FROM RANGE({TRIAL_ROWS})
+        """)
+
+    if case.pending == "rewrite_deletes":
+        # Create position-delete files: delete first quarter of trial data
+        lo, hi = base, base + TRIAL_ROWS // 4 - 1
+        spark.sql(f"DELETE FROM {full} WHERE bkt = {bkt} AND id BETWEEN {lo} AND {hi}")
+
+    return base
+
+
+# ── snapshot helpers ──────────────────────────────────────────────────────────
+
+def _latest_snap_id(spark: Any, full: str) -> int | None:
+    rows = spark.sql(
+        f"SELECT max(snapshot_id) AS sid FROM {full}.snapshots"
+    ).collect()
+    return rows[0]["sid"] if rows and rows[0]["sid"] is not None else None
+
+
+def _snap_summary_since(spark: Any, full: str, before_id: int | None) -> dict:
+    """Return snapshot summary of most recent snapshot committed after before_id."""
+    cond = f"snapshot_id > {before_id}" if before_id is not None else "1=1"
+    rows = spark.sql(f"""
+        SELECT operation, summary
+        FROM {full}.snapshots
+        WHERE {cond}
+        ORDER BY committed_at DESC
+        LIMIT 1
+    """).collect()
+    if not rows:
+        return {}
+    op   = rows[0]["operation"] or ""
+    summ = dict(rows[0]["summary"] or {})
+    return {"operation": op, **summ}
+
+
+def _data_changed(summary: dict) -> bool:
+    """True if at least one record was added, deleted, or marked with delete file."""
+    if not summary:
+        return False
+    keys = ["deleted-records", "added-records", "added-position-deletes",
+            "added-delete-files", "deleted-data-files", "added-equality-deletes"]
+    return any(int(summary.get(k, 0)) > 0 for k in keys)
+
+
+# ── op execution ─────────────────────────────────────────────────────────────
+
+def _exec_op(
+    spark:            Any,
+    op:               str,
+    cat:              str,
+    table:            str,
+    bkt:              int,
+    seq:              int,
+    base:             int,
+    base_snapshot_id: int | None = None,
+) -> None:
+    """Execute one operation.  base = trial id base for this (seq, bkt)."""
+    full = f"{cat}.{NS}.{table}"
+    lo   = base
+    hi   = base + TRIAL_ROWS - 1
+
+    if op in ("append", "stream_upsert"):
+        # Insert rows within [lo, lo+9] — covered by DELETE/UPDATE predicate for predicate-overlap
+        spark.sql(f"""
+            INSERT INTO {full}
+            SELECT ({lo} + id) AS id, {bkt} AS bkt,
+                   CONCAT('{op}-{seq}-', CAST(id AS STRING)) AS val
             FROM RANGE(10)
         """)
 
     elif op == "overwrite":
         (
-            spark.range(seq * 50, seq * 50 + 10)
+            spark.range(lo, lo + 10)
             .selectExpr(
                 "CAST(id AS INT) AS id",
                 f"{bkt} AS bkt",
@@ -275,60 +355,133 @@ def _exec_op(
             .overwritePartitions()
         )
 
-    elif op == "cow_dml":
+    elif op == "overwrite_opts":
+        # WITH isolation-level + validate-from-snapshot-id → K2 hypothesis
+        snap = base_snapshot_id or _latest_snap_id(spark, full) or 0
+        (
+            spark.range(lo, lo + 10)
+            .selectExpr(
+                "CAST(id AS INT) AS id",
+                f"{bkt} AS bkt",
+                f"CONCAT('ow_opts-{seq}-', CAST(id AS STRING)) AS val",
+            )
+            .writeTo(full)
+            .option("isolation-level", "serializable")
+            .option("validate-from-snapshot-id", str(snap))
+            .overwritePartitions()
+        )
+
+    elif op in ("cow_dml", "cow_update"):
         spark.sql(f"""
             UPDATE {full}
             SET val = CONCAT('upd-{seq}-', CAST(id AS STRING))
-            WHERE bkt = {bkt}
+            WHERE bkt = {bkt} AND id BETWEEN {lo} AND {hi}
+        """)
+
+    elif op == "cow_merge":
+        spark.sql(f"""
+            MERGE INTO {full} t
+            USING (
+                SELECT id, {bkt} AS bkt,
+                       CONCAT('merge-{seq}-', CAST(id AS STRING)) AS val
+                FROM {full}
+                WHERE bkt = {bkt} AND id BETWEEN {lo} AND {hi}
+            ) s ON t.id = s.id AND t.bkt = s.bkt
+            WHEN MATCHED THEN UPDATE SET val = s.val
         """)
 
     elif op == "mor_dml":
+        # Generic MoR DELETE (backward compat / file-overlap pairs)
         spark.sql(f"""
             DELETE FROM {full}
-            WHERE bkt = {bkt} AND id < {seq * 5 + 5}
+            WHERE bkt = {bkt} AND id BETWEEN {lo} AND {hi}
+        """)
+
+    elif op == "mor_delete":
+        spark.sql(f"""
+            DELETE FROM {full}
+            WHERE bkt = {bkt} AND id BETWEEN {lo} AND {hi}
+        """)
+
+    elif op == "mor_update":
+        spark.sql(f"""
+            UPDATE {full}
+            SET val = CONCAT('mor_upd-{seq}-', CAST(id AS STRING))
+            WHERE bkt = {bkt} AND id BETWEEN {lo} AND {hi}
+        """)
+
+    elif op == "mor_merge":
+        spark.sql(f"""
+            MERGE INTO {full} t
+            USING (
+                SELECT id, {bkt} AS bkt,
+                       CONCAT('mor_merge-{seq}-', CAST(id AS STRING)) AS val
+                FROM {full}
+                WHERE bkt = {bkt} AND id BETWEEN {lo} AND {hi}
+            ) s ON t.id = s.id AND t.bkt = s.bkt
+            WHEN MATCHED THEN UPDATE SET val = s.val
         """)
 
     elif op == "rewrite_data":
+        # Narrowed to bkt={bkt} to avoid spurious K2 in control trials
         spark.sql(f"""
             CALL {cat}.system.rewrite_data_files(
-                table => '{NS}.{table}',
+                table  => '{NS}.{table}',
+                where  => 'bkt = {bkt}',
                 options => map('min-input-files','1')
             )
         """)
 
     elif op == "rewrite_deletes":
         spark.sql(f"""
-            CALL {cat}.system.rewrite_position_delete_files(table => '{NS}.{table}')
+            CALL {cat}.system.rewrite_position_delete_files(
+                table => '{NS}.{table}'
+            )
         """)
 
     elif op == "expire":
         spark.sql(f"""
-            CALL {cat}.system.expire_snapshots(table => '{NS}.{table}', retain_last => 1)
+            CALL {cat}.system.expire_snapshots(
+                table        => '{NS}.{table}',
+                retain_last  => 1
+            )
         """)
 
     else:
         raise ValueError(f"Unknown op: {op}")
 
 
+# ── single-trial execution ────────────────────────────────────────────────────
+
 def _run_one_trial(
-    spark: Any,
-    case: Case,
-    seq: int,
+    spark:        Any,
+    case:         Case,
+    seq:          int,
     with_overlap: bool,
 ) -> dict[str, Any]:
-    """Run one trial; return outcome dict with validity flag.
-
-    validity=True  → held + committed_ok; counts toward match rate
-    validity=False → hold missed or committed failed; recorded separately
-    """
+    """Run one trial; return outcome dict."""
     pending_bkt   = 0
-    committed_bkt = 0 if with_overlap else 1   # no overlap → different partition
+    committed_bkt = 0 if with_overlap else 1
 
-    # 1. Record timestamp before hold to identify new commits for this trial
-    import time as _time
-    trial_start_ts = round(_time.time() * 1000)  # milliseconds
+    full_p = f"{CAT_P}.{NS}.{case.table_name}"
 
-    # 2. Register hold
+    # 1. Insert fresh trial data for both buckets
+    base_p = _insert_trial_data(spark, full_p, case, seq, pending_bkt)
+    base_c = (
+        base_p
+        if with_overlap
+        else _insert_trial_data(spark, full_p, case, seq, committed_bkt)
+    )
+
+    # 2. Capture base snapshot-id for overwrite_opts
+    base_snap_id: int | None = None
+    if case.pending == "overwrite_opts":
+        base_snap_id = _latest_snap_id(spark, full_p)
+
+    # 3. Record start timestamp
+    trial_start_ts = round(time.time() * 1000)
+
+    # 4. Register hold
     r = requests.post(
         f"{ADV_URL}/v1/debug/hold",
         json={"slot": PENDING_SLOT, "max_ms": HOLD_MAX_MS},
@@ -340,18 +493,19 @@ def _run_one_trial(
 
     def _pending() -> None:
         try:
-            _exec_op(spark, case.pending, CAT_P, case.table_name, pending_bkt, seq)
+            _exec_op(spark, case.pending, CAT_P, case.table_name,
+                     pending_bkt, seq, base_p, base_snap_id)
             outcome["result"] = "success"
         except Exception as exc:
             text = str(exc)
             outcome["result"] = classify(text)
-            outcome["exc"] = text[:500]
+            outcome["exc"]    = text[:600]
 
     thr = threading.Thread(target=_pending, daemon=True)
     thr.start()
 
-    # 3. Poll proxy until pending commit held (max 45 s)
-    held = False
+    # 5. Poll until pending commit is held
+    held     = False
     deadline = time.monotonic() + 45
     while time.monotonic() < deadline:
         time.sleep(0.4)
@@ -367,42 +521,43 @@ def _run_one_trial(
             break
 
     if not held:
-        # Pending op failed before reaching commit; release and collect
         with contextlib.suppress(Exception):
-            requests.delete(
-                f"{ADV_URL}/v1/debug/hold/{PENDING_SLOT}", timeout=5
-            )
+            requests.delete(f"{ADV_URL}/v1/debug/hold/{PENDING_SLOT}", timeout=5)
         thr.join(timeout=30)
-        if "result" not in outcome:
-            outcome["result"] = "no_commit"
-        outcome["held"] = False
-        outcome["valid"] = False
+        outcome["result"] = outcome.get("result", "no_commit")
+        outcome.update({"held": False, "valid": False,
+                        "rows_committed": 0, "seq": seq})
         return outcome
 
     outcome["held"] = True
 
-    # 4. Execute committed operation while pending is held
+    # 6. Execute committed op while pending is held
+    snap_before_committed = _latest_snap_id(spark, full_p)
     committed_ok = False
     try:
-        _exec_op(spark, case.committed, CAT_C, case.table_name, committed_bkt, seq)
+        _exec_op(spark, case.committed, CAT_C, case.table_name,
+                 committed_bkt, seq, base_c)
         committed_ok = True
-    except Exception:
-        pass
-    outcome["committed_ok"] = committed_ok
+    except Exception as exc:
+        outcome["committed_exc"] = str(exc)[:300]
 
-    # 5. Release hold → pending proceeds
+    # Capture committed snapshot summary
+    committed_summary: dict = {}
+    if committed_ok:
+        committed_summary = _snap_summary_since(spark, full_p, snap_before_committed)
+    outcome["committed_summary"] = committed_summary
+    outcome["committed_ok"]      = committed_ok
+
+    # 7. Release hold
     with contextlib.suppress(Exception):
-        requests.delete(
-            f"{ADV_URL}/v1/debug/hold/{PENDING_SLOT}", timeout=5
-        )
+        requests.delete(f"{ADV_URL}/v1/debug/hold/{PENDING_SLOT}", timeout=5)
 
-    # 6. Wait for pending thread
+    # 8. Wait for pending thread
     thr.join(timeout=60)
     if "result" not in outcome:
         outcome["result"] = "timeout"
 
-    # 7. Detect K1 from HTTP 409: Spark retries transparently after 409.
-    #    Check proxy log for any 409 on pending slot commits from this trial.
+    # 9. Detect K1 from HTTP 409 in proxy log
     if outcome.get("result") == "success":
         all_commits = requests.get(
             f"{ADV_URL}/_capl/debug/last-commits", timeout=10
@@ -411,13 +566,19 @@ def _run_one_trial(
             c for c in all_commits
             if c.get("slot") == PENDING_SLOT and c.get("ts", 0) >= trial_start_ts
         ]
-        got_409 = any(c.get("status") == 409 for c in trial_pending)
-        if got_409:
-            outcome["result"] = "K1"
+        if any(c.get("status") == 409 for c in trial_pending):
+            outcome["result"]       = "K1"
             outcome["k1_via_proxy"] = True
 
-    # validity: held AND committed succeeded (so conflict scenario is real)
-    outcome["valid"] = held and committed_ok
+    # 10. Validity: held + committed succeeded + committed actually changed data
+    committed_changed = _data_changed(committed_summary)
+    outcome["valid"]         = held and committed_ok and committed_changed
+    outcome["rows_committed"] = int(
+        committed_summary.get("deleted-records", 0)
+    ) + int(committed_summary.get("added-records", 0)) + int(
+        committed_summary.get("added-position-deletes", 0)
+    )
+    outcome["seq"] = seq
 
     return outcome
 
@@ -430,49 +591,40 @@ _all_results: dict[str, Any] = {}
 @pytest.mark.parametrize("case", CASES, ids=lambda c: c.case_id)
 def test_pair(spark: Any, case: Case) -> None:
     """Run TRIALS_OVERLAP + TRIALS_CONTROL trials for one conflict matrix pair."""
-    need_deletes = case.pending == "rewrite_deletes"
-    _setup_table(spark, case, need_delete_files=need_deletes)
+    _setup_table(spark, case)
 
-    overlap_valid:   list[str] = []   # valid trials (held + committed_ok)
-    overlap_invalid: list[dict] = []  # invalid trials (not counted)
-    control_outcomes: list[str] = []
-
-    def _refill(seq: int) -> None:
-        """Keep enough small files so rewrite/dml ops always have data to act on."""
-        full = f"{CAT_P}.{NS}.{case.table_name}"
-        roff = 20000 + seq * 100
-        for bkt in (0, 1):
-            spark.sql(f"""
-                INSERT INTO {full}
-                SELECT (id + {roff}) AS id, {bkt} AS bkt,
-                       CONCAT('refill-{seq}-', CAST(id + {roff} AS STRING)) AS val
-                FROM RANGE(10)
-            """)
-        if case.pending == "rewrite_deletes" or case.committed == "rewrite_deletes":
-            spark.sql(f"DELETE FROM {full} WHERE bkt = 0 AND id >= {roff} AND id < {roff + 5}")
+    overlap_valid:   list[str]   = []
+    overlap_invalid: list[dict]  = []
+    trial_rows:      list[dict]  = []  # per-trial data: seq, rows_committed, outcome
+    control_outcomes: list[str]  = []
 
     # --- overlap trials ---
     for seq in range(TRIALS_OVERLAP):
         result = _run_one_trial(spark, case, seq, with_overlap=True)
-        if result.get("valid", True):
-            overlap_valid.append(result.get("result", "error"))
+        r_val  = result.get("result", "error")
+        trial_rows.append({
+            "seq":            seq,
+            "rows_committed": result.get("rows_committed", 0),
+            "outcome":        r_val,
+            "valid":          result.get("valid", False),
+            "conflict_filter_op": result.get("committed_summary", {}).get("operation", ""),
+        })
+        if result.get("valid", False):
+            overlap_valid.append(r_val)
         else:
             overlap_invalid.append(result)
-        _rw_ops_refill = {"mor_dml", "cow_dml", "rewrite_data", "rewrite_deletes"}
-        if _rw_ops_refill & {case.pending, case.committed}:
-            _refill(seq)
 
     # --- control trials (no overlap) ---
     for seq in range(TRIALS_CONTROL):
         result = _run_one_trial(spark, case, 1000 + seq, with_overlap=False)
         control_outcomes.append(result.get("result", "error"))
 
-    # --- aggregate (valid trials only) ---
-    overlap_counts  = dict(Counter(overlap_valid))
-    control_counts  = dict(Counter(control_outcomes))
+    # --- aggregate ---
+    overlap_counts = dict(Counter(overlap_valid))
+    control_counts = dict(Counter(control_outcomes))
 
-    expected = case.expected
-    valid_n = len(overlap_valid)
+    expected  = case.expected
+    valid_n   = len(overlap_valid)
     match_rate = overlap_counts.get(expected, 0) / max(valid_n, 1)
 
     _all_results[case.case_id] = {
@@ -490,9 +642,11 @@ def test_pair(spark: Any, case: Case) -> None:
         "valid_trials":     valid_n,
         "match_rate":       round(match_rate, 3),
         "matches":          match_rate >= 0.95,
+        "trial_rows":       trial_rows,
+        "client":           "1.12.0",
+        "catalog_server":   "b0df3ca",
     }
 
-    # Persist results incrementally
     os.makedirs(os.path.dirname(RESULTS_FILE), exist_ok=True)
     with open(RESULTS_FILE, "w") as fh:
         json.dump(_all_results, fh, indent=2)
@@ -508,5 +662,5 @@ def test_pair(spark: Any, case: Case) -> None:
     if expected == "K2":
         k2_control = control_counts.get("K2", 0)
         assert k2_control == 0, (
-            f"Control with no overlap got K2: {control_counts}"
+            f"Control with no overlap got K2={k2_control}: {control_counts}"
         )

@@ -24,8 +24,16 @@ op_classes:
   append:          {iceberg_api: AppendFiles,       validates: false, controlled: false}
   stream_upsert:   {iceberg_api: RowDelta-equality, validates: false, controlled: false}
   overwrite:       {iceberg_api: ReplacePartitions, validates: by_write_option_isolation_level, controlled: true}
+  overwrite_opts:  {iceberg_api: ReplacePartitions-with-options, validates: true, controlled: true,
+                    note: "требует .option('isolation-level','serializable').option('validate-from-snapshot-id',<id>)"}
   cow_dml:         {iceberg_api: OverwriteFiles,    validates: true, controlled: true}
   mor_dml:         {iceberg_api: RowDelta-position, validates: true, controlled: true}
+  mor_delete:      {iceberg_api: RowDelta-position-DELETE, validates: true, controlled: true,
+                    note: "MoR DELETE; conflictDetectionFilter из WHERE-предиката (SparkPositionDeltaWrite.java:266-284)"}
+  mor_update:      {iceberg_api: RowDelta-position-UPDATE, validates: true, controlled: true,
+                    note: "MoR UPDATE; validateNoConflictingDataFiles + validateNoConflictingDeleteFiles"}
+  mor_merge:       {iceberg_api: RowDelta-position-MERGE,  validates: true, controlled: true,
+                    note: "MoR MERGE; аналогично mor_update"}
   rewrite_data:    {iceberg_api: RewriteFiles,      validates: true, controlled: true, narrowable: true}
   rewrite_deletes: {iceberg_api: RewriteFiles,      validates: true, controlled: true, narrowable: true}
   expire:          {iceberg_api: ExpireSnapshots,   validates: false, controlled: true}
@@ -35,14 +43,19 @@ rules:
   - {pending: append,        committed: "*",           outcome: K1, overlap: none}
   - {pending: stream_upsert, committed: "*",           outcome: K1, overlap: none}
 
-  # --- pending: overwrite (ReplacePartitions) ---
-  # Гипотеза: K2 при serializable + опции isolation-level/validate-from-snapshot-id.
-  # Итерация 1: тест не устанавливал опции → эмпирически K1 (ADR-004 отклонён).
+  # --- pending: overwrite (ReplacePartitions) без опций → K1 ---
+  # Итерация 1: подтверждено K1 (20/20). SparkWrite.java:347-358: без опций нет валидации.
   - {pending: overwrite, committed: [append, stream_upsert, overwrite, cow_dml, mor_dml, rewrite_data],
-     outcome: K2, overlap: partition, when: {isolation: serializable},
-     note: "требует .option('isolation-level','serializable').option('validate-from-snapshot-id',<id>); без опций K1 (SparkWrite.java:347-358)"}
+     outcome: K1, overlap: partition, when: {isolation: serializable},
+     note: "без опций: DynamicOverwrite не вызывает validateFromSnapshot → K1 (SparkWrite.java:347-358; итер.1 подтверждено 20/20)"}
   - {pending: overwrite, committed: [append, stream_upsert],
      outcome: K1, overlap: partition, when: {isolation: snapshot}}
+
+  # --- pending: overwrite_opts (ReplacePartitions) С опциями → K2 ---
+  # Гипотеза итерации 2: с isolation-level + validate-from-snapshot-id → K2.
+  - {pending: overwrite_opts, committed: [append, stream_upsert, overwrite, cow_dml, mor_dml, rewrite_data],
+     outcome: K2, overlap: partition, when: {isolation: serializable},
+     note: "гипотеза: SparkWrite.java:347-358 — validateFromSnapshot включается через опции"}
 
   # --- pending: cow_dml ---
   - {pending: cow_dml, committed: [append, stream_upsert, overwrite],
@@ -53,19 +66,49 @@ rules:
   - {pending: cow_dml, committed: [mor_dml], outcome: K2, overlap: file,
      note: "новые delete-файлы для прочитанных файлов"}
 
-  # --- pending: mor_dml ---
-  # Гипотеза: K2 при serializable (validateNoConflictingDataFiles с conflictDetectionFilter из условия запроса).
-  # Итерация 1: эмпирически K1 — вероятно, conflictDetectionFilter не перекрывал committed-данные.
-  # SparkPositionDeltaWrite.java:266-284: validateNoConflictingDataFiles() вызывается при serializable.
+  # --- pending: mor_dml (общее правило, итерация 1) ---
+  # Итерация 2 использует разбивку на mor_delete / mor_update / mor_merge.
   - {pending: mor_dml, committed: [append, stream_upsert, overwrite],
      outcome: K2, overlap: predicate,
-     note: "K2 только если committed-данные попадают под conflictDetectionFilter запроса (SparkPositionDeltaWrite.java:266-284); итерация 1 не проверяла это условие"}
+     note: "K2 если committed-данные под conflictDetectionFilter (SparkPositionDeltaWrite.java:266-284); итер.1 K1 — исчерпание данных"}
   - {pending: mor_dml, committed: [append, stream_upsert],
      outcome: K1, overlap: none, when: {isolation: snapshot}}
   - {pending: mor_dml, committed: [cow_dml, rewrite_data], outcome: K2, overlap: file, symmetric: true,
-     note: "файлы, на которые ссылаются position deletes, удалены"}
+     note: "файлы, на которые ссылаются position deletes, удалены; итер.1 подтверждено 20/20"}
   - {pending: mor_dml, committed: [mor_dml], outcome: K2, overlap: file,
-     note: "v2: validateNoConflictingDeleteFiles; v3: один DV на data-файл"}
+     note: "разбивка DELETE×DELETE/UPDATE×DELETE/MERGE×DELETE — см. mor_delete/mor_update/mor_merge ниже"}
+
+  # --- pending: mor_delete (MoR DELETE) ---
+  - {pending: mor_delete, committed: [append, stream_upsert, overwrite],
+     outcome: K2, overlap: predicate, when: {isolation: serializable},
+     note: "K2 если committed добавляет данные под conflictDetectionFilter WHERE-предиката (SparkPositionDeltaWrite.java:266-284)"}
+  - {pending: mor_delete, committed: [append, stream_upsert],
+     outcome: K1, overlap: none, when: {isolation: snapshot}}
+  - {pending: mor_delete, committed: [cow_dml, rewrite_data], outcome: K2, overlap: file,
+     note: "committed удалил файлы, на которые будут ссылаться position deletes pending"}
+  - {pending: mor_delete, committed: [mor_delete], outcome: K1, overlap: file,
+     note: "v2 гипотеза: два position-delete потока на одних файлах — нет конфликта (SparkPositionDeltaWrite.java:277-280)"}
+  - {pending: mor_delete, committed: [mor_delete], outcome: K2, overlap: file,
+     when: {format_version: 3},
+     note: "v3 гипотеза: validateAddedDVs — один DV на data-файл"}
+  - {pending: mor_delete, committed: [mor_update, mor_merge], outcome: K2, overlap: predicate,
+     note: "committed UPDATE/MERGE добавляет новые data-файлы под conflictDetectionFilter DELETE"}
+
+  # --- pending: mor_update (MoR UPDATE) ---
+  - {pending: mor_update, committed: [append, stream_upsert, overwrite],
+     outcome: K2, overlap: predicate, when: {isolation: serializable},
+     note: "validateNoConflictingDataFiles с conflictDetectionFilter"}
+  - {pending: mor_update, committed: [cow_dml, rewrite_data], outcome: K2, overlap: file}
+  - {pending: mor_update, committed: [mor_delete], outcome: K2, overlap: file,
+     note: "committed DELETE создаёт delete-файлы для файлов, читаемых UPDATE (validateNoConflictingDeleteFiles)"}
+  - {pending: mor_update, committed: [mor_update, mor_merge], outcome: K2, overlap: predicate}
+
+  # --- pending: mor_merge (MoR MERGE) ---
+  - {pending: mor_merge, committed: [append, stream_upsert, overwrite],
+     outcome: K2, overlap: predicate, when: {isolation: serializable}}
+  - {pending: mor_merge, committed: [cow_dml, rewrite_data], outcome: K2, overlap: file}
+  - {pending: mor_merge, committed: [mor_delete], outcome: K2, overlap: file}
+  - {pending: mor_merge, committed: [mor_update, mor_merge], outcome: K2, overlap: predicate}
 
   # --- pending: rewrite_data (компакция) ---
   - {pending: rewrite_data, committed: [append], outcome: K1, overlap: none}
@@ -86,47 +129,59 @@ rules:
   # --- pending: expire ---
   # Итерация 1 (b0df3ca, v2): expire×append даёт success (не K1) — подтверждено 20/20.
   # ExpireSnapshots без validateFromSnapshot(); удаляет старые снапшоты, не data-файлы.
+  # ГИПОТЕЗА: success распространяется на все committed-операции — проверить в итерации 2.
   - {pending: expire, committed: "*", outcome: success, overlap: none,
-     note: "эмпирически success (20/20); expire не вступает в OCC-конфликт с операциями над данными"}
+     note: "гипотеза (×append подтверждено 20/20, итер.1); expire не вступает в OCC-конфликт; проверить ×cow_dml/rewrite_data/mor_dml"}
+
+  # --- expire в обратную сторону (committed = expire) ---
+  # Гипотеза: expire коммитит через ManageSnapshots; меняет metadata, не data-файлы.
+  # pending получает 409 (CAS), повторяет коммит → K1 (прозрачный retry).
+  # Если expire удалил файлы, на которые ссылается pending → K2.
+  - {pending: rewrite_data, committed: expire, outcome: K1, overlap: none,
+     note: "гипотеза итер.2: expire меняет metadata → CAS 409 → retry → success (K1)"}
+  - {pending: cow_dml, committed: expire, outcome: K1, overlap: none,
+     note: "гипотеза итер.2"}
+  - {pending: mor_dml, committed: expire, outcome: K1, overlap: none,
+     note: "гипотеза итер.2"}
 
 # Заполняется на этапе 1
 verified:
-  - {"pending": "append", "committed": "append", "isolation": "serializable", "format_version": 2, "iceberg": "b0df3ca (1.12.0-SNAPSHOT)", "trials": 20, "observed": {"K1": 20}, "matches": true, "date": "2026-10-23"}
-  - {"pending": "stream_upsert", "committed": "append", "isolation": "serializable", "format_version": 2, "iceberg": "b0df3ca (1.12.0-SNAPSHOT)", "trials": 20, "observed": {"K1": 20}, "matches": true, "date": "2026-10-23"}
-  - {"pending": "overwrite", "committed": "append", "isolation": "serializable", "format_version": 2, "iceberg": "b0df3ca (1.12.0-SNAPSHOT)", "trials": 20, "observed": {"K1": 20}, "matches": false, "date": "2026-10-23", "mismatch_note": "expected K2, got {'K1': 20}, match_rate=0.00%"}
-  - {"pending": "overwrite", "committed": "stream_upsert", "isolation": "serializable", "format_version": 2, "iceberg": "b0df3ca (1.12.0-SNAPSHOT)", "trials": 20, "observed": {"K1": 20}, "matches": false, "date": "2026-10-23", "mismatch_note": "expected K2, got {'K1': 20}, match_rate=0.00%"}
-  - {"pending": "overwrite", "committed": "overwrite", "isolation": "serializable", "format_version": 2, "iceberg": "b0df3ca (1.12.0-SNAPSHOT)", "trials": 20, "observed": {"K1": 20}, "matches": false, "date": "2026-10-23", "mismatch_note": "expected K2, got {'K1': 20}, match_rate=0.00%"}
-  - {"pending": "overwrite", "committed": "cow_dml", "isolation": "serializable", "format_version": 2, "iceberg": "b0df3ca (1.12.0-SNAPSHOT)", "trials": 20, "observed": {"K1": 20}, "matches": false, "date": "2026-10-23", "mismatch_note": "expected K2, got {'K1': 20}, match_rate=0.00%"}
-  - {"pending": "overwrite", "committed": "mor_dml", "isolation": "serializable", "format_version": 2, "iceberg": "b0df3ca (1.12.0-SNAPSHOT)", "trials": 20, "observed": {"K1": 20}, "matches": false, "date": "2026-10-23", "mismatch_note": "expected K2, got {'K1': 20}, match_rate=0.00%"}
-  - {"pending": "overwrite", "committed": "rewrite_data", "isolation": "serializable", "format_version": 2, "iceberg": "b0df3ca (1.12.0-SNAPSHOT)", "trials": 20, "observed": {"K1": 20}, "matches": false, "date": "2026-10-23", "mismatch_note": "expected K2, got {'K1': 20}, match_rate=0.00%"}
-  - {"pending": "overwrite", "committed": "append", "isolation": "snapshot", "format_version": 2, "iceberg": "b0df3ca (1.12.0-SNAPSHOT)", "trials": 20, "observed": {"K1": 20}, "matches": true, "date": "2026-10-23"}
-  - {"pending": "overwrite", "committed": "stream_upsert", "isolation": "snapshot", "format_version": 2, "iceberg": "b0df3ca (1.12.0-SNAPSHOT)", "trials": 20, "observed": {"K1": 20}, "matches": true, "date": "2026-10-23"}
-  - {"pending": "cow_dml", "committed": "append", "isolation": "serializable", "format_version": 2, "iceberg": "b0df3ca (1.12.0-SNAPSHOT)", "trials": 20, "observed": {"K2": 20}, "matches": true, "date": "2026-10-23"}
-  - {"pending": "cow_dml", "committed": "stream_upsert", "isolation": "serializable", "format_version": 2, "iceberg": "b0df3ca (1.12.0-SNAPSHOT)", "trials": 20, "observed": {"K2": 20}, "matches": true, "date": "2026-10-23"}
-  - {"pending": "cow_dml", "committed": "overwrite", "isolation": "serializable", "format_version": 2, "iceberg": "b0df3ca (1.12.0-SNAPSHOT)", "trials": 20, "observed": {"K2": 20}, "matches": true, "date": "2026-10-23"}
-  - {"pending": "cow_dml", "committed": "append", "isolation": "snapshot", "format_version": 2, "iceberg": "b0df3ca (1.12.0-SNAPSHOT)", "trials": 20, "observed": {"K2": 20}, "matches": false, "date": "2026-10-23", "mismatch_note": "expected K1, got {'K2': 20}, match_rate=0.00%"}
-  - {"pending": "cow_dml", "committed": "stream_upsert", "isolation": "snapshot", "format_version": 2, "iceberg": "b0df3ca (1.12.0-SNAPSHOT)", "trials": 20, "observed": {"K2": 20}, "matches": false, "date": "2026-10-23", "mismatch_note": "expected K1, got {'K2': 20}, match_rate=0.00%"}
-  - {"pending": "cow_dml", "committed": "cow_dml", "isolation": "serializable", "format_version": 2, "iceberg": "b0df3ca (1.12.0-SNAPSHOT)", "trials": 20, "observed": {"K2": 20}, "matches": true, "date": "2026-10-23"}
-  - {"pending": "cow_dml", "committed": "rewrite_data", "isolation": "serializable", "format_version": 2, "iceberg": "b0df3ca (1.12.0-SNAPSHOT)", "trials": 20, "observed": {"K2": 20}, "matches": true, "date": "2026-10-23"}
-  - {"pending": "cow_dml", "committed": "mor_dml", "isolation": "serializable", "format_version": 2, "iceberg": "b0df3ca (1.12.0-SNAPSHOT)", "trials": 20, "observed": {"K2": 10, "K1": 10}, "matches": false, "date": "2026-10-23", "mismatch_note": "expected K2, got {'K2': 10, 'K1': 10}, match_rate=50.00%"}
-  - {"pending": "mor_dml", "committed": "append", "isolation": "serializable", "format_version": 2, "iceberg": "b0df3ca (1.12.0-SNAPSHOT)", "trials": 20, "observed": {"K1": 20}, "matches": false, "date": "2026-10-23", "mismatch_note": "expected K2, got {'K1': 20}, match_rate=0.00%"}
-  - {"pending": "mor_dml", "committed": "stream_upsert", "isolation": "serializable", "format_version": 2, "iceberg": "b0df3ca (1.12.0-SNAPSHOT)", "trials": 20, "observed": {"K1": 20}, "matches": false, "date": "2026-10-23", "mismatch_note": "expected K2, got {'K1': 20}, match_rate=0.00%"}
-  - {"pending": "mor_dml", "committed": "overwrite", "isolation": "serializable", "format_version": 2, "iceberg": "b0df3ca (1.12.0-SNAPSHOT)", "trials": 20, "observed": {"K2": 1, "K1": 19}, "matches": false, "date": "2026-10-23", "mismatch_note": "expected K2, got {'K2': 1, 'K1': 19}, match_rate=5.00%"}
-  - {"pending": "mor_dml", "committed": "append", "isolation": "snapshot", "format_version": 2, "iceberg": "b0df3ca (1.12.0-SNAPSHOT)", "trials": 20, "observed": {"K1": 20}, "matches": true, "date": "2026-10-23"}
-  - {"pending": "mor_dml", "committed": "stream_upsert", "isolation": "snapshot", "format_version": 2, "iceberg": "b0df3ca (1.12.0-SNAPSHOT)", "trials": 20, "observed": {"K1": 20}, "matches": true, "date": "2026-10-23"}
-  - {"pending": "mor_dml", "committed": "cow_dml", "isolation": "serializable", "format_version": 2, "iceberg": "b0df3ca (1.12.0-SNAPSHOT)", "trials": 20, "observed": {"K2": 20}, "matches": true, "date": "2026-10-23"}
-  - {"pending": "mor_dml", "committed": "rewrite_data", "isolation": "serializable", "format_version": 2, "iceberg": "b0df3ca (1.12.0-SNAPSHOT)", "trials": 20, "observed": {"K2": 20}, "matches": true, "date": "2026-10-23"}
-  - {"pending": "mor_dml", "committed": "mor_dml", "isolation": "serializable", "format_version": 2, "iceberg": "b0df3ca (1.12.0-SNAPSHOT)", "trials": 20, "observed": {"K1": 20}, "matches": false, "date": "2026-10-23", "mismatch_note": "expected K2, got {'K1': 20}, match_rate=0.00%"}
-  - {"pending": "rewrite_data", "committed": "append", "isolation": "serializable", "format_version": 2, "iceberg": "b0df3ca (1.12.0-SNAPSHOT)", "trials": 20, "observed": {"K1": 20}, "matches": true, "date": "2026-10-23"}
-  - {"pending": "rewrite_data", "committed": "stream_upsert", "isolation": "serializable", "format_version": 2, "iceberg": "b0df3ca (1.12.0-SNAPSHOT)", "trials": 20, "observed": {"K1": 20}, "matches": true, "date": "2026-10-23"}
-  - {"pending": "rewrite_data", "committed": "overwrite", "isolation": "serializable", "format_version": 2, "iceberg": "b0df3ca (1.12.0-SNAPSHOT)", "trials": 20, "observed": {"K2": 20}, "matches": true, "date": "2026-10-23"}
-  - {"pending": "rewrite_data", "committed": "cow_dml", "isolation": "serializable", "format_version": 2, "iceberg": "b0df3ca (1.12.0-SNAPSHOT)", "trials": 20, "observed": {"K2": 20}, "matches": true, "date": "2026-10-23"}
-  - {"pending": "rewrite_data", "committed": "rewrite_data", "isolation": "serializable", "format_version": 2, "iceberg": "b0df3ca (1.12.0-SNAPSHOT)", "trials": 20, "observed": {"K2": 20}, "matches": true, "date": "2026-10-23"}
-  - {"pending": "rewrite_data", "committed": "mor_dml", "isolation": "serializable", "format_version": 2, "iceberg": "b0df3ca (1.12.0-SNAPSHOT)", "trials": 20, "observed": {"K2": 10, "K1": 10}, "matches": false, "date": "2026-10-23", "mismatch_note": "expected K2, got {'K2': 10, 'K1': 10}, match_rate=50.00%"}
-  - {"pending": "rewrite_deletes", "committed": "mor_dml", "isolation": "serializable", "format_version": 2, "iceberg": "b0df3ca (1.12.0-SNAPSHOT)", "trials": 20, "observed": {"K2": 5, "K1": 11}, "matches": false, "date": "2026-10-23", "mismatch_note": "expected K2, got {'K2': 5, 'K1': 11}, match_rate=31.20%"}
-  - {"pending": "rewrite_deletes", "committed": "rewrite_data", "isolation": "serializable", "format_version": 2, "iceberg": "b0df3ca (1.12.0-SNAPSHOT)", "trials": 20, "observed": {}, "matches": false, "date": "2026-10-23", "mismatch_note": "expected K2, got {}, match_rate=0.00%"}
-  - {"pending": "rewrite_deletes", "committed": "cow_dml", "isolation": "serializable", "format_version": 2, "iceberg": "b0df3ca (1.12.0-SNAPSHOT)", "trials": 20, "observed": {}, "matches": false, "date": "2026-10-23", "mismatch_note": "expected K2, got {}, match_rate=0.00%"}
-  - {"pending": "rewrite_deletes", "committed": "append", "isolation": "serializable", "format_version": 2, "iceberg": "b0df3ca (1.12.0-SNAPSHOT)", "trials": 20, "observed": {}, "matches": false, "date": "2026-10-23", "mismatch_note": "expected K1, got {}, match_rate=0.00%"}
-  - {"pending": "rewrite_deletes", "committed": "stream_upsert", "isolation": "serializable", "format_version": 2, "iceberg": "b0df3ca (1.12.0-SNAPSHOT)", "trials": 20, "observed": {}, "matches": false, "date": "2026-10-23", "mismatch_note": "expected K1, got {}, match_rate=0.00%"}
-  - {"pending": "expire", "committed": "append", "isolation": "serializable", "format_version": 2, "iceberg": "b0df3ca (1.12.0-SNAPSHOT)", "trials": 20, "observed": {"success": 20}, "matches": false, "date": "2026-10-23", "mismatch_note": "expected K1, got {'success': 20}, match_rate=0.00%"}
-  - {"pending": "overwrite", "committed": "append", "isolation": "default", "format_version": 2, "iceberg": "b0df3ca (1.12.0-SNAPSHOT)", "trials": 20, "observed": {"K1": 20}, "matches": false, "date": "2026-10-23", "mismatch_note": "expected K2, got {'K1': 20}, match_rate=0.00%"}
+  - {"pending": "append", "committed": "append", "isolation": "serializable", "format_version": 2, "iceberg": "b0df3ca (1.12.0-SNAPSHOT)", "trials": 20, "observed": {"K1": 20}, "matches": true, "date": "2026-10-23", "iteration": 1}
+  - {"pending": "stream_upsert", "committed": "append", "isolation": "serializable", "format_version": 2, "iceberg": "b0df3ca (1.12.0-SNAPSHOT)", "trials": 20, "observed": {"K1": 20}, "matches": true, "date": "2026-10-23", "iteration": 1}
+  - {"pending": "overwrite", "committed": "append", "isolation": "serializable", "format_version": 2, "iceberg": "b0df3ca (1.12.0-SNAPSHOT)", "trials": 20, "observed": {"K1": 20}, "matches": false, "date": "2026-10-23", "mismatch_note": "expected K2, got {'K1': 20}, match_rate=0.00%", "iteration": 1}
+  - {"pending": "overwrite", "committed": "stream_upsert", "isolation": "serializable", "format_version": 2, "iceberg": "b0df3ca (1.12.0-SNAPSHOT)", "trials": 20, "observed": {"K1": 20}, "matches": false, "date": "2026-10-23", "mismatch_note": "expected K2, got {'K1': 20}, match_rate=0.00%", "iteration": 1}
+  - {"pending": "overwrite", "committed": "overwrite", "isolation": "serializable", "format_version": 2, "iceberg": "b0df3ca (1.12.0-SNAPSHOT)", "trials": 20, "observed": {"K1": 20}, "matches": false, "date": "2026-10-23", "mismatch_note": "expected K2, got {'K1': 20}, match_rate=0.00%", "iteration": 1}
+  - {"pending": "overwrite", "committed": "cow_dml", "isolation": "serializable", "format_version": 2, "iceberg": "b0df3ca (1.12.0-SNAPSHOT)", "trials": 20, "observed": {"K1": 20}, "matches": false, "date": "2026-10-23", "mismatch_note": "expected K2, got {'K1': 20}, match_rate=0.00%", "iteration": 1}
+  - {"pending": "overwrite", "committed": "mor_dml", "isolation": "serializable", "format_version": 2, "iceberg": "b0df3ca (1.12.0-SNAPSHOT)", "trials": 20, "observed": {"K1": 20}, "matches": false, "date": "2026-10-23", "mismatch_note": "expected K2, got {'K1': 20}, match_rate=0.00%", "iteration": 1}
+  - {"pending": "overwrite", "committed": "rewrite_data", "isolation": "serializable", "format_version": 2, "iceberg": "b0df3ca (1.12.0-SNAPSHOT)", "trials": 20, "observed": {"K1": 20}, "matches": false, "date": "2026-10-23", "mismatch_note": "expected K2, got {'K1': 20}, match_rate=0.00%", "iteration": 1}
+  - {"pending": "overwrite", "committed": "append", "isolation": "snapshot", "format_version": 2, "iceberg": "b0df3ca (1.12.0-SNAPSHOT)", "trials": 20, "observed": {"K1": 20}, "matches": true, "date": "2026-10-23", "iteration": 1}
+  - {"pending": "overwrite", "committed": "stream_upsert", "isolation": "snapshot", "format_version": 2, "iceberg": "b0df3ca (1.12.0-SNAPSHOT)", "trials": 20, "observed": {"K1": 20}, "matches": true, "date": "2026-10-23", "iteration": 1}
+  - {"pending": "cow_dml", "committed": "append", "isolation": "serializable", "format_version": 2, "iceberg": "b0df3ca (1.12.0-SNAPSHOT)", "trials": 20, "observed": {"K2": 20}, "matches": true, "date": "2026-10-23", "iteration": 1}
+  - {"pending": "cow_dml", "committed": "stream_upsert", "isolation": "serializable", "format_version": 2, "iceberg": "b0df3ca (1.12.0-SNAPSHOT)", "trials": 20, "observed": {"K2": 20}, "matches": true, "date": "2026-10-23", "iteration": 1}
+  - {"pending": "cow_dml", "committed": "overwrite", "isolation": "serializable", "format_version": 2, "iceberg": "b0df3ca (1.12.0-SNAPSHOT)", "trials": 20, "observed": {"K2": 20}, "matches": true, "date": "2026-10-23", "iteration": 1}
+  - {"pending": "cow_dml", "committed": "append", "isolation": "snapshot", "format_version": 2, "iceberg": "b0df3ca (1.12.0-SNAPSHOT)", "trials": 20, "observed": {"K2": 20}, "matches": false, "date": "2026-10-23", "mismatch_note": "expected K1, got {'K2': 20}, match_rate=0.00%", "iteration": 1}
+  - {"pending": "cow_dml", "committed": "stream_upsert", "isolation": "snapshot", "format_version": 2, "iceberg": "b0df3ca (1.12.0-SNAPSHOT)", "trials": 20, "observed": {"K2": 20}, "matches": false, "date": "2026-10-23", "mismatch_note": "expected K1, got {'K2': 20}, match_rate=0.00%", "iteration": 1}
+  - {"pending": "cow_dml", "committed": "cow_dml", "isolation": "serializable", "format_version": 2, "iceberg": "b0df3ca (1.12.0-SNAPSHOT)", "trials": 20, "observed": {"K2": 20}, "matches": true, "date": "2026-10-23", "iteration": 1}
+  - {"pending": "cow_dml", "committed": "rewrite_data", "isolation": "serializable", "format_version": 2, "iceberg": "b0df3ca (1.12.0-SNAPSHOT)", "trials": 20, "observed": {"K2": 20}, "matches": true, "date": "2026-10-23", "iteration": 1}
+  - {"pending": "cow_dml", "committed": "mor_dml", "isolation": "serializable", "format_version": 2, "iceberg": "b0df3ca (1.12.0-SNAPSHOT)", "trials": 20, "observed": {"K2": 10, "K1": 10}, "matches": false, "date": "2026-10-23", "mismatch_note": "expected K2, got {'K2': 10, 'K1': 10}, match_rate=50.00%", "iteration": 1}
+  - {"pending": "mor_dml", "committed": "append", "isolation": "serializable", "format_version": 2, "iceberg": "b0df3ca (1.12.0-SNAPSHOT)", "trials": 20, "observed": {"K1": 20}, "matches": false, "date": "2026-10-23", "mismatch_note": "expected K2, got {'K1': 20}, match_rate=0.00%", "iteration": 1}
+  - {"pending": "mor_dml", "committed": "stream_upsert", "isolation": "serializable", "format_version": 2, "iceberg": "b0df3ca (1.12.0-SNAPSHOT)", "trials": 20, "observed": {"K1": 20}, "matches": false, "date": "2026-10-23", "mismatch_note": "expected K2, got {'K1': 20}, match_rate=0.00%", "iteration": 1}
+  - {"pending": "mor_dml", "committed": "overwrite", "isolation": "serializable", "format_version": 2, "iceberg": "b0df3ca (1.12.0-SNAPSHOT)", "trials": 20, "observed": {"K2": 1, "K1": 19}, "matches": false, "date": "2026-10-23", "mismatch_note": "expected K2, got {'K2': 1, 'K1': 19}, match_rate=5.00%", "iteration": 1}
+  - {"pending": "mor_dml", "committed": "append", "isolation": "snapshot", "format_version": 2, "iceberg": "b0df3ca (1.12.0-SNAPSHOT)", "trials": 20, "observed": {"K1": 20}, "matches": true, "date": "2026-10-23", "iteration": 1}
+  - {"pending": "mor_dml", "committed": "stream_upsert", "isolation": "snapshot", "format_version": 2, "iceberg": "b0df3ca (1.12.0-SNAPSHOT)", "trials": 20, "observed": {"K1": 20}, "matches": true, "date": "2026-10-23", "iteration": 1}
+  - {"pending": "mor_dml", "committed": "cow_dml", "isolation": "serializable", "format_version": 2, "iceberg": "b0df3ca (1.12.0-SNAPSHOT)", "trials": 20, "observed": {"K2": 20}, "matches": true, "date": "2026-10-23", "iteration": 1}
+  - {"pending": "mor_dml", "committed": "rewrite_data", "isolation": "serializable", "format_version": 2, "iceberg": "b0df3ca (1.12.0-SNAPSHOT)", "trials": 20, "observed": {"K2": 20}, "matches": true, "date": "2026-10-23", "iteration": 1}
+  - {"pending": "mor_dml", "committed": "mor_dml", "isolation": "serializable", "format_version": 2, "iceberg": "b0df3ca (1.12.0-SNAPSHOT)", "trials": 20, "observed": {"K1": 20}, "matches": false, "date": "2026-10-23", "mismatch_note": "expected K2, got {'K1': 20}, match_rate=0.00%", "iteration": 1}
+  - {"pending": "rewrite_data", "committed": "append", "isolation": "serializable", "format_version": 2, "iceberg": "b0df3ca (1.12.0-SNAPSHOT)", "trials": 20, "observed": {"K1": 20}, "matches": true, "date": "2026-10-23", "iteration": 1}
+  - {"pending": "rewrite_data", "committed": "stream_upsert", "isolation": "serializable", "format_version": 2, "iceberg": "b0df3ca (1.12.0-SNAPSHOT)", "trials": 20, "observed": {"K1": 20}, "matches": true, "date": "2026-10-23", "iteration": 1}
+  - {"pending": "rewrite_data", "committed": "overwrite", "isolation": "serializable", "format_version": 2, "iceberg": "b0df3ca (1.12.0-SNAPSHOT)", "trials": 20, "observed": {"K2": 20}, "matches": true, "date": "2026-10-23", "iteration": 1}
+  - {"pending": "rewrite_data", "committed": "cow_dml", "isolation": "serializable", "format_version": 2, "iceberg": "b0df3ca (1.12.0-SNAPSHOT)", "trials": 20, "observed": {"K2": 20}, "matches": true, "date": "2026-10-23", "iteration": 1}
+  - {"pending": "rewrite_data", "committed": "rewrite_data", "isolation": "serializable", "format_version": 2, "iceberg": "b0df3ca (1.12.0-SNAPSHOT)", "trials": 20, "observed": {"K2": 20}, "matches": true, "date": "2026-10-23", "iteration": 1}
+  - {"pending": "rewrite_data", "committed": "mor_dml", "isolation": "serializable", "format_version": 2, "iceberg": "b0df3ca (1.12.0-SNAPSHOT)", "trials": 20, "observed": {"K2": 10, "K1": 10}, "matches": false, "date": "2026-10-23", "mismatch_note": "expected K2, got {'K2': 10, 'K1': 10}, match_rate=50.00%", "iteration": 1}
+  - {"pending": "rewrite_deletes", "committed": "mor_dml", "isolation": "serializable", "format_version": 2, "iceberg": "b0df3ca (1.12.0-SNAPSHOT)", "trials": 20, "observed": {"K2": 5, "K1": 11}, "matches": false, "date": "2026-10-23", "mismatch_note": "expected K2, got {'K2': 5, 'K1': 11}, match_rate=31.20%", "iteration": 1}
+  - {"pending": "rewrite_deletes", "committed": "rewrite_data", "isolation": "serializable", "format_version": 2, "iceberg": "b0df3ca (1.12.0-SNAPSHOT)", "trials": 20, "observed": {}, "matches": false, "date": "2026-10-23", "mismatch_note": "expected K2, got {}, match_rate=0.00%", "iteration": 1}
+  - {"pending": "rewrite_deletes", "committed": "cow_dml", "isolation": "serializable", "format_version": 2, "iceberg": "b0df3ca (1.12.0-SNAPSHOT)", "trials": 20, "observed": {}, "matches": false, "date": "2026-10-23", "mismatch_note": "expected K2, got {}, match_rate=0.00%", "iteration": 1}
+  - {"pending": "rewrite_deletes", "committed": "append", "isolation": "serializable", "format_version": 2, "iceberg": "b0df3ca (1.12.0-SNAPSHOT)", "trials": 20, "observed": {}, "matches": false, "date": "2026-10-23", "mismatch_note": "expected K1, got {}, match_rate=0.00%", "iteration": 1}
+  - {"pending": "rewrite_deletes", "committed": "stream_upsert", "isolation": "serializable", "format_version": 2, "iceberg": "b0df3ca (1.12.0-SNAPSHOT)", "trials": 20, "observed": {}, "matches": false, "date": "2026-10-23", "mismatch_note": "expected K1, got {}, match_rate=0.00%", "iteration": 1}
+  - {"pending": "expire", "committed": "append", "isolation": "serializable", "format_version": 2, "iceberg": "b0df3ca (1.12.0-SNAPSHOT)", "trials": 20, "observed": {"success": 20}, "matches": false, "date": "2026-10-23", "mismatch_note": "expected K1, got {'success': 20}, match_rate=0.00%", "iteration": 1}
+  - {"pending": "overwrite", "committed": "append", "isolation": "default", "format_version": 2, "iceberg": "b0df3ca (1.12.0-SNAPSHOT)", "trials": 20, "observed": {"K1": 20}, "matches": false, "date": "2026-10-23", "mismatch_note": "expected K2, got {'K1': 20}, match_rate=0.00%", "iteration": 1}

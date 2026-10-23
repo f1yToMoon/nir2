@@ -1,0 +1,789 @@
+{
+  "append_x_append_serializable_v2": {
+    "pending": "append",
+    "committed": "append",
+    "isolation": "serializable",
+    "format_version": 2,
+    "overlap": "none",
+    "expected": "K1",
+    "overlap_counts": {
+      "K1": 20
+    },
+    "overlap_invalid": 0,
+    "control_counts": {
+      "K1": 5
+    },
+    "trials_overlap": 20,
+    "trials_control": 5,
+    "valid_trials": 20,
+    "match_rate": 1.0,
+    "matches": true
+  },
+  "stream_upsert_x_append_serializable_v2": {
+    "pending": "stream_upsert",
+    "committed": "append",
+    "isolation": "serializable",
+    "format_version": 2,
+    "overlap": "none",
+    "expected": "K1",
+    "overlap_counts": {
+      "K1": 20
+    },
+    "overlap_invalid": 0,
+    "control_counts": {
+      "K1": 5
+    },
+    "trials_overlap": 20,
+    "trials_control": 5,
+    "valid_trials": 20,
+    "match_rate": 1.0,
+    "matches": true
+  },
+  "overwrite_x_append_serializable_v2": {
+    "pending": "overwrite",
+    "committed": "append",
+    "isolation": "serializable",
+    "format_version": 2,
+    "overlap": "partition",
+    "expected": "K2",
+    "overlap_counts": {
+      "K1": 20
+    },
+    "overlap_invalid": 0,
+    "control_counts": {
+      "K1": 5
+    },
+    "trials_overlap": 20,
+    "trials_control": 5,
+    "valid_trials": 20,
+    "match_rate": 0.0,
+    "matches": false
+  },
+  "overwrite_x_stream_upsert_serializable_v2": {
+    "pending": "overwrite",
+    "committed": "stream_upsert",
+    "isolation": "serializable",
+    "format_version": 2,
+    "overlap": "partition",
+    "expected": "K2",
+    "overlap_counts": {
+      "K1": 20
+    },
+    "overlap_invalid": 0,
+    "control_counts": {
+      "K1": 5
+    },
+    "trials_overlap": 20,
+    "trials_control": 5,
+    "valid_trials": 20,
+    "match_rate": 0.0,
+    "matches": false
+  },
+  "overwrite_x_overwrite_serializable_v2": {
+    "pending": "overwrite",
+    "committed": "overwrite",
+    "isolation": "serializable",
+    "format_version": 2,
+    "overlap": "partition",
+    "expected": "K2",
+    "overlap_counts": {
+      "K1": 20
+    },
+    "overlap_invalid": 0,
+    "control_counts": {
+      "K1": 5
+    },
+    "trials_overlap": 20,
+    "trials_control": 5,
+    "valid_trials": 20,
+    "match_rate": 0.0,
+    "matches": false
+  },
+  "overwrite_x_cow_dml_serializable_v2": {
+    "pending": "overwrite",
+    "committed": "cow_dml",
+    "isolation": "serializable",
+    "format_version": 2,
+    "overlap": "partition",
+    "expected": "K2",
+    "overlap_counts": {
+      "K1": 20
+    },
+    "overlap_invalid": 0,
+    "control_counts": {
+      "K1": 5
+    },
+    "trials_overlap": 20,
+    "trials_control": 5,
+    "valid_trials": 20,
+    "match_rate": 0.0,
+    "matches": false
+  },
+  "overwrite_x_mor_dml_serializable_v2": {
+    "pending": "overwrite",
+    "committed": "mor_dml",
+    "isolation": "serializable",
+    "format_version": 2,
+    "overlap": "partition",
+    "expected": "K2",
+    "overlap_counts": {
+      "K1": 20
+    },
+    "overlap_invalid": 0,
+    "control_counts": {
+      "K1": 5
+    },
+    "trials_overlap": 20,
+    "trials_control": 5,
+    "valid_trials": 20,
+    "match_rate": 0.0,
+    "matches": false
+  },
+  "overwrite_x_rewrite_data_serializable_v2": {
+    "pending": "overwrite",
+    "committed": "rewrite_data",
+    "isolation": "serializable",
+    "format_version": 2,
+    "overlap": "partition",
+    "expected": "K2",
+    "overlap_counts": {
+      "K1": 20
+    },
+    "overlap_invalid": 0,
+    "control_counts": {
+      "K1": 1,
+      "success": 4
+    },
+    "trials_overlap": 20,
+    "trials_control": 5,
+    "valid_trials": 20,
+    "match_rate": 0.0,
+    "matches": false
+  },
+  "overwrite_x_append_snapshot_v2": {
+    "pending": "overwrite",
+    "committed": "append",
+    "isolation": "snapshot",
+    "format_version": 2,
+    "overlap": "partition",
+    "expected": "K1",
+    "overlap_counts": {
+      "K1": 20
+    },
+    "overlap_invalid": 0,
+    "control_counts": {
+      "K1": 5
+    },
+    "trials_overlap": 20,
+    "trials_control": 5,
+    "valid_trials": 20,
+    "match_rate": 1.0,
+    "matches": true
+  },
+  "overwrite_x_stream_upsert_snapshot_v2": {
+    "pending": "overwrite",
+    "committed": "stream_upsert",
+    "isolation": "snapshot",
+    "format_version": 2,
+    "overlap": "partition",
+    "expected": "K1",
+    "overlap_counts": {
+      "K1": 20
+    },
+    "overlap_invalid": 0,
+    "control_counts": {
+      "K1": 5
+    },
+    "trials_overlap": 20,
+    "trials_control": 5,
+    "valid_trials": 20,
+    "match_rate": 1.0,
+    "matches": true
+  },
+  "cow_dml_x_append_serializable_v2": {
+    "pending": "cow_dml",
+    "committed": "append",
+    "isolation": "serializable",
+    "format_version": 2,
+    "overlap": "partition",
+    "expected": "K2",
+    "overlap_counts": {
+      "K2": 20
+    },
+    "overlap_invalid": 0,
+    "control_counts": {
+      "K1": 5
+    },
+    "trials_overlap": 20,
+    "trials_control": 5,
+    "valid_trials": 20,
+    "match_rate": 1.0,
+    "matches": true
+  },
+  "cow_dml_x_stream_upsert_serializable_v2": {
+    "pending": "cow_dml",
+    "committed": "stream_upsert",
+    "isolation": "serializable",
+    "format_version": 2,
+    "overlap": "partition",
+    "expected": "K2",
+    "overlap_counts": {
+      "K2": 20
+    },
+    "overlap_invalid": 0,
+    "control_counts": {
+      "K1": 5
+    },
+    "trials_overlap": 20,
+    "trials_control": 5,
+    "valid_trials": 20,
+    "match_rate": 1.0,
+    "matches": true
+  },
+  "cow_dml_x_overwrite_serializable_v2": {
+    "pending": "cow_dml",
+    "committed": "overwrite",
+    "isolation": "serializable",
+    "format_version": 2,
+    "overlap": "partition",
+    "expected": "K2",
+    "overlap_counts": {
+      "K2": 20
+    },
+    "overlap_invalid": 0,
+    "control_counts": {
+      "K1": 5
+    },
+    "trials_overlap": 20,
+    "trials_control": 5,
+    "valid_trials": 20,
+    "match_rate": 1.0,
+    "matches": true
+  },
+  "cow_dml_x_append_snapshot_v2": {
+    "pending": "cow_dml",
+    "committed": "append",
+    "isolation": "snapshot",
+    "format_version": 2,
+    "overlap": "partition",
+    "expected": "K1",
+    "overlap_counts": {
+      "K2": 20
+    },
+    "overlap_invalid": 0,
+    "control_counts": {
+      "K1": 5
+    },
+    "trials_overlap": 20,
+    "trials_control": 5,
+    "valid_trials": 20,
+    "match_rate": 0.0,
+    "matches": false
+  },
+  "cow_dml_x_stream_upsert_snapshot_v2": {
+    "pending": "cow_dml",
+    "committed": "stream_upsert",
+    "isolation": "snapshot",
+    "format_version": 2,
+    "overlap": "partition",
+    "expected": "K1",
+    "overlap_counts": {
+      "K2": 20
+    },
+    "overlap_invalid": 0,
+    "control_counts": {
+      "K1": 5
+    },
+    "trials_overlap": 20,
+    "trials_control": 5,
+    "valid_trials": 20,
+    "match_rate": 0.0,
+    "matches": false
+  },
+  "cow_dml_x_cow_dml_serializable_v2": {
+    "pending": "cow_dml",
+    "committed": "cow_dml",
+    "isolation": "serializable",
+    "format_version": 2,
+    "overlap": "file",
+    "expected": "K2",
+    "overlap_counts": {
+      "K2": 20
+    },
+    "overlap_invalid": 0,
+    "control_counts": {
+      "K1": 5
+    },
+    "trials_overlap": 20,
+    "trials_control": 5,
+    "valid_trials": 20,
+    "match_rate": 1.0,
+    "matches": true
+  },
+  "cow_dml_x_rewrite_data_serializable_v2": {
+    "pending": "cow_dml",
+    "committed": "rewrite_data",
+    "isolation": "serializable",
+    "format_version": 2,
+    "overlap": "file",
+    "expected": "K2",
+    "overlap_counts": {
+      "K2": 20
+    },
+    "overlap_invalid": 0,
+    "control_counts": {
+      "K2": 1,
+      "success": 4
+    },
+    "trials_overlap": 20,
+    "trials_control": 5,
+    "valid_trials": 20,
+    "match_rate": 1.0,
+    "matches": true
+  },
+  "cow_dml_x_mor_dml_serializable_v2": {
+    "pending": "cow_dml",
+    "committed": "mor_dml",
+    "isolation": "serializable",
+    "format_version": 2,
+    "overlap": "file",
+    "expected": "K2",
+    "overlap_counts": {
+      "K2": 10,
+      "K1": 10
+    },
+    "overlap_invalid": 0,
+    "control_counts": {
+      "K1": 5
+    },
+    "trials_overlap": 20,
+    "trials_control": 5,
+    "valid_trials": 20,
+    "match_rate": 0.5,
+    "matches": false
+  },
+  "mor_dml_x_append_serializable_v2": {
+    "pending": "mor_dml",
+    "committed": "append",
+    "isolation": "serializable",
+    "format_version": 2,
+    "overlap": "partition",
+    "expected": "K2",
+    "overlap_counts": {
+      "K1": 20
+    },
+    "overlap_invalid": 0,
+    "control_counts": {
+      "K1": 5
+    },
+    "trials_overlap": 20,
+    "trials_control": 5,
+    "valid_trials": 20,
+    "match_rate": 0.0,
+    "matches": false
+  },
+  "mor_dml_x_stream_upsert_serializable_v2": {
+    "pending": "mor_dml",
+    "committed": "stream_upsert",
+    "isolation": "serializable",
+    "format_version": 2,
+    "overlap": "partition",
+    "expected": "K2",
+    "overlap_counts": {
+      "K1": 20
+    },
+    "overlap_invalid": 0,
+    "control_counts": {
+      "K1": 5
+    },
+    "trials_overlap": 20,
+    "trials_control": 5,
+    "valid_trials": 20,
+    "match_rate": 0.0,
+    "matches": false
+  },
+  "mor_dml_x_overwrite_serializable_v2": {
+    "pending": "mor_dml",
+    "committed": "overwrite",
+    "isolation": "serializable",
+    "format_version": 2,
+    "overlap": "partition",
+    "expected": "K2",
+    "overlap_counts": {
+      "K2": 1,
+      "K1": 19
+    },
+    "overlap_invalid": 0,
+    "control_counts": {
+      "K1": 5
+    },
+    "trials_overlap": 20,
+    "trials_control": 5,
+    "valid_trials": 20,
+    "match_rate": 0.05,
+    "matches": false
+  },
+  "mor_dml_x_append_snapshot_v2": {
+    "pending": "mor_dml",
+    "committed": "append",
+    "isolation": "snapshot",
+    "format_version": 2,
+    "overlap": "partition",
+    "expected": "K1",
+    "overlap_counts": {
+      "K1": 20
+    },
+    "overlap_invalid": 0,
+    "control_counts": {
+      "K1": 5
+    },
+    "trials_overlap": 20,
+    "trials_control": 5,
+    "valid_trials": 20,
+    "match_rate": 1.0,
+    "matches": true
+  },
+  "mor_dml_x_stream_upsert_snapshot_v2": {
+    "pending": "mor_dml",
+    "committed": "stream_upsert",
+    "isolation": "snapshot",
+    "format_version": 2,
+    "overlap": "partition",
+    "expected": "K1",
+    "overlap_counts": {
+      "K1": 20
+    },
+    "overlap_invalid": 0,
+    "control_counts": {
+      "K1": 5
+    },
+    "trials_overlap": 20,
+    "trials_control": 5,
+    "valid_trials": 20,
+    "match_rate": 1.0,
+    "matches": true
+  },
+  "mor_dml_x_cow_dml_serializable_v2": {
+    "pending": "mor_dml",
+    "committed": "cow_dml",
+    "isolation": "serializable",
+    "format_version": 2,
+    "overlap": "file",
+    "expected": "K2",
+    "overlap_counts": {
+      "K2": 20
+    },
+    "overlap_invalid": 0,
+    "control_counts": {
+      "K1": 5
+    },
+    "trials_overlap": 20,
+    "trials_control": 5,
+    "valid_trials": 20,
+    "match_rate": 1.0,
+    "matches": true
+  },
+  "mor_dml_x_rewrite_data_serializable_v2": {
+    "pending": "mor_dml",
+    "committed": "rewrite_data",
+    "isolation": "serializable",
+    "format_version": 2,
+    "overlap": "file",
+    "expected": "K2",
+    "overlap_counts": {
+      "K2": 20
+    },
+    "overlap_invalid": 0,
+    "control_counts": {
+      "K2": 1,
+      "success": 3,
+      "K1": 1
+    },
+    "trials_overlap": 20,
+    "trials_control": 5,
+    "valid_trials": 20,
+    "match_rate": 1.0,
+    "matches": true
+  },
+  "mor_dml_x_mor_dml_serializable_v2": {
+    "pending": "mor_dml",
+    "committed": "mor_dml",
+    "isolation": "serializable",
+    "format_version": 2,
+    "overlap": "file",
+    "expected": "K2",
+    "overlap_counts": {
+      "K1": 20
+    },
+    "overlap_invalid": 0,
+    "control_counts": {
+      "K1": 5
+    },
+    "trials_overlap": 20,
+    "trials_control": 5,
+    "valid_trials": 20,
+    "match_rate": 0.0,
+    "matches": false
+  },
+  "rewrite_data_x_append_serializable_v2": {
+    "pending": "rewrite_data",
+    "committed": "append",
+    "isolation": "serializable",
+    "format_version": 2,
+    "overlap": "none",
+    "expected": "K1",
+    "overlap_counts": {
+      "K1": 20
+    },
+    "overlap_invalid": 0,
+    "control_counts": {
+      "K1": 5
+    },
+    "trials_overlap": 20,
+    "trials_control": 5,
+    "valid_trials": 20,
+    "match_rate": 1.0,
+    "matches": true
+  },
+  "rewrite_data_x_stream_upsert_serializable_v2": {
+    "pending": "rewrite_data",
+    "committed": "stream_upsert",
+    "isolation": "serializable",
+    "format_version": 2,
+    "overlap": "none",
+    "expected": "K1",
+    "overlap_counts": {
+      "K1": 20
+    },
+    "overlap_invalid": 0,
+    "control_counts": {
+      "K1": 5
+    },
+    "trials_overlap": 20,
+    "trials_control": 5,
+    "valid_trials": 20,
+    "match_rate": 1.0,
+    "matches": true
+  },
+  "rewrite_data_x_overwrite_serializable_v2": {
+    "pending": "rewrite_data",
+    "committed": "overwrite",
+    "isolation": "serializable",
+    "format_version": 2,
+    "overlap": "file",
+    "expected": "K2",
+    "overlap_counts": {
+      "K2": 20
+    },
+    "overlap_invalid": 0,
+    "control_counts": {
+      "K2": 1,
+      "K1": 1,
+      "success": 3
+    },
+    "trials_overlap": 20,
+    "trials_control": 5,
+    "valid_trials": 20,
+    "match_rate": 1.0,
+    "matches": true
+  },
+  "rewrite_data_x_cow_dml_serializable_v2": {
+    "pending": "rewrite_data",
+    "committed": "cow_dml",
+    "isolation": "serializable",
+    "format_version": 2,
+    "overlap": "file",
+    "expected": "K2",
+    "overlap_counts": {
+      "K2": 20
+    },
+    "overlap_invalid": 0,
+    "control_counts": {
+      "K2": 1,
+      "K1": 1,
+      "success": 3
+    },
+    "trials_overlap": 20,
+    "trials_control": 5,
+    "valid_trials": 20,
+    "match_rate": 1.0,
+    "matches": true
+  },
+  "rewrite_data_x_rewrite_data_serializable_v2": {
+    "pending": "rewrite_data",
+    "committed": "rewrite_data",
+    "isolation": "serializable",
+    "format_version": 2,
+    "overlap": "file",
+    "expected": "K2",
+    "overlap_counts": {
+      "K2": 20
+    },
+    "overlap_invalid": 0,
+    "control_counts": {
+      "K2": 1,
+      "success": 4
+    },
+    "trials_overlap": 20,
+    "trials_control": 5,
+    "valid_trials": 20,
+    "match_rate": 1.0,
+    "matches": true
+  },
+  "rewrite_data_x_mor_dml_serializable_v2": {
+    "pending": "rewrite_data",
+    "committed": "mor_dml",
+    "isolation": "serializable",
+    "format_version": 2,
+    "overlap": "file",
+    "expected": "K2",
+    "overlap_counts": {
+      "K2": 10,
+      "K1": 10
+    },
+    "overlap_invalid": 0,
+    "control_counts": {
+      "K2": 1,
+      "K1": 1,
+      "success": 3
+    },
+    "trials_overlap": 20,
+    "trials_control": 5,
+    "valid_trials": 20,
+    "match_rate": 0.5,
+    "matches": false
+  },
+  "rewrite_deletes_x_mor_dml_serializable_v2": {
+    "pending": "rewrite_deletes",
+    "committed": "mor_dml",
+    "isolation": "serializable",
+    "format_version": 2,
+    "overlap": "file",
+    "expected": "K2",
+    "overlap_counts": {
+      "K2": 5,
+      "K1": 11
+    },
+    "overlap_invalid": 4,
+    "control_counts": {
+      "K1": 5
+    },
+    "trials_overlap": 20,
+    "trials_control": 5,
+    "valid_trials": 16,
+    "match_rate": 0.312,
+    "matches": false
+  },
+  "rewrite_deletes_x_rewrite_data_serializable_v2": {
+    "pending": "rewrite_deletes",
+    "committed": "rewrite_data",
+    "isolation": "serializable",
+    "format_version": 2,
+    "overlap": "file",
+    "expected": "K2",
+    "overlap_counts": {},
+    "overlap_invalid": 20,
+    "control_counts": {
+      "success": 5
+    },
+    "trials_overlap": 20,
+    "trials_control": 5,
+    "valid_trials": 0,
+    "match_rate": 0.0,
+    "matches": false
+  },
+  "rewrite_deletes_x_cow_dml_serializable_v2": {
+    "pending": "rewrite_deletes",
+    "committed": "cow_dml",
+    "isolation": "serializable",
+    "format_version": 2,
+    "overlap": "file",
+    "expected": "K2",
+    "overlap_counts": {},
+    "overlap_invalid": 20,
+    "control_counts": {
+      "success": 5
+    },
+    "trials_overlap": 20,
+    "trials_control": 5,
+    "valid_trials": 0,
+    "match_rate": 0.0,
+    "matches": false
+  },
+  "rewrite_deletes_x_append_serializable_v2": {
+    "pending": "rewrite_deletes",
+    "committed": "append",
+    "isolation": "serializable",
+    "format_version": 2,
+    "overlap": "none",
+    "expected": "K1",
+    "overlap_counts": {},
+    "overlap_invalid": 20,
+    "control_counts": {
+      "success": 5
+    },
+    "trials_overlap": 20,
+    "trials_control": 5,
+    "valid_trials": 0,
+    "match_rate": 0.0,
+    "matches": false
+  },
+  "rewrite_deletes_x_stream_upsert_serializable_v2": {
+    "pending": "rewrite_deletes",
+    "committed": "stream_upsert",
+    "isolation": "serializable",
+    "format_version": 2,
+    "overlap": "none",
+    "expected": "K1",
+    "overlap_counts": {},
+    "overlap_invalid": 20,
+    "control_counts": {
+      "success": 5
+    },
+    "trials_overlap": 20,
+    "trials_control": 5,
+    "valid_trials": 0,
+    "match_rate": 0.0,
+    "matches": false
+  },
+  "expire_x_append_serializable_v2": {
+    "pending": "expire",
+    "committed": "append",
+    "isolation": "serializable",
+    "format_version": 2,
+    "overlap": "none",
+    "expected": "K1",
+    "overlap_counts": {
+      "success": 20
+    },
+    "overlap_invalid": 0,
+    "control_counts": {
+      "success": 5
+    },
+    "trials_overlap": 20,
+    "trials_control": 5,
+    "valid_trials": 20,
+    "match_rate": 0.0,
+    "matches": false
+  },
+  "overwrite_x_append_default_v2": {
+    "pending": "overwrite",
+    "committed": "append",
+    "isolation": "default",
+    "format_version": 2,
+    "overlap": "partition",
+    "expected": "K2",
+    "overlap_counts": {
+      "K1": 20
+    },
+    "overlap_invalid": 0,
+    "control_counts": {
+      "K1": 5
+    },
+    "trials_overlap": 20,
+    "trials_control": 5,
+    "valid_trials": 20,
+    "match_rate": 0.0,
+    "matches": false
+  }
+}

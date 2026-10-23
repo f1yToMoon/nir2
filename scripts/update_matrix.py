@@ -33,13 +33,16 @@ def _build_verified(results: dict) -> list[dict]:
     today = date.today().isoformat()
     verified = []
     for cid, r in results.items():
+        client = r.get("client", "1.12.0")
+        catalog = r.get("catalog_server", "b0df3ca")
         entry: dict = {
             "pending":        r["pending"],
             "committed":      r["committed"],
             "isolation":      r["isolation"],
             "format_version": r["format_version"],
-            "iceberg":        "b0df3ca (1.12.0-SNAPSHOT)",
-            "trials":         r["trials_overlap"],
+            "client":         client,
+            "catalog_server": catalog,
+            "trials":         r["valid_trials"],
             "observed":       r["overlap_counts"],
             "matches":        r["matches"],
             "date":           today,
@@ -85,8 +88,9 @@ def _build_heatmap(results: dict, out: Path) -> None:
         print("matplotlib not available — skipping heatmap", file=sys.stderr)
         return
 
-    ops = ["append", "stream_upsert", "overwrite", "cow_dml",
-           "mor_dml", "rewrite_data", "rewrite_deletes", "expire"]
+    ops = ["append", "stream_upsert", "overwrite", "overwrite_opts", "cow_dml",
+           "mor_dml", "mor_delete", "mor_update", "mor_merge",
+           "rewrite_data", "rewrite_deletes", "expire"]
     n = len(ops)
     op_idx = {o: i for i, o in enumerate(ops)}
 
@@ -180,47 +184,20 @@ def _print_g1_summary(results: dict) -> None:
     Uses CORRECTED expected values from ADR-004 and ADR-005.
     Groups defined by representative K2-risk scenarios.
     """
-    # ADR-004 and ADR-005 were REJECTED: iteration-1 test did not set required Spark write
-    # options (isolation-level + validate-from-snapshot-id for overwrite; conflictDetectionFilter
-    # must cover committed data for mor_dml). These corrections are removed.
-    # CORRECTED_K1 is empty for iteration-1 report (evaluate against original hypothesis).
+    # Iteration 2: corrected matrix with new methodology.
+    # overwrite (no options) → K1 confirmed iter1; rules updated in YAML.
     CORRECTED_K1: set = set()
 
-    # Confirmed new finding: expire commits via ManageSnapshots; no data-level CAS conflict.
-    # Predicted K1 (retry on 409), observed success (no conflict at all). Not related to
-    # ADR-004/ADR-005 rejection; stands independently.
+    # expire → success (confirmed iter1 for ×append; hypothesis for others)
     CORRECTED_SUCCESS = {
         ("expire", "append", "serializable"),
     }
-    # Test limitation: snapshot isolation not applied; snapshot cases not conclusive
-    SNAPSHOT_NOT_TESTED = {("cow_dml", "append", "snapshot"), ("cow_dml", "stream_upsert", "snapshot")}
-    # Test limitation: partition-overlap ≠ file-overlap; ×mor_dml K2 not reliably triggered
-    # K2 mechanism EXISTS but overlap rate < 95% — treated as "not conclusive" not MISMATCH
-    FILE_OVERLAP_UNRELIABLE = {
-        ("cow_dml",         "mor_dml", "serializable"),
-        ("rewrite_data",    "mor_dml", "serializable"),
-        ("rewrite_deletes", "mor_dml", "serializable"),
-    }
-    # Test limitation: rewrite_deletes requires pre-existing position-delete files.
-    # When committed op is not mor_dml (append/su/cow_dml/rewrite_data), no position
-    # deletes exist → 0 valid overlap trials → overlap={}.  Not conclusive.
-    NO_POSITION_DELETES = {
-        ("rewrite_deletes", "append",        "serializable"),
-        ("rewrite_deletes", "stream_upsert", "serializable"),
-        ("rewrite_deletes", "rewrite_data",  "serializable"),
-        ("rewrite_deletes", "cow_dml",       "serializable"),
-    }
-    # k2_control test bug: rewrite_data/rewrite_deletes are global ops;
-    # "no-overlap" control trials still get K2 because global op touches all partitions
-    K2_CONTROL_BUG = {
-        ("mor_dml",        "rewrite_data", "serializable"),
-        ("rewrite_data",   "overwrite",    "serializable"),
-        ("rewrite_data",   "cow_dml",      "serializable"),
-        ("rewrite_data",   "rewrite_data", "serializable"),
-        ("rewrite_data",   "mor_dml",      "serializable"),
-        ("rewrite_deletes","rewrite_data", "serializable"),
-        ("rewrite_deletes","cow_dml",      "serializable"),
-    }
+    # Snapshot isolation cases (iter2 sets table property)
+    SNAPSHOT_NOT_TESTED: set = set()
+    # Data exhaustion cases (iter2 uses fresh data per trial)
+    FILE_OVERLAP_UNRELIABLE: set = set()
+    # rewrite_deletes cases (iter2 creates prior position deletes)
+    NO_POSITION_DELETES: set = set()
 
     def _corrected_expected(r: dict) -> str:
         key_any = (r["pending"], None, r["isolation"])
@@ -245,12 +222,12 @@ def _print_g1_summary(results: dict) -> None:
         total = r["trials_overlap"]
         return count / max(total, 1) >= 0.95
 
-    # G1 groups — defined by KEY representative K2-risk case (after corrections)
+    # G1 groups — iter2 uses mor_delete (subtype) for group 2
     groups: dict[str, tuple[str, str]] = {
-        "compaction×CoW_DML":  ("rewrite_data", "cow_dml"),
-        "compaction×MoR_DML":  ("rewrite_data", "mor_dml"),
-        "cow_dml×append_serial": ("cow_dml",    "append"),
-        "cow_dml×cow_dml":     ("cow_dml",       "cow_dml"),
+        "compaction×CoW_DML":    ("rewrite_data", "cow_dml"),
+        "compaction×MoR_DELETE": ("rewrite_data", "mor_delete"),
+        "cow_dml×append_serial": ("cow_dml",      "append"),
+        "cow_dml×cow_dml":       ("cow_dml",       "cow_dml"),
     }
 
     print("\n── G1 Criteria (with corrected matrix) ──")
@@ -273,7 +250,7 @@ def _print_g1_summary(results: dict) -> None:
               f"({'CONFIRMED' if confirmed else 'NOT CONFIRMED'})")
 
     # Corrected overall match rate (excludes not-conclusive cases)
-    NOT_CONCLUSIVE = SNAPSHOT_NOT_TESTED | FILE_OVERLAP_UNRELIABLE | NO_POSITION_DELETES
+    NOT_CONCLUSIVE: set = SNAPSHOT_NOT_TESTED | FILE_OVERLAP_UNRELIABLE | NO_POSITION_DELETES
     skipped = sum(1 for r in results.values()
                   if (r["pending"], r["committed"], r["isolation"]) in NOT_CONCLUSIVE)
     total_eval = len(results) - skipped

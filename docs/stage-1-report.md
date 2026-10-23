@@ -63,7 +63,7 @@ K2 возникает **только если** committed-данные попа�
 | cow_dml × stream_upsert (snapshot) | K1 | K2 (20/20) | 0% | not-conclusive |
 | cow_dml × cow_dml (serial) | K2 | K2 (20/20) | 100% | ✓ |
 | cow_dml × rewrite_data (serial) | K2 | K2 (20/20) | 100% | ✓ |
-| cow_dml × mor_dml (serial) | K2 | K2=10,K1=10 | 50% | not-conclusive (file-overlap) |
+| cow_dml × mor_dml (serial) | K2 | K2=10,K1=10 | 50% | not-conclusive (исчерпание данных, §4.4) |
 | mor_dml × append (serial) | K2 | K1 (20/20) | 0% | ✗ conflictFilter не покрыл (§3.2) |
 | mor_dml × stream_upsert (serial) | K2 | K1 (20/20) | 0% | ✗ |
 | mor_dml × overwrite (serial) | K2 | K1=19,K2=1 | 5% | ✗ |
@@ -77,8 +77,8 @@ K2 возникает **только если** committed-данные попа�
 | rewrite_data × overwrite | K2 | K2 (20/20) | 100% | ✓ |
 | rewrite_data × cow_dml | K2 | K2 (20/20) | 100% | ✓ G1 Группа 1 |
 | rewrite_data × rewrite_data | K2 | K2 (20/20) | 100% | ✓ |
-| rewrite_data × mor_dml | K2 | K2=10,K1=10 | 50% | not-conclusive (file-overlap) G1 Группа 2 |
-| rewrite_deletes × mor_dml | K2 | K2=5,K1=11 | 31% | not-conclusive (file-overlap) |
+| rewrite_data × mor_dml | K2 | K2=10,K1=10 | 50% | not-conclusive (исчерпание данных, §4.4) G1 Группа 2 |
+| rewrite_deletes × mor_dml | K2 | K2=5,K1=11 | 31% | not-conclusive (исчерпание данных, §4.4) |
 | rewrite_deletes × rw/cow | K2 | {} (0/20) | — | not-conclusive (no prior position deletes) |
 | rewrite_deletes × append/su | K1 | {} (0/20) | — | not-conclusive (no prior position deletes) |
 | expire × append | K1 | success (20/20) | — | новая находка (§5) |
@@ -90,7 +90,7 @@ K2 возникает **только если** committed-данные попа�
 | # | Группа | Пара | K2/20 | Итог |
 | --- | --- | --- | --- | --- |
 | 1 | Компакция × CoW DML | rewrite_data × cow_dml | 20/20 | ✓ ПОДТВЕРЖДЕНО |
-| 2 | Компакция × MoR DML | rewrite_data × mor_dml | 10/20 | ✗ (file-overlap ненадёжен) |
+| 2 | Компакция × MoR DML | rewrite_data × mor_dml | 10/20 | ✗ (исчерпание данных, §4.4) |
 | 3 | CoW DML × append (serial) | cow_dml × append | 20/20 | ✓ ПОДТВЕРЖДЕНО |
 | 4 | CoW DML × CoW DML | cow_dml × cow_dml | 20/20 | ✓ ПОДТВЕРЖДЕНО |
 
@@ -109,6 +109,45 @@ K2 возникает **только если** committed-данные попа�
 ### 4.3 K1 vs success: протокол определения
 
 K1 детектируется через прокси: `status=409` в `_last_commits` с `ts ≥ trial_start_ts`. `AppendFiles`/`ReplacePartitions` при 409 молча повторяют коммит — Spark-код видит `success`. `OverwriteFiles` при K2 бросает `ValidationException` — видно в Spark.
+
+### 4.4 Исчерпание данных (объяснение 10/10 и 1/20)
+
+Committed `mor_dml` выполнял `DELETE WHERE bkt=0 AND id < seq*5+5`. Исходные строки в bkt=0:
+id 0–49 (50 строк). Рефилл добавлял строки с id ≥ 20000 — за пределами предиката.
+
+К повтору 10 предикат `id < 55` не захватывает ни одной строки (id 0–49 удалены раньше,
+id 50+ вставлены рефиллом с offset 20000+). Committed `mor_dml` фиксирует 0 строк →
+не создаёт position-delete файлов → pending не видит конфликта → K1.
+
+**cow_dml × mor_dml** и **rewrite_data × mor_dml** (committed = mor_dml):
+
+| Повтор | DELETE WHERE id < | Строк удалено | Исход |
+| --- | --- | --- | --- |
+| 0 | 5 | 5 | K2 |
+| 1 | 10 | 5 | K2 |
+| 2 | 15 | 5 | K2 |
+| 3 | 20 | 5 | K2 |
+| 4 | 25 | 5 | K2 |
+| 5 | 30 | 5 | K2 |
+| 6 | 35 | 5 | K2 |
+| 7 | 40 | 5 | K2 |
+| 8 | 45 | 5 | K2 |
+| 9 | 50 | 5 | K2 |
+| 10 | 55 | 0 | K1 |
+| 11–19 | 60–100 | 0 | K1 |
+
+**mor_dml × overwrite** (pending = mor_dml DELETE id < seq\*5+5; committed = overwrite пишет id seq\*50..seq\*50+9):
+
+| Повтор | DELETE WHERE id < | Overwrite пишет id | Строк под фильтр | Исход |
+| --- | --- | --- | --- | --- |
+| 0 | 5 | 0–9 | 5 (id 0–4) | K2 |
+| 1 | 10 | 50–59 | 0 | K1 |
+| 2 | 15 | 100–109 | 0 | K1 |
+| 3–9 | 20–50 | 150–459 | 0 | K1 |
+| 10–19 | 55–100 | 500–959 | 0 | K1 |
+
+Итог: не file-overlap, а исчерпание диапазона id + несоответствие диапазонов. В итерации 2 каждый
+повтор получает уникальный диапазон id (seq × 10000), предикат всегда покрывает committed-данные.
 
 ## 5. Новые находки
 
