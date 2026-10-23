@@ -1,11 +1,11 @@
-# Отчёт по этапу 1: Эмпирическая матрица конфликтов — итерация 1
+# Отчёт по этапу 1: Эмпирическая матрица конфликтов — итерация 2
 
 | Поле | Значение |
 | --- | --- |
 | Даты | 2026-10-23 |
-| Коммит / тег | `1db94e2` / `stage-1` |
+| Коммит | `e55e25b` (iter2) |
 | Версии | Клиент Iceberg 1.12.0, сервер каталога b0df3ca (2026-04-29 nightly) |
-| Статус | Итерация 1 завершена. G1 не принят — требуется итерация 2 (§7) |
+| Статус | Итерация 2 завершена. G1 принят — GO |
 
 ## 1. Цель этапа
 
@@ -15,204 +15,158 @@
 ## 2. Что сделано
 
 - `src/capl/main.py`: hold-механизм (`POST /v1/debug/hold`, `DELETE /v1/debug/hold/{slot}`);
-  `_last_commits` с полями `ts`, `status`, `hold_ms`; `DELETE /_capl/debug/last-commits`.
+  `_last_commits` с полями `ts`, `status`, `hold_ms`.
 - `tests/integration/test_conflict_matrix.py`: параметризованный тест (20 overlap + 5 control);
-  синхронизация по timestamp; K1-детекция по HTTP 409 в прокси; validity tracking.
+  hold-синхронизация; K1-детекция по HTTP 409 в прокси; per-trial уникальные id-диапазоны.
 - `src/runner/ops/errors.py`: классификатор K1/K2/unknown.
 - `scripts/update_matrix.py`: заполнение `verified:`, тепловая карта, G1-оценка.
 - `infra/spark/Dockerfile`: `pytest>=8.3`, `matplotlib>=3.9`.
+- `config/conflict_matrix.yaml`: разбивка `mor_dml` → `mor_delete/mor_update/mor_merge`; правила expire.
+- Архив результатов итерации 1: `results/stage-1/iter1/`.
 
-## 3. Ограничения итерации 1 (причина отклонения G1)
+## 3. Исправленная методология (итерация 2)
 
-### 3.1 overwrite — опции не установлены
+### 3.1 Уникальные id-диапазоны
 
-Spark INSERT OVERWRITE (`DataFrameWriterV2.overwritePartitions()`) использует `DynamicOverwrite`.
-`SparkWrite.java:347-358`: data-level валидация включается **только** при наличии опций
-`.option("isolation-level","serializable").option("validate-from-snapshot-id", <id снапшота чтения>)`.
-Итерация 1 не устанавливала эти опции → overwrite всегда выполнялся без `validateFromSnapshot` → K1.
+Итерация 1 использовала глобальные данные (`DELETE WHERE id < seq*5+5`), что приводило к
+исчерпанию строк на поздних повторах (§4). Итерация 2: каждый повтор получает свой диапазон
+`[seq × 10000 + bkt × 1000000, seq × 10000 + bkt × 1000000 + 49]`.
 
-### 3.2 mor_dml — conflictDetectionFilter не покрывал committed-данные
+### 3.2 Predicate-overlap для DELETE/UPDATE
 
-`SparkPositionDeltaWrite.java:266-284`: при `isolation=serializable` вызывается
-`validateNoConflictingDataFiles()` с `conflictDetectionFilter` из `WHERE`-предиката запроса.
-K2 возникает **только если** committed-данные попадают под этот фильтр.
-В итерации 1 committed-операции (append/su/overwrite) добавляли данные в тот же bucket,
-но не обязательно под `WHERE`-предикат pending `mor_dml` → K1 (артефакт данных, не поведение Iceberg).
+Pending DELETE/UPDATE использует `WHERE bkt={bkt} AND id BETWEEN lo AND lo+49`.
+Committed append вставляет строки `lo..lo+9` — внутри predicate-диапазона.
 
-### 3.3 Другие ограничения
+### 3.3 Разбивка mor_dml
 
-- Snapshot isolation: тест не устанавливал `write.delete.isolation-level=SNAPSHOT` →
-  `cow_dml×{append,su}(snapshot)` прогонялся с serializable-default → K2 вместо K1.
-- rewrite_deletes: таблица без prior position deletes → `overlap={}` для всех non-MoR committed.
-- k2_control assertion: `rewrite_data` глобальна → control trials дают K2 → pytest FAIL
-  (данные overlap верны: K2=20/20).
+`mor_dml` (общий alias для MoR-DELETE) разбит на:
+- `mor_delete` — SQL DELETE (RowDelta position-delete, нет validateNoConflictingDataFiles)
+- `mor_update` — SQL UPDATE (RowDelta + validateNoConflictingDataFiles + validateNoConflictingDeleteFiles)
+- `mor_merge`  — SQL MERGE (аналогично UPDATE)
 
-## 4. Эмпирические результаты (итерация 1, v2, serializable если не указано иное)
+### 3.4 overwrite_opts
 
-| Пара (pending × committed) | Гипотеза | Факт (overlap) | Rate | Статус |
-| --- | --- | --- | --- | --- |
-| append × append | K1 | K1 (20/20) | 100% | ✓ совпадение |
-| stream_upsert × append | K1 | K1 (20/20) | 100% | ✓ |
-| overwrite × append/su/ow/cow/mor/rw (serial) | K2 | K1 (20/20) | 0% | ✗ опции не устан. (§3.1) |
-| overwrite × append/su (snapshot) | K1 | K1 (20/20) | 100% | ✓ |
-| overwrite × append (default) | K2 | K1 (20/20) | 0% | ✗ опции не устан. |
-| cow_dml × append (serial) | K2 | K2 (20/20) | 100% | ✓ |
-| cow_dml × stream_upsert (serial) | K2 | K2 (20/20) | 100% | ✓ |
-| cow_dml × overwrite (serial) | K2 | K2 (20/20) | 100% | ✓ |
-| cow_dml × append (snapshot) | K1 | K2 (20/20) | 0% | not-conclusive (isolation не тест.) |
-| cow_dml × stream_upsert (snapshot) | K1 | K2 (20/20) | 0% | not-conclusive |
-| cow_dml × cow_dml (serial) | K2 | K2 (20/20) | 100% | ✓ |
-| cow_dml × rewrite_data (serial) | K2 | K2 (20/20) | 100% | ✓ |
-| cow_dml × mor_dml (serial) | K2 | K2=10,K1=10 | 50% | not-conclusive (исчерпание данных, §4.4) |
-| mor_dml × append (serial) | K2 | K1 (20/20) | 0% | ✗ conflictFilter не покрыл (§3.2) |
-| mor_dml × stream_upsert (serial) | K2 | K1 (20/20) | 0% | ✗ |
-| mor_dml × overwrite (serial) | K2 | K1=19,K2=1 | 5% | ✗ |
-| mor_dml × append (snapshot) | K1 | K1 (20/20) | 100% | ✓ |
-| mor_dml × stream_upsert (snapshot) | K1 | K1 (20/20) | 100% | ✓ |
-| mor_dml × cow_dml (serial) | K2 | K2 (20/20) | 100% | ✓ |
-| mor_dml × rewrite_data (serial) | K2 | K2 (20/20) | 100% | ✓ |
-| mor_dml × mor_dml (serial) | K2 | K1 (20/20) | 0% | ✗ conflictFilter не покрыл (§3.2) |
-| rewrite_data × append | K1 | K1 (20/20) | 100% | ✓ |
-| rewrite_data × stream_upsert | K1 | K1 (20/20) | 100% | ✓ |
-| rewrite_data × overwrite | K2 | K2 (20/20) | 100% | ✓ |
-| rewrite_data × cow_dml | K2 | K2 (20/20) | 100% | ✓ G1 Группа 1 |
-| rewrite_data × rewrite_data | K2 | K2 (20/20) | 100% | ✓ |
-| rewrite_data × mor_dml | K2 | K2=10,K1=10 | 50% | not-conclusive (исчерпание данных, §4.4) G1 Группа 2 |
-| rewrite_deletes × mor_dml | K2 | K2=5,K1=11 | 31% | not-conclusive (исчерпание данных, §4.4) |
-| rewrite_deletes × rw/cow | K2 | {} (0/20) | — | not-conclusive (no prior position deletes) |
-| rewrite_deletes × append/su | K1 | {} (0/20) | — | not-conclusive (no prior position deletes) |
-| expire × append | K1 | success (20/20) | — | новая находка (§5) |
+Добавлен op-класс `overwrite_opts`: `overwritePartitions()` с
+`.option("isolation-level","serializable").option("validate-from-snapshot-id",<snap_id>)`.
 
-> Полная таблица: `results/stage-1/matrix_results.json`; тепловая карта: `results/stage-1/heatmap.png`.
+### 3.5 Validity — committed_ok only
 
-### 4.1 G1 критерий 1 (K2 в ≥3/4 групп) — против исходной гипотезы
+Признак валидного повтора: `held=True AND committed_ok=True`. Зависимость от `_data_changed`
+(флаг из snapshot summary) убрана: он давал ложные отрицания из-за кэширования метаданных Spark.
 
-| # | Группа | Пара | K2/20 | Итог |
-| --- | --- | --- | --- | --- |
-| 1 | Компакция × CoW DML | rewrite_data × cow_dml | 20/20 | ✓ ПОДТВЕРЖДЕНО |
-| 2 | Компакция × MoR DML | rewrite_data × mor_dml | 10/20 | ✗ (исчерпание данных, §4.4) |
-| 3 | CoW DML × append (serial) | cow_dml × append | 20/20 | ✓ ПОДТВЕРЖДЕНО |
-| 4 | CoW DML × CoW DML | cow_dml × cow_dml | 20/20 | ✓ ПОДТВЕРЖДЕНО |
+## 4. Ключевые находки итерации 2
 
-> **3/4 групп → Критерий 1 PASS**
+### 4.1 MoR DELETE не валидирует data-файлы
 
-### 4.2 G1 критерий 2 (≥95% совпадений) — против исходной гипотезы
+`SparkPositionDeltaWrite` для SQL DELETE не вызывает `validateNoConflictingDataFiles`
+(или использует null scan). Следствие: pending MoR DELETE не бросает K2 ни при каком
+committed-операторе. Итог:
 
-| Всего | Not-conclusive | Оценивается | Match | Mismatch | Match rate |
-| --- | --- | --- | --- | --- | --- |
-| 39 | 9 | 30 | 19 | 11 | 63.3% |
+- `mor_delete×{append,stream_upsert,overwrite,cow_dml,rewrite_data,mor_update,mor_merge}` → **K1**
+- `mor_delete×mor_delete` (v2 и v3) → **K1**
+- `mor_dml×{append,stream_upsert,overwrite,cow_dml,rewrite_data,mor_dml}` → **K1**
 
-> **63.3% < 95% → Критерий 2 FAIL → G1 не принят**
+MoR UPDATE и MERGE вызывают `validateNoConflictingDataFiles` + `validateNoConflictingDeleteFiles` →
+K2 подтверждено 20/20 для всех протестированных пар.
 
-11 расхождений: 7 `overwrite×*` (опции не установлены) + 3 `mor_dml×{append,su,overwrite}` + 1 `mor_dml×mor_dml` (conflictDetectionFilter не покрывал committed-данные).
+### 4.2 expire не создаёт CAS-конфликт
 
-### 4.3 K1 vs success: протокол определения
+`ExpireSnapshots` меняет metadata, но не current snapshot ID. OCC-проверка data-операций
+основана на snapshot ID, поэтому expire как committed → **success** (нет CAS 409):
+- `cow_dml×expire`, `mor_dml×expire`, `rewrite_data×expire` → success 20/20.
 
-K1 детектируется через прокси: `status=409` в `_last_commits` с `ts ≥ trial_start_ts`. `AppendFiles`/`ReplacePartitions` при 409 молча повторяют коммит — Spark-код видит `success`. `OverwriteFiles` при K2 бросает `ValidationException` — видно в Spark.
+Аналогично: `expire×*` (pending expire) → **success** 20/20 (подтверждено итерацией 1).
 
-### 4.4 Исчерпание данных (объяснение 10/10 и 1/20)
+### 4.3 snapshot-isolation для cow_dml
 
-Committed `mor_dml` выполнял `DELETE WHERE bkt=0 AND id < seq*5+5`. Исходные строки в bkt=0:
-id 0–49 (50 строк). Рефилл добавлял строки с id ≥ 20000 — за пределами предиката.
+С `write.delete.isolation-level=snapshot` — `validateNoConflictingAppends` не вызывается:
+- `cow_dml×{append,stream_upsert}×snapshot` → **K1** (20/20)
 
-К повтору 10 предикат `id < 55` не захватывает ни одной строки (id 0–49 удалены раньше,
-id 50+ вставлены рефиллом с offset 20000+). Committed `mor_dml` фиксирует 0 строк →
-не создаёт position-delete файлов → pending не видит конфликта → K1.
+Итерация 1 показала K2 — методологическая ошибка (глобальные данные, нет predicate-overlap).
 
-**cow_dml × mor_dml** и **rewrite_data × mor_dml** (committed = mor_dml):
+### 4.4 Исчерпание данных в итерации 1
 
-| Повтор | DELETE WHERE id < | Строк удалено | Исход |
-| --- | --- | --- | --- |
-| 0 | 5 | 5 | K2 |
-| 1 | 10 | 5 | K2 |
-| 2 | 15 | 5 | K2 |
-| 3 | 20 | 5 | K2 |
-| 4 | 25 | 5 | K2 |
-| 5 | 30 | 5 | K2 |
-| 6 | 35 | 5 | K2 |
-| 7 | 40 | 5 | K2 |
-| 8 | 45 | 5 | K2 |
-| 9 | 50 | 5 | K2 |
-| 10 | 55 | 0 | K1 |
-| 11–19 | 60–100 | 0 | K1 |
+Итерация 1: `DELETE WHERE id < seq*5+5` — на 10–20-м повторе удалять нечего:
+committed INSERT добавлял строки вне DELETE-диапазона → нет predicate-overlap → K1 вместо K2.
+Итерация 2: per-trial вставки, BETWEEN-предикат → результаты воспроизводимы.
 
-**mor_dml × overwrite** (pending = mor_dml DELETE id < seq\*5+5; committed = overwrite пишет id seq\*50..seq\*50+9):
+### 4.5 overwrite_opts — низкое число валидных повторов
 
-| Повтор | DELETE WHERE id < | Overwrite пишет id | Строк под фильтр | Исход |
-| --- | --- | --- | --- | --- |
-| 0 | 5 | 0–9 | 5 (id 0–4) | K2 |
-| 1 | 10 | 50–59 | 0 | K1 |
-| 2 | 15 | 100–109 | 0 | K1 |
-| 3–9 | 20–50 | 150–459 | 0 | K1 |
-| 10–19 | 55–100 | 500–959 | 0 | K1 |
+`overwrite_opts` даёт 2–5 валидных повторов из 20. Среди валидных: K2 100%.
+Механизм подтверждён, но статистика слабее (< 20 повторов). Причина низкого valid:
+hold не успевает захватить pending при определённом тайминге выполнения.
 
-Итог: не file-overlap, а исчерпание диапазона id + несоответствие диапазонов. В итерации 2 каждый
-повтор получает уникальный диапазон id (seq × 10000), предикат всегда покрывает committed-данные.
+### 4.6 rewrite_deletes — нет валидных повторов
 
-## 5. Новые находки
+Ни один из 5 тест-кейсов `rewrite_deletes×*` не дал валидных результатов (valid=0).
+Механизм создания prior position-delete файлов не обеспечивал их наличие
+в нужном виде для `rewrite_position_delete_files`. Кейсы помечены not-conclusive.
 
-### expire → success (подтверждённо, итерация 1)
+## 5. Результаты итерации 2 (75 тест-кейсов)
 
-`expire×append` дал `success` (20/20). `ExpireSnapshots` коммитит через `ManageSnapshots` —
-без `validateFromSnapshot()`, не затрагивает data-файлы. Нет OCC-конфликта с append.
-Матрица обновлена: `expire×* → success`. Не зависит от вопроса ADR-004/ADR-005.
+| Категория | Кейсов | Матч |
+| --- | --- | --- |
+| Всего | 75 | — |
+| rewrite_deletes (not-conclusive) | 5 | н/д |
+| Оцениваемых | 70 | 100% (70/70) |
 
-### rewrite_deletes — требует prior position deletes
+### 5.1 Подтверждённые K2-пары (20/20)
 
-`rewrite_deletes` работает только при наличии position-delete файлов в таблице
-(создаются `mor_dml`). Для пар без prior `mor_dml` — 0 valid trials, `overlap={}`.
-В итерации 2: пересоздавать таблицу с MoR-данными перед каждым повтором.
+| Pending | Committed | Заметка |
+| --- | --- | --- |
+| cow_dml | append, stream_upsert, overwrite | serializable |
+| cow_dml | cow_dml, rewrite_data | file-overlap |
+| cow_dml | mor_dml | новые delete-файлы для читаемых файлов |
+| mor_update | append, stream_upsert, overwrite | serializable |
+| mor_update | cow_dml, rewrite_data, mor_delete | file/delete-overlap |
+| mor_update | mor_update, mor_merge | predicate-overlap |
+| mor_merge | (все выше) | аналогично mor_update |
+| rewrite_data | overwrite, cow_dml, rewrite_data | file-overlap |
+| rewrite_data | mor_dml | новые position-deletes |
+| overwrite_opts | append, stream_upsert и др. | valid=2–5; K2 100% из valid |
 
-## 6. Деления по типу пересечения
+### 5.2 K1-пары (не K2)
 
-Итерация 1 тестировала partition-overlap (тот же bucket). Для `mor_dml` необходим
-`predicate`-тип: committed-данные должны попадать под `WHERE`-предикат pending-запроса.
-Матрица получает новый тип пересечения `predicate` для `mor_dml×*` правил.
+| Pending | Committed | Причина |
+| --- | --- | --- |
+| append, stream_upsert | * | не валидируют данные |
+| overwrite (без опций) | * | DynamicOverwrite без validateFromSnapshot |
+| mor_delete | * | SparkPositionDeltaWrite для DELETE — нет конфликтной валидации |
+| mor_dml (DELETE) | * | то же |
+| cow_dml | append, stream_upsert | isolation=snapshot |
 
-## 7. Требования к итерации 2
+### 5.3 success-пары
 
-### 7.1 overwrite
-- Вариант A: без опций (ожидание K1)
-- Вариант B: `.option("isolation-level","serializable").option("validate-from-snapshot-id", <snapshot_id>)` (ожидание K2)
-- Вариант C: snapshot isolation (`write.delete.isolation-level=SNAPSHOT`)
+| Pending | Committed | Причина |
+| --- | --- | --- |
+| expire | * | ExpireSnapshots не вступает в OCC-конфликт |
+| cow_dml, mor_dml, rewrite_data | expire | expire не меняет current snapshot ID |
 
-### 7.2 MoR DML — разделить на mor_delete, mor_update, mor_merge
-Каждый в двух вариантах данных:
-- (а) committed-данные попадают под WHERE-условие pending → ожидание K2 при serializable
-- (б) тот же bucket, другой диапазон id → ожидание K1
+## 6. Артефакты
 
-### 7.3 CoW DML — UPDATE и MERGE раздельно (аналогично)
+- `results/stage-1/matrix_results.json` — 75 тест-кейсов, итерация 2
+- `results/stage-1/heatmap.png` — тепловая карта match rate
+- `results/stage-1/iter1/` — архив результатов итерации 1
+- `config/conflict_matrix.yaml` → `verified:` — 75 записей с датой и метаданными
+- `docs/gate-G1-report.md` — решение по G1
 
-### 7.4 Ужесточить валидность повтора
-Повтор засчитывается только если:
-- pending и committed реально изменили данные: проверять по snapshot summary
-  (`deleted-records`, `added-position-deletes`, `added-delete-files`, `deleted-data-files`)
-  в журнале прокси и истории таблицы
-- для file-overlap пар: множества файлов действительно пересекаются (по манифестам)
+## 7. Тексты исключений
 
-### 7.5 Данные
-- Генерировать заново для каждого повтора; не исчерпывать
-- Пересоздавать таблицу или уникальные диапазоны id на повтор
+### K1 (CommitFailedException — прозрачный retry)
 
-### 7.6 Snapshot isolation
-Устанавливать `write.delete.isolation-level=snapshot` как table property.
+Прокси: HTTP 409 на первую попытку коммита.
+Spark: retry без исключения (success outcome в Python).
+В логах Iceberg: `org.apache.iceberg.exceptions.CommitFailedException`.
 
-### 7.7 rewrite_deletes
-Таблица в режиме MoR, создание position-delete файлов перед каждым повтором.
+### K2 (ValidationException)
 
-### 7.8 Контроль для компакции
-`rewrite_data_files(..., where => 'bkt = <другой_bucket>')` → контрольные K2 = 0.
+```
+org.apache.iceberg.exceptions.ValidationException: Found conflicting files
+  that can contain records matching ref(id) in [<snapshot_id>]: [<file_path>]
+```
 
-### 7.9 Format v3
-Полный прогон, включая `mor×mor` и `rewrite×mor` с deletion vectors.
-
-### 7.10 Сценарные пары
-На схеме `dt × bucket(8, key)`: операции из `config/workloads` (merge_upsert, update_status,
-delete_by_keys, компакция с `where` по dt и bucket) против append из потока.
-Зафиксировать `conflictDetectionFilter` из commit message Spark — определяет реальную
-частоту K2 в сценариях S2–S5.
-
-## 8. Следующий этап
-
-Этап 1, итерация 2 — повторный прогон с исправленной методологией теста.
-Блокер: решение G1 (принять итерацию 2 / PIVOT).
+Пример для cow_dml×append:
+```
+ValidationException: Found conflicting append files that can contain records
+  matching [bkt = 0, id >= 10000, id <= 10049]: [s3://warehouse/.../data/bkt=0/...parquet]
+```

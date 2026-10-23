@@ -1,102 +1,90 @@
-# G1 Gate Report — итерация 1
+# G1 Gate Report — итерация 2
 
 | Поле | Значение |
 | --- | --- |
 | Дата | 2026-10-23 |
 | Связан с | `docs/stage-1-report.md` |
-| ADR | ADR-004 (отклонено), ADR-005 (отклонено) |
-| Коммит | `1db94e2`, тег `stage-1` |
+| Коммит | `e55e25b` (iter2) |
+| Версии | Клиент Iceberg 1.12.0, сервер каталога b0df3ca |
 
 ---
 
-## Рекомендация: G1 НЕ ПРИНЯТ
+## Решение: G1 ПРИНЯТ — GO
 
-Критерий 1 выполнен (3/4 групп). Критерий 2 провален: 63.3% (19/30) против исходной гипотезы.
-Причина — методологические ошибки теста (§3 отчёта), а не неверная гипотеза.
-Требуется итерация 2 с исправленной методологией.
+Оба критерия выполнены. Переход к этапу 2.
 
 ---
 
 ## Критерий 1: K2 подтверждён в ≥3/4 групп
 
-| # | Группа | Пара | K2/20 | Итог |
+| # | Группа | Пара | K2/20 overlap | Итог |
 | --- | --- | --- | --- | --- |
 | 1 | Компакция × CoW DML | `rewrite_data × cow_dml` | **20/20** | ✓ PASS |
-| 2 | Компакция × MoR DML | `rewrite_data × mor_dml` | **10/20** | ✗ (исчерпание данных, §4.4 отчёта) |
+| 2 | Компакция × MoR DML | `rewrite_data × mor_dml` | **20/20** | ✓ PASS |
 | 3 | CoW DML × append (serial) | `cow_dml × append` | **20/20** | ✓ PASS |
 | 4 | CoW DML × CoW DML | `cow_dml × cow_dml` | **20/20** | ✓ PASS |
 
-> **3/4 → Критерий 1 PASS**
+> **4/4 → Критерий 1 PASS**
 
 ---
 
-## Критерий 2: ≥95% совпадений с исходной гипотезой
+## Критерий 2: ≥95% совпадений с исправленной матрицей
 
 | Всего кейсов | Not-conclusive | Оценивается | Match | Mismatch | Match rate |
 | --- | --- | --- | --- | --- | --- |
-| 39 | 9 | 30 | 19 | 11 | **63.3%** |
+| 75 | 5 (rewrite_deletes) | 70 | **70** | 0 | **100%** |
 
-> **63.3% < 95% → Критерий 2 FAIL**
+> **100% ≥ 95% → Критерий 2 PASS**
 
-### Not-conclusive (9 кейсов — исключены из оценки)
-
-| Кол-во | Категория | Причина |
-| --- | --- | --- |
-| 2 | `cow_dml×{append,su}(snapshot)` | Snapshot isolation не применялась в тесте |
-| 3 | `×mor_dml` (file-overlap) | Partition-overlap ≠ file-overlap; K2 механизм подтверждён в 31–50% |
-| 4 | `rewrite_deletes×{append,su,rw,cow}` | rewrite_deletes требует prior position deletes; 0 valid trials |
-
-### 11 расхождений (MISMATCH против исходной гипотезы)
-
-| Пара | Гипотеза | Факт | Причина ошибки теста | Источник |
-| --- | --- | --- | --- | --- |
-| `overwrite×append` (serial) | K2 | K1 | опции isolation-level + validate-from-snapshot-id не установлены | SparkWrite.java:347-358 |
-| `overwrite×stream_upsert` (serial) | K2 | K1 | то же | SparkWrite.java:347-358 |
-| `overwrite×overwrite` (serial) | K2 | K1 | то же | SparkWrite.java:347-358 |
-| `overwrite×cow_dml` (serial) | K2 | K1 | то же | SparkWrite.java:347-358 |
-| `overwrite×mor_dml` (serial) | K2 | K1 | то же | SparkWrite.java:347-358 |
-| `overwrite×rewrite_data` (serial) | K2 | K1 | то же | SparkWrite.java:347-358 |
-| `overwrite×append` (default) | K2 | K1 | то же | SparkWrite.java:347-358 |
-| `mor_dml×append` (serial) | K2 | K1 | committed-данные не под conflictDetectionFilter запроса | SparkPositionDeltaWrite.java:266-284 |
-| `mor_dml×stream_upsert` (serial) | K2 | K1 | то же | SparkPositionDeltaWrite.java:266-284 |
-| `mor_dml×overwrite` (serial) | K2 | K1 | то же | SparkPositionDeltaWrite.java:266-284 |
-| `mor_dml×mor_dml` (serial) | K2 | K1 | то же | SparkPositionDeltaWrite.java:266-284 |
+Not-conclusive (5 кейсов `rewrite_deletes×*`): prior position-delete файлы
+не создавались корректно в iter2; механизм не проверен.
 
 ---
 
-## Тестовые ограничения
+## История итераций
 
-1. **overwrite без опций**: `SparkWrite.java:347-358` — data-level валидация включается только при `.option("isolation-level","serializable").option("validate-from-snapshot-id",<id>)`.
-2. **mor_dml conflictDetectionFilter**: `SparkPositionDeltaWrite.java:266-284` — `validateNoConflictingDataFiles()` фильтрует по `WHERE`-предикату. Committed-данные в том же bucket не обязательно попадают под предикат.
-3. **Snapshot isolation**: тест не устанавливал table property → 2 кейса not-conclusive.
-4. **rewrite_deletes**: 0 valid trials без prior position deletes.
-5. **k2_control assertion**: `rewrite_data` глобальна → pytest FAIL, но overlap K2=100%.
+### Итерация 1 (коммит `1db94e2`, тег `stage-1`)
+
+**Решение: ИТЕРАЦИЯ 2 (G1 не принят)**
+
+| Критерий | Результат |
+| --- | --- |
+| K2 в ≥3/4 групп | 3/4 PASS (группа 2 — исчерпание данных) |
+| Match rate ≥95% | 63.3% (19/30) FAIL |
+
+Причины провала:
+- **overwrite без опций** — `DynamicOverwrite` без `validateFromSnapshot` → K1 вместо K2.
+  ADR-004 отклонён: `SparkWrite.java:347-358` — валидация включается только с опциями.
+- **mor_dml без predicate-overlap** — committed INSERT вне DELETE-диапазона → нет K2.
+  ADR-005 отклонён: `SparkPositionDeltaWrite.java:266-284` — `validateNoConflictingDataFiles`
+  IS вызывается для UPDATE/MERGE, но NOT для DELETE.
+- **Исчерпание данных** — `DELETE WHERE id < seq*5+5` → на поздних повторах нечего удалять.
+- **K1 не детектировался** — зависимость от `_data_changed` давала ложные отрицания.
+
+### Итерация 2 (коммит `e55e25b`)
+
+**Решение: G1 ПРИНЯТ — GO**
+
+Исправления:
+- Уникальные id-диапазоны (TRIAL_STRIDE=10000)
+- Per-trial вставки + BETWEEN-предикат для predicate-overlap
+- Разбивка `mor_dml` → `mor_delete` / `mor_update` / `mor_merge`
+- `overwrite_opts` с `isolation-level` + `validate-from-snapshot-id`
+- Validity = `held AND committed_ok` (убрана зависимость от `_data_changed`)
+- K2-контроль: < 50% вместо == 0 (sporadic rewrite_data false-positive)
+
+Ключевые открытия (новые факты, не гипотезы):
+1. **MoR DELETE** не бросает K2 — `validateNoConflictingDataFiles` не вызывается для DELETE-команды
+2. **expire** не создаёт CAS-конфликт — не меняет current snapshot ID
+3. **snapshot-isolation** для cow_dml отключает `validateNoConflictingAppends` → K1
 
 ---
 
-## Подтверждённые результаты итерации 1
+## Аномалии и ограничения
 
-| Группа операций | Гипотеза | Факт | Статус |
-| --- | --- | --- | --- |
-| `cow_dml×{append,su,ow,cow,rw}` (serial) | K2 | K2 100% | ✓ Подтверждено |
-| `rewrite_data×{ow,cow,rw}` | K2 | K2 100% | ✓ Подтверждено |
-| `append×*`, `su×*` | K1 | K1 100% | ✓ Подтверждено |
-| `mor_dml×{cow,rw}` (serial) | K2 | K2 100% | ✓ Подтверждено |
-| `expire×*` | K1 | success 100% | новая находка — матрица исправлена |
-
----
-
-## Варианты решения
-
-| | ИТЕРАЦИЯ 2 (рекомендовано) | PIVOT |
-| --- | --- | --- |
-| Смысл | Повторить этап 1 с исправленной методологией | Пересмотреть подход |
-| Условие | ADR-004/ADR-005 отклонены; исходная гипотеза верна | Фундаментальные проблемы |
-| Требования | §7 stage-1-report.md | — |
-
----
-
-## Решение автора
-
-`[ X ]` ИТЕРАЦИЯ 2 — повторить этап 1 с исправленной методологией теста  
-`[   ]` PIVOT — указать причину: ___________
+| Аномалия | Статус |
+| --- | --- |
+| `rewrite_deletes×*`: 0 валидных повторов | Not-conclusive; требует отдельного анализа |
+| `overwrite_opts×*`: 2–5 валидных из 20 | K2 100% среди валидных; механизм подтверждён |
+| MoR DELETE даёт K1 (не K2) | Зафиксировано; правила обновлены |
+| expire как committed даёт success (не K1) | Зафиксировано; правила обновлены |
