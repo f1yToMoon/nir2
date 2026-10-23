@@ -19,11 +19,11 @@ RUN set -eux; \
     pip3 install --no-cache-dir --break-system-packages \
       "pydantic>=2.7" "pyyaml>=6" "requests>=2.32" "psycopg[binary]>=3.2" \
       "confluent-kafka>=2.5" "numpy>=1.26" "pandas>=2.2" "pyarrow>=16" "pyiceberg[pyarrow]>=0.10" \
-      "tenacity>=8.5" "structlog>=24.1" "typer>=0.12" || \
+      "tenacity>=8.5" "structlog>=24.1" "typer>=0.12" "pytest>=8.3" "matplotlib>=3.9" || \
     pip3 install --no-cache-dir \
       "pydantic>=2.7" "pyyaml>=6" "requests>=2.32" "psycopg[binary]>=3.2" \
       "confluent-kafka>=2.5" "numpy>=1.26" "pandas>=2.2" "pyarrow>=16" "pyiceberg[pyarrow]>=0.10" \
-      "tenacity>=8.5" "structlog>=24.1" "typer>=0.12"
+      "tenacity>=8.5" "structlog>=24.1" "typer>=0.12" "pytest>=8.3" "matplotlib>=3.9"
 
 COPY infra/spark/spark-defaults.conf /opt/spark/conf/spark-defaults.conf
 COPY infra/spark/fairscheduler.xml /opt/spark/conf/fairscheduler.xml
