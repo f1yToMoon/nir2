@@ -11,3 +11,4 @@ __pycache__/
 .pytest_cache/
 third_party/
 .obsidian/
+.claude/settings.local.json
