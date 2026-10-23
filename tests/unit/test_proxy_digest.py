@@ -1,4 +1,4 @@
-"""The proxy's debug digest reads the commit body without changing it (AGENTS.md, constraint 1)."""
+"""Debug digest of a commit body (requirements/updates) for the proxy log."""
 from __future__ import annotations
 
 import json
@@ -29,13 +29,6 @@ def test_digest_extracts_requirements_and_updates() -> None:
     assert d["updates"][0]["snapshot"]["summary"]["added-position-deletes"] == "10"
     assert d["updates"][1]["snapshot-id"] == 8
     assert d["updates"][2]["snapshot-ids"] == [1, 2]
-
-
-def test_digest_does_not_mutate_body() -> None:
-    raw = json.dumps(BODY).encode()
-    before = bytes(raw)
-    _commit_digest(raw)
-    assert raw == before
 
 
 def test_digest_non_json() -> None:

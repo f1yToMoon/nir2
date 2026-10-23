@@ -54,14 +54,22 @@ rules:
   - {pending: append,        committed: "*", outcome: K1, overlap: none}
   - {pending: stream_upsert, committed: "*", outcome: K1, overlap: none}
 
-  # --- pending: overwrite (ReplacePartitions) без опций → K1 ---
-  # SW:350-358: validateFromSnapshot/validateNoConflictingData только при заданных isolation-level
-  # и validate-from-snapshot-id (опции записи); по умолчанию — без валидации.
+  # --- pending: overwrite (DataFrame overwritePartitions → ReplacePartitions) без опций → K1 ---
+  # SW:353-356: validateNoConflictingData/Deletes включает одна опция записи isolation-level
+  # (SparkWriteConf.java:484-488 — только опция, не свойство таблицы); validate-from-snapshot-id
+  # лишь задаёт начало истории (SW:349-351). Без isolation-level валидации нет → K1.
+  # Только isolation-level (без validate-from-snapshot-id) — история от начала таблицы
+  # (MSP:967-994) → ValidationException без параллельной операции: test_overwrite_iso_only.
   - {pending: overwrite, committed: [append, stream_upsert, overwrite, cow_dml, mor_dml, rewrite_data],
      outcome: K1, overlap: partition, when: {isolation: serializable},
-     note: "без опций записи валидации нет (SW:350-358)"}
+     note: "без опции isolation-level валидации нет (SW:353-356)"}
   - {pending: overwrite, committed: [append, stream_upsert],
      outcome: K1, overlap: partition, when: {isolation: snapshot}}
+
+  # --- SQL INSERT OVERWRITE ... PARTITION (статический режим → OverwriteByFilter, SW:374-404):
+  # SQL не передаёт опции записи → isolation-level не задан → валидации нет
+  - {pending: insert_overwrite, committed: [append, cow_dml], outcome: K1, overlap: partition,
+     when: {isolation: serializable}, note: "SW:390-401: валидации только при опции isolation-level"}
 
   # --- pending: overwrite_opts (ReplacePartitions с isolation-level=serializable и
   #     validate-from-snapshot-id = текущий снапшот до операции) → K2 ---
@@ -156,7 +164,7 @@ rules:
   # append в другую партицию + expire: базовый снапшот pending удалён (проверяется по телу коммита)
   - {pending: [rewrite_data, cow_dml], committed: append_expire, outcome: K1, overlap: none,
      note: "исследовательский (гипотезы нет; c6e9a4e: «проверить»): история валидации доходит до снапшота, чей parent = базовый (MSP:990-994) → проверка проходит"}
-  - {pending: mor_update, committed: append_expire, outcome: "error:IllegalArgumentException", overlap: none,
+  - {pending: mor_update, committed: append_expire, outcome: base_expired, overlap: none,
      note: "исследовательский: RowDelta требует, чтобы базовый снапшот был предком текущего (BRD:134-139); удалённый снапшот не найден → IllegalArgumentException без повтора: работа потеряна, как при K2, но вне классов K1/K2"}
 
 verified:

@@ -30,6 +30,7 @@ OP_KIND: dict[str, str] = {
     "stream_upsert":        "stream_upsert",
     "overwrite":            "overwrite",
     "overwrite_opts":       "overwrite",
+    "insert_overwrite":     "overwrite",
     "cow_dml":              "cow_dml",
     "merge_upsert":         "cow_dml",
     "merge_upsert_unscoped": "cow_dml",

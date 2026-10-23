@@ -87,7 +87,8 @@ def test_hold_window() -> None:
      "contain records matching ref(name=\"bkt\") == 0", "K2"),
     ("org.apache.iceberg.exceptions.CommitFailedException: Requirement failed: branch main "
      "has changed", "K1"),
-    ("java.lang.IllegalArgumentException: Snapshot 1 is not an ancestor of 2", "unknown"),
+    ("java.lang.IllegalArgumentException: Snapshot 1 is not an ancestor of 2", "base_expired"),
+    ("java.lang.IllegalArgumentException: something else", "unknown"),
     # Spark rewrite action wrapper: the message names both, the cause decides
     ("java.lang.RuntimeException: Cannot commit rewrite because of a ValidationException or "
      "CommitFailedException.\n\tat org.apache.iceberg.spark.actions.X\nCaused by: "

@@ -12,7 +12,6 @@ Phase 2: start Flink job in background thread (HTTP only, no Spark) +
 from __future__ import annotations
 
 import json
-import os
 import sys
 import threading
 import time
@@ -22,7 +21,6 @@ import requests
 sys.path.insert(0, "/workspace")
 
 from scripts.smoke import (
-    CATALOG_URL,
     FLINK_GW_URL,
     FLINK_REST_URL,
     KAFKA_BOOTSTRAP,

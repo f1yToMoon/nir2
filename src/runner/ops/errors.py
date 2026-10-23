@@ -19,8 +19,15 @@ _CLASS: dict[str, str] = {
 }
 
 
+# RowDelta whose base snapshot was expired concurrently: the operation fails without a
+# retry (BaseRowDelta.java:134-139) — work is lost as with K2, but it is not a data conflict
+_BASE_EXPIRED = re.compile(r"Snapshot -?\d+ is not an ancestor of -?\d+")
+
+
 def classify(exc_text: str) -> str:
-    """Return 'K2', 'K1', or 'unknown' for an exception text (with stack trace)."""
+    """Return 'K2', 'K1', 'base_expired' or 'unknown' for an exception text (with stack trace)."""
+    if _BASE_EXPIRED.search(exc_text):
+        return "base_expired"
     names = _ICEBERG_EXC.findall(exc_text)
     for name in reversed(names):            # deepest cause is printed last
         if name in _CLASS:

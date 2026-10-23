@@ -362,7 +362,7 @@ def _commit_log_lines(table: str, since_ms: int) -> list[dict[str, Any]]:
             ts, cls, msg = int(parts[0]), parts[1], parts[2]
             if ts >= since_ms and msg.startswith("Committing") and msg.endswith(f".{table}"):
                 cat = msg.rsplit(" ", 1)[-1].split(".", 1)[0]
-                m = re.search(r"conflictDetectionFilter: (.*?)(?:, isolationLevel|\) to table|$)",
+                m = re.search(r"conflictDetectionFilter: (.*?)(?:, isolationLevel| to table |$)",
                               msg)
                 out.append({"ts": ts, "class": cls, "catalog": cat, "msg": msg[:1500],
                             "filter": m.group(1) if m else None})
@@ -485,6 +485,14 @@ def _exec_op(spark: Any, jv: Jv, case: Case, op: str, cat: str, bkt: int, seq: i
         """)
     elif op == "stream_upsert":
         _upsert_java(jv, jv.table(cat, table), bkt, lo, seq)
+    elif op == "insert_overwrite":
+        # SQL, static partition overwrite → OverwriteByFilter (SparkWrite.java:374-404);
+        # SQL cannot pass write options, so isolation-level is never set
+        spark.sql(f"""
+            INSERT OVERWRITE {full} PARTITION (bkt = {bkt})
+            SELECT CAST({lo} + id AS INT), CONCAT('{op}-{seq}-', CAST(id AS STRING))
+            FROM RANGE({DML_ROWS})
+        """)
     elif op in ("overwrite", "overwrite_opts"):
         w = (spark.range(lo, lo + DML_ROWS)
              .selectExpr("CAST(id AS INT) AS id", f"{bkt} AS bkt",
@@ -524,7 +532,8 @@ def _exec_op(spark: Any, jv: Jv, case: Case, op: str, cat: str, bkt: int, seq: i
                 options => map('rewrite-all','true'))
         """)
     elif op == "expire":
-        now = datetime.now(timezone.utc)  # noqa: UP017 — runner is Python 3.10.strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
+        now = datetime.now(timezone.utc).strftime(  # noqa: UP017 — runner is Python 3.10
+            "%Y-%m-%d %H:%M:%S.%f")[:-3]
         spark.sql(f"""
             CALL {cat}.system.expire_snapshots(
                 table => '{NS}.{table}', older_than => TIMESTAMP '{now}', retain_last => 1)
@@ -769,6 +778,55 @@ def test_pair(spark: Any, case: Case) -> None:
     _assert_case(case, e)
 
 
+# ── overwritePartitions() with isolation-level but without validate-from-snapshot-id ──
+# SparkWrite.java:349-356: validateNoConflictingData is enabled by isolation-level alone;
+# validateFromSnapshot only if validate-from-snapshot-id is also set. Without it the
+# validation history is every ancestor (MergingSnapshotProducer.java:967-994), so any file
+# ever added to the replaced partition is a "conflict" — expected ValidationException with
+# no concurrent operation, raised in apply() before the commit request
+# (SnapshotProducer.java:376), i.e. the proxy sees no commit.
+ISO_ONLY_TRIALS = 5
+
+
+@pytest.mark.parametrize("fv", FORMAT_VERSIONS, ids=lambda v: f"v{v}")
+def test_overwrite_iso_only(spark: Any, fv: int) -> None:
+    case = Case("overwrite_iso_only", "none", "serializable", fv, "none", "K2")
+    _setup_table(spark, case)
+    full = f"{CAT_P}.{NS}.{case.table_name}"
+    trials: list[dict[str, Any]] = []
+    for seq in range(ISO_ONLY_TRIALS):
+        base = _insert_trial_data(spark, full, case, seq, 0)
+        t_start = round(time.time() * 1000)
+        out: dict[str, Any] = {"seq": seq}
+        try:
+            (spark.range(base, base + DML_ROWS)
+             .selectExpr("CAST(id AS INT) AS id", "0 AS bkt", "'iso-only' AS val")
+             .writeTo(full).option("isolation-level", "serializable").overwritePartitions())
+            out["outcome"] = "success"
+        except Exception as exc:
+            text = str(exc)
+            out["outcome"] = classify(text)
+            out["exc_class"] = _exc_class(text) or type(exc).__name__
+            out["exc"] = text[:800]
+        out["proxy_commits"] = len(_proxy_entries(PENDING_SLOT, case.table_name, t_start))
+        trials.append(out)
+    entry = {
+        "pending": case.pending, "committed": "none", "isolation": "serializable",
+        "format_version": fv, "overlap": "none", "variant": "", "expected": "K2",
+        "control_expected_k2": True,
+        "overlap_counts": dict(Counter(t["outcome"] for t in trials)),
+        "proxy_commits": sum(t["proxy_commits"] for t in trials),
+        "trials_overlap": 0, "trials_control": ISO_ONLY_TRIALS, "valid_trials": 0,
+        "control_counts": dict(Counter(t["outcome"] for t in trials)), "control_valid": 0,
+        "match_rate": 0.0, "matches": True, "standalone": True,
+        "client": "1.12.0", "catalog_server": "b0df3ca", "trials": [],
+        "standalone_trials": trials,
+    }
+    _save(case.case_id, entry)
+    assert all(t["outcome"] == "K2" for t in trials), entry["overlap_counts"]
+    assert entry["proxy_commits"] == 0, "validation must fail before the commit request"
+
+
 # ── scenario pairs (config/workloads S2-S5) ──────────────────────────────────
 # Table: schema and partition spec of config/workloads/_base.yaml (dt x bucket(8, key)).
 # Pending: the scenario's controlled op; committed: append of late events.
@@ -804,7 +862,7 @@ class ScenarioCase:
 
     @property
     def case_id(self) -> str:
-        return f"sc_{self.scenario}_{self.pending}_x_append_v{self.fmt_ver}"
+        return f"sc_{self.scenario}_{self.pending}_x_{self.committed}_v{self.fmt_ver}"
 
     @property
     def table_name(self) -> str:
@@ -823,6 +881,17 @@ SC_CASES = [c for c in [
     ScenarioCase("S5", "delete_by_keys", "copy-on-write", 2, "K2"),
     ScenarioCase("S2", "compaction_where", "copy-on-write", 2, "K1"),
     ScenarioCase("S3", "compaction_where", "merge-on-read", 3, "K1"),
+    # pairs the scenarios are built on (compaction x DML), both directions
+    ScenarioCase("S2", "compaction_where", "copy-on-write", 2, "K2", committed="merge_upsert",
+                 note="rewrite_data x cow_dml on the scenario schema"),
+    ScenarioCase("S2", "merge_upsert", "copy-on-write", 2, "K2", committed="compaction_where",
+                 note="cow_dml x rewrite_data on the scenario schema"),
+    ScenarioCase("S3", "compaction_where", "merge-on-read", 2, "K2", committed="update_status",
+                 note="rewrite_data x mor_dml on the scenario schema"),
+    ScenarioCase("S3", "update_status", "merge-on-read", 2, "K2", committed="compaction_where",
+                 note="mor_dml x rewrite_data on the scenario schema"),
+    ScenarioCase("S3", "compaction_where", "merge-on-read", 3, "K2", committed="update_status"),
+    ScenarioCase("S3", "update_status", "merge-on-read", 3, "K2", committed="compaction_where"),
 ] if ONLY in c.case_id and c.fmt_ver in FORMAT_VERSIONS]
 
 
@@ -945,6 +1014,11 @@ def _sc_trial(spark: Any, jv: Jv, case: ScenarioCase, seq: int, with_overlap: bo
     if out["outcome"] == "unknown":
         out["outcome"] = f"error:{out.get('exc_class') or 'unknown'}"
     first_p = p_entries[0] if p_entries else {}
+    out["pending_attempts"] = [{k: e.get(k) for k in ("ts", "ts_fwd", "ts_resp", "status",
+                                                      "held", "hold_ms", "hold_timeout",
+                                                      "requirements")} for e in p_entries]
+    out["committed_commits"] = [{k: e.get(k) for k in ("ts", "ts_resp", "status",
+                                                       "requirements")} for e in c_entries]
     out["pending_summary"] = (added_snapshot(first_p.get("updates", [])) or {}).get("summary")
     out["committed_summaries"] = [(added_snapshot(e.get("updates", [])) or {}).get("summary")
                                   for e in c_entries]

@@ -41,6 +41,12 @@ HYP_CLASS: dict[str, str] = {
     "compaction_where": "rewrite_data",
 }
 
+# op classes of the original hypothesis: the primary G1-2 metric uses only cases whose
+# pending and committed are these ops (review stage-1-r2, S1-R2-02); cases with ops added
+# later and mapped by HYP_CLASS are reported on a separate line
+ORIG_OPS = {"append", "stream_upsert", "overwrite", "cow_dml", "mor_dml", "rewrite_data",
+            "rewrite_deletes", "expire"}
+
 # G1 groups (tz/06_implementation_plan.md, G1 criterion 1): pairs in hypothesis classes
 G1_GROUPS: dict[str, set[tuple[str, str]]] = {
     "компакция x CoW DML": {("rewrite_data", "cow_dml"), ("cow_dml", "rewrite_data")},
@@ -94,11 +100,18 @@ def valid_overlap(r: dict[str, Any]) -> list[dict[str, Any]]:
     return [t for t in r["trials"] if t["overlap_trial"] and t["valid"]]
 
 
-def g1_metric(results: dict[str, Any], ref: str) -> dict[str, Any]:
+def is_original(r: dict[str, Any]) -> bool:
+    return (r["pending"] in ORIG_OPS and r["committed"] in ORIG_OPS
+            and not r.get("scenario"))
+
+
+def g1_metric(results: dict[str, Any], ref: str, original_only: bool) -> dict[str, Any]:
     rules = hypothesis_rules(ref)
     rows, no_hyp, not_concl = [], [], []
     trials_match = trials_total = 0
     for cid, r in sorted(results.items()):
+        if r.get("standalone") or (original_only and not is_original(r)):
+            continue
         exp = hyp_expected(rules, r)
         vt = valid_overlap(r)
         if exp is None:
@@ -113,7 +126,7 @@ def g1_metric(results: dict[str, Any], ref: str) -> dict[str, Any]:
         rows.append({"case": cid, "hyp": exp, "observed": dict(Counter(t["outcome"] for t in vt)),
                      "valid": len(vt), "match": m})
     pairs_ok = sum(1 for x in rows if x["match"] / x["valid"] >= 0.95)
-    return {"ref": ref, "trial_match": trials_match, "trial_total": trials_total,
+    return {"ref": ref, "original_only": original_only, "trial_match": trials_match, "trial_total": trials_total,
             "trial_rate": trials_match / max(trials_total, 1),
             "pairs_match": pairs_ok, "pairs_total": len(rows),
             "mismatches": [x for x in rows if x["match"] / x["valid"] < 0.95],
@@ -229,7 +242,9 @@ def main(argv: list[str] | None = None) -> int:
         heatmap(results, fv, args.out / f"heatmap-v{fv}.png")
 
     summary = {"groups": g1_groups(results),
-               "hypothesis": {ref: g1_metric(results, ref) for ref in HYPOTHESIS_REFS}}
+               "hypothesis": {ref: g1_metric(results, ref, True) for ref in HYPOTHESIS_REFS},
+               "hypothesis_with_mapped": {ref: g1_metric(results, ref, False)
+                                          for ref in HYPOTHESIS_REFS}}
     (args.out / "g1.json").write_text(json.dumps(summary, indent=1, ensure_ascii=False))
 
     print("\nG1 criterion 1 (K2 in ≥ 3 of 4 groups):")
@@ -240,10 +255,14 @@ def main(argv: list[str] | None = None) -> int:
         print(f"  {'+' if d['confirmed'] else '-'} {g}: {mem}")
     print(f"  confirmed {n_conf}/4")
     print("\nG1 criterion 2 (observed = original hypothesis, ≥ 95% of valid trials):")
-    for ref, m in summary["hypothesis"].items():
-        print(f"  {ref}: trials {m['trial_match']}/{m['trial_total']} = {m['trial_rate']:.1%}; "
-              f"pairs {m['pairs_match']}/{m['pairs_total']}; no hypothesis "
-              f"{len(m['no_hypothesis'])}; not conclusive {len(m['not_conclusive'])}")
+    for key, title in (("hypothesis", "original op classes (primary)"),
+                       ("hypothesis_with_mapped", "incl. ops mapped to hypothesis classes")):
+        print(f" {title}:")
+        for ref, m in summary[key].items():
+            print(f"  {ref}: trials {m['trial_match']}/{m['trial_total']} = "
+                  f"{m['trial_rate']:.1%}; pairs {m['pairs_match']}/{m['pairs_total']}; "
+                  f"no hypothesis {len(m['no_hypothesis'])}; "
+                  f"not conclusive {len(m['not_conclusive'])}")
     return 0
 
 
