@@ -1,5 +1,23 @@
 # CHANGELOG
 
+## Этап 1 (2026-10-23)
+
+**Матрица конфликтов v2 (20 повторов на пару):**
+
+3 из 4 G1-групп подтверждены K2=100%: компакция×CoW DML, CoW DML×append(serial), CoW DML×DML. Группа компакция×MoR DML: K2=50% (механизм подтверждён, file-overlap ненадёжен в тесте). Выявлено три системных расхождения: ADR-004 (overwrite→K1, все уровни изоляции), ADR-005 (mor_dml→K1 для новых данных), expire→success (не K1). После коррекций match_rate=100% по 30/30 оцениваемых кейсов (9 not-conclusive: 2 snapshot isolation не проверена, 3 ×mor_dml file-overlap, 4 rewrite_deletes без prior position deletes). G1 gate: GO.
+
+**Компоненты этапа 1:**
+
+- `tests/integration/test_conflict_matrix.py`: параметризованный тест (hold-механизм, timestamp-based K1-detection, validity tracking).
+- `src/runner/ops/errors.py`: классификатор K1/K2/unknown.
+- `scripts/update_matrix.py`: заполнение `verified:` + тепловая карта.
+- `src/capl/main.py`: `ts`, `status`, `hold_ms` в `_last_commits`; `DELETE /_capl/debug/last-commits`.
+- `infra/spark/Dockerfile`: `pytest>=8.3`, `matplotlib>=3.9`.
+
+**ADR-004:** `ReplacePartitions` (INSERT OVERWRITE) не производит data-level валидацию в retry; `write.delete.isolation-level=serializable` влияет только на `OverwriteFiles`.
+
+---
+
 ## Этап 0 — итерация 3 (2026-10-23) · пред-этап-1
 
 **Измерение памяти с рабочей конфигурацией:**

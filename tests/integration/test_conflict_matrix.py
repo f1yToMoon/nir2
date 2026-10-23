@@ -125,15 +125,16 @@ def _load_cases() -> list[Case]:
                 ))
 
     # Extra: overwrite without explicit isolation-level option (default behaviour)
+    # ADR-004: empirically K1 (ReplacePartitions never validates data), not K2
     for fv in fmt_versions:
         cases.append(Case(
             pending="overwrite",
             committed="append",
             isolation="default",
             fmt_ver=fv,
-            overlap="partition",
-            expected="K2",
-            note="INSERT OVERWRITE без явной опции isolation-level",
+            overlap="none",
+            expected="K1",
+            note="INSERT OVERWRITE без явной опции isolation-level; ADR-004: K1 не K2",
         ))
 
     # Deduplicate (same case_id may arise from symmetric rules)
