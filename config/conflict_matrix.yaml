@@ -15,7 +15,8 @@
 
 version: 1
 iceberg_version_assumed: "1.12.0"
-format_versions: [2, 3]
+format_versions: [2]
+# v3 (deletion vectors) — отдельный прогон после верификации v2
 defaults:
   isolation: serializable
   rewrite_use_starting_sequence_number: true
