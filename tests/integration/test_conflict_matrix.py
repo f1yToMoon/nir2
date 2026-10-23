@@ -281,10 +281,18 @@ class Jv:
         def dfile(f: Any) -> dict[str, Any]:
             return {"path": str(f.location()), "partition": part(f), "bounds": bounds(f)}
 
+        cfu = self.jvm.org.apache.iceberg.util.ContentFileUtil
+
         def delfile(f: Any) -> dict[str, Any]:
-            ref = f.referencedDataFile()
-            return {**dfile(f), "content": str(f.content().name()),
-                    "referenced": str(ref) if ref is not None else None}
+            content = str(f.content().name())
+            ref = cfu.referencedDataFileLocation(f)
+            refs = [str(ref)] if ref is not None else []
+            if not refs and content == "POSITION_DELETES":
+                # v2 Spark position deletes: no referencedDataFile and file_path bounds are
+                # truncated by the default metrics mode → read the file_path column
+                refs = _pos_delete_targets(str(f.location()))
+            return {**dfile(f), "content": content,
+                    "referenced": refs[0] if len(refs) == 1 else None, "referenced_all": refs}
 
         fp = {
             "operation": str(sn.operation()),
@@ -294,16 +302,28 @@ class Jv:
             "removed_deletes": [delfile(f) for f in self._iter(sn.removedDeleteFiles(io))],
         }
         touched = {f["path"] for f in fp["removed_data"]}
-        touched |= {f["referenced"] for f in fp["added_deletes"] + fp["removed_deletes"]
-                    if f["referenced"]}
+        touched |= {r for f in fp["added_deletes"] + fp["removed_deletes"]
+                    for r in f["referenced_all"]}
         fp["touched_files"] = sorted(touched)
         fp["partitions"] = sorted({f["partition"] for k in
                                    ("added_data", "removed_data", "added_deletes", "removed_deletes")
                                    for f in fp[k]})
         fp["unreferenced_pos_deletes"] = sum(
             1 for f in fp["added_deletes"] + fp["removed_deletes"]
-            if f["content"] == "POSITION_DELETES" and not f["referenced"])
+            if f["content"] == "POSITION_DELETES" and not f["referenced_all"])
         return fp
+
+
+def _pos_delete_targets(location: str) -> list[str]:
+    """Distinct data-file paths referenced by a Parquet position-delete file."""
+    import pyarrow.compute as pc
+    import pyarrow.fs as pafs
+    import pyarrow.parquet as pq
+
+    fs = pafs.S3FileSystem(endpoint_override=S3_URL, scheme="http",
+                           region=os.environ.get("AWS_REGION", "us-east-1"))
+    tbl = pq.read_table(location.removeprefix("s3://"), columns=["file_path"], filesystem=fs)
+    return sorted(str(x) for x in pc.unique(tbl.column("file_path")).to_pylist())
 
 
 def _overlaps(p_fp: dict[str, Any] | None, c_fp: dict[str, Any] | None,
