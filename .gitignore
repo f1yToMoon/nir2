@@ -7,6 +7,9 @@ results/*
 !results/stage-1/
 results/stage-1/*
 !results/stage-1/iter*/
+# крупные несжатые файлы прогона — в репозитории их .gz-копии
+results/stage-1/iter*/**/*.log
+results/stage-1/iter*/v*/matrix_results.json
 __pycache__/
 *.pyc
 .venv/

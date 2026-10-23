@@ -16,6 +16,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import gzip
 import json
 import subprocess
 import sys
@@ -42,10 +43,10 @@ HYP_CLASS: dict[str, str] = {
 
 # G1 groups (tz/06_implementation_plan.md, G1 criterion 1): pairs in hypothesis classes
 G1_GROUPS: dict[str, set[tuple[str, str]]] = {
-    "компакция × CoW DML": {("rewrite_data", "cow_dml"), ("cow_dml", "rewrite_data")},
-    "компакция × MoR DML": {("rewrite_data", "mor_dml"), ("mor_dml", "rewrite_data")},
-    "DML × append (serializable)": {("cow_dml", "append"), ("mor_dml", "append")},
-    "DML × DML": {("cow_dml", "cow_dml"), ("cow_dml", "mor_dml"), ("mor_dml", "cow_dml"),
+    "компакция x CoW DML": {("rewrite_data", "cow_dml"), ("cow_dml", "rewrite_data")},
+    "компакция x MoR DML": {("rewrite_data", "mor_dml"), ("mor_dml", "rewrite_data")},
+    "DML x append (serializable)": {("cow_dml", "append"), ("mor_dml", "append")},
+    "DML x DML": {("cow_dml", "cow_dml"), ("cow_dml", "mor_dml"), ("mor_dml", "cow_dml"),
                   ("mor_dml", "mor_dml")},
 }
 
@@ -53,7 +54,8 @@ G1_GROUPS: dict[str, set[tuple[str, str]]] = {
 def load_results(paths: list[Path]) -> dict[str, Any]:
     out: dict[str, Any] = {}
     for p in paths:
-        with p.open() as fh:
+        opener = gzip.open if p.suffix == ".gz" else open
+        with opener(p, "rt") as fh:
             out.update(json.load(fh))
     return out
 
@@ -69,6 +71,7 @@ def hyp_expected(rules: list[dict[str, Any]], r: dict[str, Any]) -> str | None:
     p = HYP_CLASS.get(r["pending"], r["pending"])
     c = HYP_CLASS.get(r["committed"], r["committed"])
     startseq = r.get("variant") != "nostartseq"
+    best: tuple[int, str] | None = None     # most specific matching rule wins (most `when` keys)
     for rule in rules:
         if rule["pending"] != p:
             continue
@@ -82,9 +85,9 @@ def hyp_expected(rules: list[dict[str, Any]], r: dict[str, Any]) -> str | None:
             continue
         if when.get("rewrite_use_starting_sequence_number", True) != startseq:
             continue
-        outcome: str = rule["outcome"]
-        return outcome
-    return None
+        if best is None or len(when) > best[0]:
+            best = (len(when), str(rule["outcome"]))
+    return best[1] if best else None
 
 
 def valid_overlap(r: dict[str, Any]) -> list[dict[str, Any]]:
