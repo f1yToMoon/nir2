@@ -12,6 +12,7 @@ import asyncio
 import logging
 import os
 import re
+import time
 from collections import deque
 from typing import Any
 
@@ -20,6 +21,8 @@ import structlog
 import uvicorn
 from fastapi import FastAPI, HTTPException, Request, Response
 from pydantic import BaseModel
+
+from capl.digest import commit_digest as _commit_digest
 
 # ---------- env / defaults -----------------------------------------------
 UPSTREAM_URI  = os.environ.get("CAPL_UPSTREAM_URI", "http://catalog:8181")
@@ -62,6 +65,10 @@ HOP_BY_HOP_REQ = frozenset([
 ])
 HOP_BY_HOP_RESP = HOP_BY_HOP_REQ | frozenset(["content-encoding"])
 
+def _now_ms() -> int:
+    return round(time.time() * 1000)
+
+
 # ---------- proxy app -----------------------------------------------------
 proxy_app = FastAPI(title="CAPL Proxy", docs_url=None)
 
@@ -94,20 +101,23 @@ async def proxy(request: Request, path: str) -> Response:
         writer = request.headers.get("X-CAPL-Writer", "")
         run    = request.headers.get("X-CAPL-Run", "")
         log.info("commit_attempt", path="/" + path, slot=slot, writer=writer, run=run)
-        import time as _time
         entry = {"path": "/" + path, "slot": slot, "writer": writer, "run": run,
-                 "status": None, "hold_ms": None,
-                 "ts": round(_time.time() * 1000)}
+                 "status": None, "hold_ms": None, "held": False,
+                 "ts": _now_ms(), "ts_fwd": None, "ts_resp": None,
+                 **_commit_digest(body)}
         _last_commits.append(entry)
         # Hold: if this slot is registered, wait until released or timeout
         if slot in _holds:
             evt = _holds[slot]
+            entry["held"] = True
             t0 = asyncio.get_event_loop().time()
             try:
                 await asyncio.wait_for(evt.wait(), timeout=HOLD_MAX_S)
             except TimeoutError:
+                entry["hold_timeout"] = True
                 log.warning("hold_timeout", slot=slot, max_s=HOLD_MAX_S)
             entry["hold_ms"] = round((asyncio.get_event_loop().time() - t0) * 1000)
+        entry["ts_fwd"] = _now_ms()
 
     upstream_resp = await _client.request(
         method=request.method,
@@ -117,6 +127,7 @@ async def proxy(request: Request, path: str) -> Response:
     )
     if entry is not None:
         entry["status"] = upstream_resp.status_code
+        entry["ts_resp"] = _now_ms()
 
     resp_headers = {
         k: v

@@ -2,7 +2,11 @@ infra/.env
 data/
 models/*
 !models/.gitkeep
-results/
+results/*
+# stage-1: результаты итераций коммитятся (ревью S1-R1-10); пилоты, прототипы — нет
+!results/stage-1/
+results/stage-1/*
+!results/stage-1/iter*/
 __pycache__/
 *.pyc
 .venv/

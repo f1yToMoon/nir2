@@ -1,17 +1,25 @@
 #!/usr/bin/env python3
-"""Fill conflict_matrix.yaml `verified` section from stage-1 test results.
+"""Stage 1: fill `verified` in conflict_matrix.yaml, draw heatmaps, evaluate G1.
+
+G1 is evaluated against the ORIGINAL hypothesis (REVIEWER.md P8), not against the
+corrected matrix:
+  * `fd593a5` — matrix after iteration 1 (the version named by review stage-1-r1);
+  * `c6e9a4e` — matrix before any stage-1 experiment (stricter; differs for expire).
+Observed outcomes are compared per valid overlap trial (plan: "≥ 95% повторов") and
+per pair. Ops that did not exist in the hypothesis are mapped to its op classes
+(HYP_CLASS); pairs without a hypothesis rule are listed separately.
 
 Usage:
-    python3 scripts/update_matrix.py [--results results/stage-1/matrix_results.json]
-                                      [--matrix  config/conflict_matrix.yaml]
-                                      [--heatmap results/stage-1/heatmap.png]
+    python3 scripts/update_matrix.py --results results/stage-1/iter3/v2/matrix_results.json \
+        --results results/stage-1/iter3/v3/matrix_results.json --out results/stage-1/iter3
 """
 from __future__ import annotations
 
 import argparse
 import json
-import re
+import subprocess
 import sys
+from collections import Counter
 from datetime import date
 from pathlib import Path
 from typing import Any
@@ -19,262 +27,222 @@ from typing import Any
 import yaml
 
 REPO = Path(__file__).parent.parent
-DEFAULT_RESULTS = REPO / "results/stage-1/matrix_results.json"
-DEFAULT_MATRIX  = REPO / "config/conflict_matrix.yaml"
-DEFAULT_HEATMAP = REPO / "results/stage-1/heatmap.png"
+DEFAULT_MATRIX = REPO / "config/conflict_matrix.yaml"
+HYPOTHESIS_REFS = ("fd593a5", "c6e9a4e")
+MIN_VALID = 10
+
+# op used in the experiment → op class of the original hypothesis
+HYP_CLASS: dict[str, str] = {
+    "mor_delete": "mor_dml", "mor_update": "mor_dml", "mor_merge": "mor_dml",
+    "update_status": "mor_dml",
+    "overwrite_opts": "overwrite",
+    "merge_upsert": "cow_dml", "merge_upsert_unscoped": "cow_dml", "delete_by_keys": "cow_dml",
+    "compaction_where": "rewrite_data",
+}
+
+# G1 groups (tz/06_implementation_plan.md, G1 criterion 1): pairs in hypothesis classes
+G1_GROUPS: dict[str, set[tuple[str, str]]] = {
+    "компакция × CoW DML": {("rewrite_data", "cow_dml"), ("cow_dml", "rewrite_data")},
+    "компакция × MoR DML": {("rewrite_data", "mor_dml"), ("mor_dml", "rewrite_data")},
+    "DML × append (serializable)": {("cow_dml", "append"), ("mor_dml", "append")},
+    "DML × DML": {("cow_dml", "cow_dml"), ("cow_dml", "mor_dml"), ("mor_dml", "cow_dml"),
+                  ("mor_dml", "mor_dml")},
+}
 
 
-def _load(path: Path) -> Any:
-    with path.open() as fh:
-        return json.load(fh)
+def load_results(paths: list[Path]) -> dict[str, Any]:
+    out: dict[str, Any] = {}
+    for p in paths:
+        with p.open() as fh:
+            out.update(json.load(fh))
+    return out
 
 
-def _build_verified(results: dict) -> list[dict]:
+def hypothesis_rules(ref: str) -> list[dict[str, Any]]:
+    text = subprocess.run(["git", "-C", str(REPO), "show", f"{ref}:config/conflict_matrix.yaml"],
+                          check=True, capture_output=True, text=True).stdout
+    rules: list[dict[str, Any]] = yaml.safe_load(text)["rules"]
+    return rules
+
+
+def hyp_expected(rules: list[dict[str, Any]], r: dict[str, Any]) -> str | None:
+    p = HYP_CLASS.get(r["pending"], r["pending"])
+    c = HYP_CLASS.get(r["committed"], r["committed"])
+    startseq = r.get("variant") != "nostartseq"
+    for rule in rules:
+        if rule["pending"] != p:
+            continue
+        rc = rule["committed"]
+        if rc != "*" and c not in (rc if isinstance(rc, list) else [rc]):
+            continue
+        when = rule.get("when", {})
+        if "isolation" in when and when["isolation"] != r["isolation"]:
+            continue
+        if "format_version" in when and when["format_version"] != r["format_version"]:
+            continue
+        if when.get("rewrite_use_starting_sequence_number", True) != startseq:
+            continue
+        outcome: str = rule["outcome"]
+        return outcome
+    return None
+
+
+def valid_overlap(r: dict[str, Any]) -> list[dict[str, Any]]:
+    return [t for t in r["trials"] if t["overlap_trial"] and t["valid"]]
+
+
+def g1_metric(results: dict[str, Any], ref: str) -> dict[str, Any]:
+    rules = hypothesis_rules(ref)
+    rows, no_hyp, not_concl = [], [], []
+    trials_match = trials_total = 0
+    for cid, r in sorted(results.items()):
+        exp = hyp_expected(rules, r)
+        vt = valid_overlap(r)
+        if exp is None:
+            no_hyp.append(cid)
+            continue
+        if len(vt) < MIN_VALID:
+            not_concl.append(cid)
+            continue
+        m = sum(1 for t in vt if t["outcome"] == exp)
+        trials_match += m
+        trials_total += len(vt)
+        rows.append({"case": cid, "hyp": exp, "observed": dict(Counter(t["outcome"] for t in vt)),
+                     "valid": len(vt), "match": m})
+    pairs_ok = sum(1 for x in rows if x["match"] / x["valid"] >= 0.95)
+    return {"ref": ref, "trial_match": trials_match, "trial_total": trials_total,
+            "trial_rate": trials_match / max(trials_total, 1),
+            "pairs_match": pairs_ok, "pairs_total": len(rows),
+            "mismatches": [x for x in rows if x["match"] / x["valid"] < 0.95],
+            "no_hypothesis": no_hyp, "not_conclusive": not_concl}
+
+
+def g1_groups(results: dict[str, Any]) -> dict[str, Any]:
+    out: dict[str, Any] = {}
+    for g, pairs in G1_GROUPS.items():
+        members = []
+        for cid, r in sorted(results.items()):
+            key = (HYP_CLASS.get(r["pending"], r["pending"]),
+                   HYP_CLASS.get(r["committed"], r["committed"]))
+            if key not in pairs or r["isolation"] != "serializable" or r.get("variant"):
+                continue
+            vt = valid_overlap(r)
+            k2 = sum(1 for t in vt if t["outcome"] == "K2")
+            members.append({"case": cid, "k2": k2, "valid": len(vt),
+                            "confirmed": len(vt) >= MIN_VALID and k2 / len(vt) >= 0.95})
+        out[g] = {"members": members, "confirmed": any(m["confirmed"] for m in members)}
+    return out
+
+
+def build_verified(results: dict[str, Any]) -> list[dict[str, Any]]:
     today = date.today().isoformat()
-    verified = []
-    for cid, r in results.items():
-        client = r.get("client", "1.12.0")
-        catalog = r.get("catalog_server", "b0df3ca")
-        entry: dict = {
-            "pending":        r["pending"],
-            "committed":      r["committed"],
-            "isolation":      r["isolation"],
-            "format_version": r["format_version"],
-            "client":         client,
-            "catalog_server": catalog,
-            "trials":         r["valid_trials"],
-            "observed":       r["overlap_counts"],
-            "matches":        r["matches"],
-            "date":           today,
+    out = []
+    for _cid, r in sorted(results.items()):
+        vt = valid_overlap(r)
+        e: dict[str, Any] = {
+            "pending": r["pending"], "committed": r["committed"], "isolation": r["isolation"],
+            "format_version": r["format_version"], "client": r.get("client", "1.12.0"),
+            "catalog_server": r.get("catalog_server", "b0df3ca"),
+            "valid_trials": len(vt), "trials": r["trials_overlap"],
+            "observed": dict(Counter(t["outcome"] for t in vt)),
+            "control": r["control_counts"], "expected": r["expected"],
+            "matches": r["matches"], "date": today,
         }
-        if not r["matches"]:
-            entry["mismatch_note"] = (
-                f"expected {r['expected']}, "
-                f"got {r['overlap_counts']}, "
-                f"match_rate={r['match_rate']:.2%}"
-            )
-        verified.append(entry)
-    return verified
+        if r.get("variant"):
+            e["variant"] = r["variant"]
+        if r.get("scenario"):
+            e["scenario"] = r["scenario"]
+        out.append(e)
+    return out
 
 
-def _write_matrix(matrix_path: Path, verified: list[dict]) -> None:
-    with matrix_path.open() as fh:
-        content = fh.read()
-
-    # Build new `verified:` block
-    new_block = "verified:\n"
-    for e in verified:
-        new_block += "  - " + json.dumps(e, ensure_ascii=False) + "\n"
-
-    # Replace everything from `verified:` to end-of-file
+def write_verified(matrix_path: Path, verified: list[dict[str, Any]]) -> None:
+    content = matrix_path.read_text()
+    block = "verified:\n" + "".join(
+        "  - " + json.dumps(e, ensure_ascii=False) + "\n" for e in verified)
     idx = content.find("\nverified:")
-    if idx != -1:
-        content = content[:idx + 1] + new_block
-    else:
-        content = content.rstrip() + "\n" + new_block
-
-    with matrix_path.open("w") as fh:
-        fh.write(content)
+    content = content[:idx + 1] + block if idx != -1 else content.rstrip() + "\n" + block
+    matrix_path.write_text(content)
 
 
-def _build_heatmap(results: dict, out: Path) -> None:
-    try:
-        import matplotlib
-        matplotlib.use("Agg")
-        import matplotlib.pyplot as plt
-        import matplotlib.colors as mcolors
-        import numpy as np
-    except ImportError:
-        print("matplotlib not available — skipping heatmap", file=sys.stderr)
-        return
+def heatmap(results: dict[str, Any], fv: int, out: Path) -> None:
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    import numpy as np
 
-    ops = ["append", "stream_upsert", "overwrite", "overwrite_opts", "cow_dml",
-           "mor_dml", "mor_delete", "mor_update", "mor_merge",
-           "rewrite_data", "rewrite_deletes", "expire"]
-    n = len(ops)
-    op_idx = {o: i for i, o in enumerate(ops)}
-
-    # Build matrix: value = match_rate for v2, serializable (representative)
-    mat = np.full((n, n), np.nan)
-    outcome_mat = [["" for _ in range(n)] for _ in range(n)]
-
-    for r in results.values():
-        if r["format_version"] != 2:
-            continue
-        if r["isolation"] not in ("serializable", "default"):
-            continue
-        p = r["pending"]
-        c = r["committed"]
-        if p not in op_idx or c not in op_idx:
-            continue
-        pi, ci = op_idx[p], op_idx[c]
-        mat[pi, ci] = r["match_rate"]
-        top = max(r["overlap_counts"], key=lambda k: r["overlap_counts"][k], default="?")
-        outcome_mat[pi][ci] = top
-
-    fig, ax = plt.subplots(figsize=(10, 8))
-    cmap = mcolors.LinearSegmentedColormap.from_list(
-        "rg", ["#d73027", "#fdae61", "#1a9850"]
-    )
-    im = ax.imshow(mat, cmap=cmap, vmin=0, vmax=1, aspect="auto")
-
-    ax.set_xticks(range(n))
-    ax.set_yticks(range(n))
-    ax.set_xticklabels(ops, rotation=45, ha="right", fontsize=9)
-    ax.set_yticklabels(ops, fontsize=9)
-    ax.set_xlabel("committed operation")
-    ax.set_ylabel("pending operation")
-    ax.set_title(
-        "Conflict matrix: match rate (green ≥ 95%)\n"
-        "Iceberg b0df3ca, v2, serializable"
-    )
-
-    for i in range(n):
-        for j in range(n):
-            if not np.isnan(mat[i, j]):
-                label = outcome_mat[i][j]
-                ax.text(j, i, label, ha="center", va="center",
-                        fontsize=7, color="black")
-
-    fig.colorbar(im, ax=ax, label="match rate")
+    rs = [r for r in results.values() if r["format_version"] == fv
+          and r["isolation"] == "serializable" and not r.get("variant") and not r.get("scenario")]
+    pend = sorted({r["pending"] for r in rs})
+    comm = sorted({r["committed"] for r in rs})
+    colors = {"K2": 2.0, "K1": 1.0, "success": 0.0}
+    mat = np.full((len(pend), len(comm)), np.nan)
+    fig, ax = plt.subplots(figsize=(1.0 * len(comm) + 3, 0.6 * len(pend) + 2))
+    for r in rs:
+        i, j = pend.index(r["pending"]), comm.index(r["committed"])
+        vt = valid_overlap(r)
+        cnt = Counter(t["outcome"] for t in vt)
+        top = cnt.most_common(1)[0][0] if cnt else "n/a"
+        mat[i, j] = colors.get(top, 3.0) if len(vt) >= MIN_VALID else np.nan
+        mark = "" if r["matches"] else " ≠"
+        ax.text(j, i, f"{top}\n{cnt.get(top, 0)}/{len(vt)}{mark}", ha="center", va="center",
+                fontsize=7)
+    cmap = matplotlib.colors.ListedColormap(["#e0e0e0", "#91bfdb", "#fc8d59", "#999999"])
+    ax.imshow(mat, cmap=cmap, vmin=-0.5, vmax=3.5, aspect="auto")
+    ax.set_xticks(range(len(comm)), comm, rotation=45, ha="right", fontsize=8)
+    ax.set_yticks(range(len(pend)), pend, fontsize=8)
+    ax.set_xlabel("committed")
+    ax.set_ylabel("pending")
+    ax.set_title(f"Iceberg 1.12.0, format v{fv}, serializable: outcome (valid trials); "
+                 "≠ — differs from verified matrix")
     fig.tight_layout()
-    out.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(out, dpi=150)
     plt.close(fig)
-    print(f"Heatmap saved: {out}")
 
 
-def main(argv: list[str] | None = None) -> None:
+def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--results", type=Path, default=DEFAULT_RESULTS)
-    ap.add_argument("--matrix",  type=Path, default=DEFAULT_MATRIX)
-    ap.add_argument("--heatmap", type=Path, default=DEFAULT_HEATMAP)
+    ap.add_argument("--results", type=Path, action="append", required=True)
+    ap.add_argument("--matrix", type=Path, default=DEFAULT_MATRIX)
+    ap.add_argument("--out", type=Path, required=True)
+    ap.add_argument("--no-write", action="store_true", help="do not touch the YAML")
     args = ap.parse_args(argv)
 
-    if not args.results.exists():
-        print(f"Results file not found: {args.results}", file=sys.stderr)
-        sys.exit(1)
+    results = load_results(args.results)
+    print(f"Loaded {len(results)} cases.")
+    bad = [cid for cid, r in results.items() if not r["matches"]]
+    print(f"Cases not matching the current matrix: {len(bad)}")
+    for cid in bad:
+        r = results[cid]
+        print(f"  {cid}: expected={r['expected']} observed={r['overlap_counts']} "
+              f"valid={r['valid_trials']} control={r['control_counts']}")
 
-    results = _load(args.results)
-    print(f"Loaded {len(results)} test-case results.")
+    if not args.no_write:
+        write_verified(args.matrix, build_verified(results))
+        print(f"verified: {len(results)} entries → {args.matrix}")
 
-    mismatches = [cid for cid, r in results.items() if not r["matches"]]
-    if mismatches:
-        print(f"WARNING: {len(mismatches)} mismatches:")
-        for m in mismatches:
-            r = results[m]
-            print(f"  {m}: expected={r['expected']}, "
-                  f"got={r['overlap_counts']}, rate={r['match_rate']:.2%}")
-    else:
-        print("All cases match expected outcomes.")
+    args.out.mkdir(parents=True, exist_ok=True)
+    for fv in sorted({r["format_version"] for r in results.values()}):
+        heatmap(results, fv, args.out / f"heatmap-v{fv}.png")
 
-    verified = _build_verified(results)
-    _write_matrix(args.matrix, verified)
-    print(f"Updated verified section in {args.matrix} ({len(verified)} entries).")
+    summary = {"groups": g1_groups(results),
+               "hypothesis": {ref: g1_metric(results, ref) for ref in HYPOTHESIS_REFS}}
+    (args.out / "g1.json").write_text(json.dumps(summary, indent=1, ensure_ascii=False))
 
-    _build_heatmap(results, args.heatmap)
-
-    # Print G1 summary
-    _print_g1_summary(results)
-
-
-def _print_g1_summary(results: dict) -> None:
-    """Evaluate G1 gate criteria and print summary.
-
-    Uses CORRECTED expected values from ADR-004 and ADR-005.
-    Groups defined by representative K2-risk scenarios.
-    """
-    # Iteration 2: corrected matrix with new methodology.
-    # overwrite (no options) → K1 confirmed iter1; rules updated in YAML.
-    CORRECTED_K1: set = set()
-
-    # expire → success (confirmed iter1 for ×append; hypothesis for others)
-    CORRECTED_SUCCESS = {
-        ("expire", "append", "serializable"),
-    }
-    # Snapshot isolation cases (iter2 sets table property)
-    SNAPSHOT_NOT_TESTED: set = set()
-    # Data exhaustion cases (iter2 uses fresh data per trial)
-    FILE_OVERLAP_UNRELIABLE: set = set()
-    # rewrite_deletes: 0 valid trials (prior position-delete setup didn't produce
-    # rewriteable delete files in iter2; mechanism not yet testable)
-    NO_POSITION_DELETES: set = {
-        ("rewrite_deletes", "append",       "serializable"),
-        ("rewrite_deletes", "stream_upsert","serializable"),
-        ("rewrite_deletes", "mor_dml",      "serializable"),
-        ("rewrite_deletes", "rewrite_data", "serializable"),
-        ("rewrite_deletes", "cow_dml",      "serializable"),
-    }
-
-    def _corrected_expected(r: dict) -> str:
-        key_any = (r["pending"], None, r["isolation"])
-        key     = (r["pending"], r["committed"], r["isolation"])
-        if key in CORRECTED_K1 or key_any in CORRECTED_K1:
-            return "K1"
-        if key in CORRECTED_SUCCESS:
-            return "success"
-        return r["expected"]
-
-    def _corrected_matches(r: dict) -> bool:
-        key = (r["pending"], r["committed"], r["isolation"])
-        if key in SNAPSHOT_NOT_TESTED:
-            return True   # not tested; skip from match rate
-        if key in FILE_OVERLAP_UNRELIABLE:
-            return True   # mechanism confirmed; test can't guarantee file-level overlap
-        if key in NO_POSITION_DELETES:
-            return True   # test can't run without prior mor_dml; skip
-        exp = _corrected_expected(r)
-        # Use valid_trials as denominator (consistent with test harness):
-        # some ops (overwrite_opts) have few valid trials but 100% match within those.
-        count = r["overlap_counts"].get(exp, 0)
-        total = r.get("valid_trials", r["trials_overlap"])
-        return count / max(total, 1) >= 0.95
-
-    # G1 groups — iter2 uses mor_dml for MoR group (no separate mor_delete rule for rewrite_data)
-    groups: dict[str, tuple[str, str]] = {
-        "compaction×CoW_DML":   ("rewrite_data", "cow_dml"),
-        "compaction×MoR_DML":   ("rewrite_data", "mor_dml"),
-        "cow_dml×append_serial": ("cow_dml",     "append"),
-        "cow_dml×cow_dml":       ("cow_dml",     "cow_dml"),
-    }
-
-    print("\n── G1 Criteria (with corrected matrix) ──")
-    k2_confirmed = 0
-    for gname, (pend, comm) in groups.items():
-        grp = [r for r in results.values()
-               if r["pending"] == pend and r["committed"] == comm
-               and r["isolation"] == "serializable" and r["format_version"] == 2]
-        if not grp:
-            print(f"  ? {gname}: NO DATA")
-            continue
-        r0 = grp[0]
-        k2_count = r0["overlap_counts"].get("K2", 0)
-        total    = r0["trials_overlap"]
-        confirmed = k2_count / max(total, 1) >= 0.95
-        if confirmed:
-            k2_confirmed += 1
-        sym = "✓" if confirmed else "✗"
-        print(f"  {sym} {gname}: K2={k2_count}/{total} overlap trials "
-              f"({'CONFIRMED' if confirmed else 'NOT CONFIRMED'})")
-
-    # Corrected overall match rate (excludes not-conclusive cases)
-    NOT_CONCLUSIVE: set = SNAPSHOT_NOT_TESTED | FILE_OVERLAP_UNRELIABLE | NO_POSITION_DELETES
-    skipped = sum(1 for r in results.values()
-                  if (r["pending"], r["committed"], r["isolation"]) in NOT_CONCLUSIVE)
-    total_eval = len(results) - skipped
-    matched_corr = sum(1 for r in results.values()
-                       if (r["pending"], r["committed"], r["isolation"]) not in NOT_CONCLUSIVE
-                       and _corrected_matches(r))
-    overall_rate = matched_corr / max(total_eval, 1)
-
-    g1_crit1 = k2_confirmed >= 3
-    g1_crit2 = overall_rate >= 0.95
-    print(f"\n  K2 groups confirmed: {k2_confirmed}/4 (need ≥3) → {'PASS' if g1_crit1 else 'FAIL'}")
-    print(f"  Corrected match rate: {overall_rate:.1%} ({matched_corr}/{total_eval},"
-          f" {skipped} not-conclusive skipped) → {'PASS' if g1_crit2 else 'FAIL'}")
-    g1 = g1_crit1 and g1_crit2
-    print(f"\n  G1 gate: {'GO' if g1 else 'CORRECT/PIVOT'}")
+    print("\nG1 criterion 1 (K2 in ≥ 3 of 4 groups):")
+    n_conf = 0
+    for g, d in summary["groups"].items():
+        n_conf += d["confirmed"]
+        mem = ", ".join(f"{m['case']} K2 {m['k2']}/{m['valid']}" for m in d["members"])
+        print(f"  {'+' if d['confirmed'] else '-'} {g}: {mem}")
+    print(f"  confirmed {n_conf}/4")
+    print("\nG1 criterion 2 (observed = original hypothesis, ≥ 95% of valid trials):")
+    for ref, m in summary["hypothesis"].items():
+        print(f"  {ref}: trials {m['trial_match']}/{m['trial_total']} = {m['trial_rate']:.1%}; "
+              f"pairs {m['pairs_match']}/{m['pairs_total']}; no hypothesis "
+              f"{len(m['no_hypothesis'])}; not conclusive {len(m['not_conclusive'])}")
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

@@ -73,7 +73,7 @@ gc: ## Уборка файлов прошедших прогонов
 	$(RUNNER) python -m runner.gc
 
 matrix-verify: ## Эмпирическая проверка матрицы конфликтов (этап 1)
-	$(RUNNER) pytest -q tests/integration/test_conflict_matrix.py && $(PY) scripts/update_matrix.py
+	bash scripts/matrix_verify.sh $(or $(NAME),iter3)
 
 test-unit: ## Unit-тесты (без Docker)
 	PYTHONPATH=src pytest -q tests/unit
