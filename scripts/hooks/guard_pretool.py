@@ -1,0 +1,100 @@
+#!/usr/bin/env python3
+"""PreToolUse-хук Claude Code.
+
+Блокирует (exit 2, причина в stderr — её видит агент):
+1. `git tag stage-N` без принятого ревью для текущего HEAD (docs/reviews/stage-N-rK.md, Verdict PASS*)
+   и, для этапов 1 и 4, без решения автора в отчёте контрольной точки (GO/CORRECT/PIVOT).
+2. Попытку агента отметить «Решение автора» в docs/gate-G*-report.md (Edit/Write/Bash).
+3. Изменение уже записанного файла ревью (ревью неизменяемы; новое мнение — новый раунд).
+"""
+from __future__ import annotations
+
+import json
+import os
+import re
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from review_lib import (  # noqa: E402
+    ACCEPTING,
+    GATE_BY_STAGE,
+    author_decision,
+    latest_review,
+    review_covers_head,
+    text_sets_decision,
+)
+
+ROOT = Path(os.environ.get("CLAUDE_PROJECT_DIR", ".")).resolve()
+TAG_RE = re.compile(r"\bgit\s+tag\b(?![^;&|]*\s-d\b)[^;&|]*?\bstage-(\d+)\b")
+GATE_FILE_RE = re.compile(r"docs/gate-G\d-report\.md")
+
+
+def block(msg: str) -> None:
+    print(msg, file=sys.stderr)
+    sys.exit(2)
+
+
+def check_tag(stage: int) -> None:
+    path, hdr = latest_review(ROOT, stage)
+    if path is None:
+        block(
+            f"Тег stage-{stage} запрещён: нет ревью docs/reviews/stage-{stage}-r*.md. "
+            f"Запусти /review {stage}."
+        )
+    verdict = hdr.get("Verdict", "")
+    if verdict not in ACCEPTING:
+        block(
+            f"Тег stage-{stage} запрещён: последнее ревью {path.name} имеет Verdict={verdict or '?'}. "
+            "Закрой замечания и запусти новый раунд ревью."
+        )
+    ok, why = review_covers_head(ROOT, hdr.get("Reviewed-Commit", ""))
+    if not ok:
+        block(f"Тег stage-{stage} запрещён: ревью {path.name} не относится к текущему HEAD ({why}). "
+              "Нужен новый раунд /review.")
+    gate = GATE_BY_STAGE.get(stage)
+    if gate:
+        decision = author_decision(ROOT, gate)
+        if decision not in {"GO", "CORRECT", "PIVOT"}:
+            block(
+                f"Тег stage-{stage} запрещён: в docs/gate-{gate}-report.md нет решения автора "
+                "(GO/CORRECT/PIVOT). Решение принимает только автор — остановись и попроси его."
+            )
+
+
+def main() -> None:
+    try:
+        data = json.load(sys.stdin)
+    except Exception:
+        sys.exit(0)
+    tool = data.get("tool_name", "")
+    tin = data.get("tool_input", {}) or {}
+
+    if tool == "Bash":
+        cmd = tin.get("command", "") or ""
+        for m in TAG_RE.finditer(cmd):
+            check_tag(int(m.group(1)))
+        if GATE_FILE_RE.search(cmd) and text_sets_decision(cmd):
+            block("Запрещено: отмечать «Решение автора» в отчёте контрольной точки может только автор.")
+        if re.search(r"docs/reviews/stage-\d+-r\d+\.md", cmd) and re.search(
+            r"(sed\s+-i|>\s*docs/reviews|tee\s+docs/reviews|rm\s|git\s+rm|mv\s)", cmd
+        ):
+            block("Запрещено изменять или удалять существующие ревью. Новое мнение — новый раунд /review.")
+        sys.exit(0)
+
+    if tool in {"Edit", "Write", "MultiEdit"}:
+        fp = str(tin.get("file_path", ""))
+        rel = os.path.relpath(fp, ROOT) if os.path.isabs(fp) else fp
+        new_text = tin.get("new_string") or tin.get("content") or ""
+        if tool == "MultiEdit":
+            new_text = "\n".join(e.get("new_string", "") for e in tin.get("edits", []))
+        if GATE_FILE_RE.search(rel) and text_sets_decision(new_text):
+            block("Запрещено: отмечать «Решение автора» в отчёте контрольной точки может только автор. "
+                  "Оставь поле пустым и попроси автора.")
+        if re.match(r"docs/reviews/stage-\d+-r\d+\.md$", rel) and Path(ROOT, rel).exists():
+            block("Запрещено изменять существующий файл ревью. Новое мнение — новый раунд /review.")
+    sys.exit(0)
+
+
+if __name__ == "__main__":
+    main()
