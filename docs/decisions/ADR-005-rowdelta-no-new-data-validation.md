@@ -1,17 +1,24 @@
-# ADR-005: RowDelta не валидирует новые записи данных
+# ADR-005: RowDelta не валидирует новые записи данных (ОТКЛОНЕНО)
 
-**Статус:** Принято  
+**Статус:** Отклонено (2026-10-23)  
+**Причина:** Противоречит SparkPositionDeltaWrite.java:266-284  
 **Дата:** 2026-10-23  
 **Связано с:** ADR-004
 
 ---
 
-## Контекст
+## Причина отклонения
 
-Матрица конфликтов прогнозировала K2 для пар `mor_dml × append`,
-`mor_dml × stream_upsert`, `mor_dml × overwrite` при `isolation=serializable`.
-Гипотеза: `RowDelta` (позиционные deletes) должен обнаруживать новые файлы данных
-в тех же партициях и бросать `ValidationException`.
+`SparkPositionDeltaWrite.java`, строки 266–284: при `isolation=serializable` **вызывается** `validateNoConflictingDataFiles()` с `conflictDetectionFilter`, построенным из условия запроса (`WHERE`-предиката). K2 возникает только если committed-данные попадают под этот фильтр.
+
+Итерация 1 теста не учитывала это условие: `committed`-операции (append/su/overwrite) добавляли данные в тот же bucket, но не обязательно с id, попадающими под `WHERE`-предикат pending `mor_dml`. Эмпирически K1 — артефакт данных теста, не поведение Iceberg.
+
+`validateNoConflictingDeleteFiles` — отдельная проверка только для UPDATE/MERGE (не для DELETE).
+
+## Контекст (итерация 1)
+
+Матрица прогнозировала K2 для `mor_dml × append`, `mor_dml × stream_upsert`, `mor_dml × overwrite` при `isolation=serializable`.
+Гипотеза остаётся в силе: K2 при правильном тесте (committed-данные под conflictDetectionFilter).
 
 ## Эмпирический результат
 

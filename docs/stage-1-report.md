@@ -1,130 +1,179 @@
-# Отчёт по этапу 1: Эмпирическая матрица конфликтов
+# Отчёт по этапу 1: Эмпирическая матрица конфликтов — итерация 1
 
 | Поле | Значение |
 | --- | --- |
-| Даты | 2026-10-23 — 2026-10-23 |
-| Коммит / тег | `c94aff2` / `stage-1` (будет проставлен после финального коммита) |
-| Версии | Iceberg b0df3ca (1.12.0-SNAPSHOT), Spark 4.0.1, каталог `iceberg-rest-fixture` |
-| Статус | Завершён с отклонениями и новыми находками (§5, §6) |
+| Даты | 2026-10-23 |
+| Коммит / тег | `1db94e2` / `stage-1` |
+| Версии | Клиент Iceberg 1.12.0, сервер каталога b0df3ca (2026-04-29 nightly) |
+| Статус | Итерация 1 завершена. G1 не принят — требуется итерация 2 (§7) |
 
 ## 1. Цель этапа
 
-Подтвердить или исправить `config/conflict_matrix.yaml` для Iceberg b0df3ca (формат v2) — первый научный результат; зафиксировать тексты исключений для классификатора; оценить критерии G1-gate.
+Подтвердить или исправить `config/conflict_matrix.yaml` для Iceberg 1.12.0 (формат v2) —
+зафиксировать тексты исключений; оценить критерии G1.
 
 ## 2. Что сделано
 
-- `src/capl/main.py`: hold-механизм (`POST /v1/debug/hold`, `DELETE /v1/debug/hold/{slot}`, `GET /v1/debug/holds`); в `_last_commits` записываются `ts` (мс epoch), `status` (HTTP upstream), `hold_ms`; `DELETE /_capl/debug/last-commits`.
-- `tests/integration/test_conflict_matrix.py`: параметризованный тест (20 overlap + 5 control повторов); синхронизация через опрос `last-commits` по timestamp (не sleep); K1 через HTTP 409 в журнале прокси; validity tracking; инвалидные повторы отдельно.
+- `src/capl/main.py`: hold-механизм (`POST /v1/debug/hold`, `DELETE /v1/debug/hold/{slot}`);
+  `_last_commits` с полями `ts`, `status`, `hold_ms`; `DELETE /_capl/debug/last-commits`.
+- `tests/integration/test_conflict_matrix.py`: параметризованный тест (20 overlap + 5 control);
+  синхронизация по timestamp; K1-детекция по HTTP 409 в прокси; validity tracking.
 - `src/runner/ops/errors.py`: классификатор K1/K2/unknown.
-- `scripts/update_matrix.py`: заполняет `verified:` YAML, строит тепловую карту, вычисляет G1.
-- `scripts/smoke.py`: проверка `0.4b s3_put_get`.
+- `scripts/update_matrix.py`: заполнение `verified:`, тепловая карта, G1-оценка.
 - `infra/spark/Dockerfile`: `pytest>=8.3`, `matplotlib>=3.9`.
 
-## 3. Результаты проверок
+## 3. Ограничения итерации 1 (причина отклонения G1)
 
-| Проверка | Ожидаемо | Фактически | Итог |
-| --- | --- | --- | --- |
-| Полный прогон v2 (20 overlap повторов) | ≥95% match vs корр. матрице | см. §4 | PASS после корректировок |
-| Тексты исключений K1/K2 зафиксированы | classifier работает | ✓ | PASS |
-| Каждое расхождение объяснено | ссылка на код Iceberg | ✓ ADR-004, ADR-005 | PASS |
+### 3.1 overwrite — опции не установлены
 
-```
-MATRIX_TRIALS_OVERLAP=20 MATRIX_TRIALS_CONTROL=5 MATRIX_FORMAT_VERSIONS=2 \
-  docker compose exec runner pytest tests/integration/test_conflict_matrix.py
-python3 scripts/update_matrix.py
-```
+Spark INSERT OVERWRITE (`DataFrameWriterV2.overwritePartitions()`) использует `DynamicOverwrite`.
+`SparkWrite.java:347-358`: data-level валидация включается **только** при наличии опций
+`.option("isolation-level","serializable").option("validate-from-snapshot-id", <id снапшота чтения>)`.
+Итерация 1 не устанавливала эти опции → overwrite всегда выполнялся без `validateFromSnapshot` → K1.
 
-## 4. Результаты
+### 3.2 mor_dml — conflictDetectionFilter не покрывал committed-данные
 
-### 4.1 G1-группы (K2 подтверждения)
+`SparkPositionDeltaWrite.java:266-284`: при `isolation=serializable` вызывается
+`validateNoConflictingDataFiles()` с `conflictDetectionFilter` из `WHERE`-предиката запроса.
+K2 возникает **только если** committed-данные попадают под этот фильтр.
+В итерации 1 committed-операции (append/su/overwrite) добавляли данные в тот же bucket,
+но не обязательно под `WHERE`-предикат pending `mor_dml` → K1 (артефакт данных, не поведение Iceberg).
 
-| Группа | Представительная пара | Overlap K2/20 | Итог |
-| --- | --- | --- | --- |
-| Компакция × CoW DML | `rewrite_data × cow_dml` | 20/20 | ✓ ПОДТВЕРЖДЕНО |
-| Компакция × MoR DML | `rewrite_data × mor_dml` | см. §4.2 | см. §4.2 |
-| CoW DML × append (serial) | `cow_dml × append` | 20/20 | ✓ ПОДТВЕРЖДЕНО |
-| CoW DML × CoW DML | `cow_dml × cow_dml` | 20/20 | ✓ ПОДТВЕРЖДЕНО |
+### 3.3 Другие ограничения
 
-### 4.2 Полные эмпирические результаты (v2, serializable, если не указано иное)
+- Snapshot isolation: тест не устанавливал `write.delete.isolation-level=SNAPSHOT` →
+  `cow_dml×{append,su}(snapshot)` прогонялся с serializable-default → K2 вместо K1.
+- rewrite_deletes: таблица без prior position deletes → `overlap={}` для всех non-MoR committed.
+- k2_control assertion: `rewrite_data` глобальна → control trials дают K2 → pytest FAIL
+  (данные overlap верны: K2=20/20).
 
-| Пара (pending × committed) | Ожид. | Факт (overlap) | Rate | Примечание |
+## 4. Эмпирические результаты (итерация 1, v2, serializable если не указано иное)
+
+| Пара (pending × committed) | Гипотеза | Факт (overlap) | Rate | Статус |
 | --- | --- | --- | --- | --- |
-| append × append | K1 | K1 (20/20) | 100% | ✓ |
+| append × append | K1 | K1 (20/20) | 100% | ✓ совпадение |
 | stream_upsert × append | K1 | K1 (20/20) | 100% | ✓ |
-| overwrite × append/su/ow/cow/mor/rw (serial) | K2→K1* | K1 (20/20) | — | *ADR-004 |
+| overwrite × append/su/ow/cow/mor/rw (serial) | K2 | K1 (20/20) | 0% | ✗ опции не устан. (§3.1) |
 | overwrite × append/su (snapshot) | K1 | K1 (20/20) | 100% | ✓ |
-| overwrite × append (default) | K2→K1* | K1 (20/20) | — | *ADR-004 (все уровни изоляции) |
+| overwrite × append (default) | K2 | K1 (20/20) | 0% | ✗ опции не устан. |
 | cow_dml × append (serial) | K2 | K2 (20/20) | 100% | ✓ |
 | cow_dml × stream_upsert (serial) | K2 | K2 (20/20) | 100% | ✓ |
 | cow_dml × overwrite (serial) | K2 | K2 (20/20) | 100% | ✓ |
-| cow_dml × append (snapshot) | K1 | K2 (20/20) | — | isolation не применялась в тесте |
-| cow_dml × stream_upsert (snapshot) | K1 | K2 (20/20) | — | isolation не применялась в тесте |
+| cow_dml × append (snapshot) | K1 | K2 (20/20) | 0% | not-conclusive (isolation не тест.) |
+| cow_dml × stream_upsert (snapshot) | K1 | K2 (20/20) | 0% | not-conclusive |
 | cow_dml × cow_dml (serial) | K2 | K2 (20/20) | 100% | ✓ |
 | cow_dml × rewrite_data (serial) | K2 | K2 (20/20) | 100% | ✓ |
-| cow_dml × mor_dml (serial) | K2 | K2=10,K1=10 | 50% | file-overlap ненадёжен в тесте |
-| mor_dml × append (serial) | K2→K1* | K1 (20/20) | — | *ADR-005 |
-| mor_dml × stream_upsert (serial) | K2→K1* | K1 (20/20) | — | *ADR-005 |
-| mor_dml × overwrite (serial) | K2→K1* | K1=19,K2=1 | — | *ADR-005 |
+| cow_dml × mor_dml (serial) | K2 | K2=10,K1=10 | 50% | not-conclusive (file-overlap) |
+| mor_dml × append (serial) | K2 | K1 (20/20) | 0% | ✗ conflictFilter не покрыл (§3.2) |
+| mor_dml × stream_upsert (serial) | K2 | K1 (20/20) | 0% | ✗ |
+| mor_dml × overwrite (serial) | K2 | K1=19,K2=1 | 5% | ✗ |
 | mor_dml × append (snapshot) | K1 | K1 (20/20) | 100% | ✓ |
 | mor_dml × stream_upsert (snapshot) | K1 | K1 (20/20) | 100% | ✓ |
 | mor_dml × cow_dml (serial) | K2 | K2 (20/20) | 100% | ✓ |
 | mor_dml × rewrite_data (serial) | K2 | K2 (20/20) | 100% | ✓ |
-| mor_dml × mor_dml (serial) | K2→K1* | K1 (20/20) | — | *ADR-005 (v2 position deletes) |
+| mor_dml × mor_dml (serial) | K2 | K1 (20/20) | 0% | ✗ conflictFilter не покрыл (§3.2) |
 | rewrite_data × append | K1 | K1 (20/20) | 100% | ✓ |
 | rewrite_data × stream_upsert | K1 | K1 (20/20) | 100% | ✓ |
 | rewrite_data × overwrite | K2 | K2 (20/20) | 100% | ✓ |
 | rewrite_data × cow_dml | K2 | K2 (20/20) | 100% | ✓ G1 Группа 1 |
 | rewrite_data × rewrite_data | K2 | K2 (20/20) | 100% | ✓ |
-| rewrite_data × mor_dml | K2 | K2=10,K1=10 | 50% | G1 Группа 2 — §4.3 |
-| rewrite_deletes × mor_dml | K2 | K2=5,K1=11 | 31% | file-overlap ненадёжен — §4.3 |
-| rewrite_deletes × rewrite_data/cow_dml | K2 | {} (0/20) | — | нет position deletes — §4.5 |
-| rewrite_deletes × append/su | K1 | {} (0/20) | — | нет position deletes — §4.5 |
-| expire × append | K1→success* | success (20/20) | — | *новая находка — §4.6 |
+| rewrite_data × mor_dml | K2 | K2=10,K1=10 | 50% | not-conclusive (file-overlap) G1 Группа 2 |
+| rewrite_deletes × mor_dml | K2 | K2=5,K1=11 | 31% | not-conclusive (file-overlap) |
+| rewrite_deletes × rw/cow | K2 | {} (0/20) | — | not-conclusive (no prior position deletes) |
+| rewrite_deletes × append/su | K1 | {} (0/20) | — | not-conclusive (no prior position deletes) |
+| expire × append | K1 | success (20/20) | — | новая находка (§5) |
 
-> *K2→K1 = изначально предсказан K2, исправлено после прогона (ADR-004 или ADR-005).  
-> *K1→success = предсказан K1 (retry CAS), эмпирически success (нет конфликта вообще).  
 > Полная таблица: `results/stage-1/matrix_results.json`; тепловая карта: `results/stage-1/heatmap.png`.
 
-### 4.3 rewrite_data × mor_dml (G1 Группа 2)
+### 4.1 G1 критерий 1 (K2 в ≥3/4 групп) — против исходной гипотезы
 
-K2=10/K1=10 (valid=20, match_rate=50%). Механизм K2 подтверждён (10 trials), но bucket-overlap в тесте не гарантирует file-level overlap: `mor_dml` создаёт position deletes для конкретных строк, но не обязательно для тех же data-файлов, которые `rewrite_data` компактирует в этом trial. Тот же паттерн у `cow_dml×mor_dml` и `rewrite_deletes×mor_dml`.
+| # | Группа | Пара | K2/20 | Итог |
+| --- | --- | --- | --- | --- |
+| 1 | Компакция × CoW DML | rewrite_data × cow_dml | 20/20 | ✓ ПОДТВЕРЖДЕНО |
+| 2 | Компакция × MoR DML | rewrite_data × mor_dml | 10/20 | ✗ (file-overlap ненадёжен) |
+| 3 | CoW DML × append (serial) | cow_dml × append | 20/20 | ✓ ПОДТВЕРЖДЕНО |
+| 4 | CoW DML × CoW DML | cow_dml × cow_dml | 20/20 | ✓ ПОДТВЕРЖДЕНО |
 
-### 4.4 K1 vs success: протокол определения
+> **3/4 групп → Критерий 1 PASS**
 
-`AppendFiles`/`ReplacePartitions` при 409 молча повторяют коммит (`num-retries=4`). Spark-код не видит `CommitFailedException` — всегда `success`. K1 определяется по прокси: `status=409` в `_last_commits` с `ts >= trial_start_ts` → результат перекодируется в K1. `OverwriteFiles` при K2 бросает `ValidationException` → видно в Spark.
+### 4.2 G1 критерий 2 (≥95% совпадений) — против исходной гипотезы
 
-### 4.5 Тестовые ограничения (не ошибки предсказания)
+| Всего | Not-conclusive | Оценивается | Match | Mismatch | Match rate |
+| --- | --- | --- | --- | --- | --- |
+| 39 | 9 | 30 | 19 | 11 | 63.3% |
 
-1. **k2_control assertion для глобальных операций**: `rewrite_data` переписывает ВСЕ партиции независимо от `committed_bkt`. Контрольные (без overlap) попытки для `*×rewrite_data` и `rewrite_data×*` всё равно дают K2, нарушая `assert k2_control == 0`. pytest FAIL = баг теста, а не расхождение с матрицей (в overlap K2=100%).
-2. **Snapshot isolation не применялась**: тест не устанавливал `write.delete.isolation-level=SNAPSHOT` на уровне table property. Случаи `cow_dml×{append,stream_upsert}(snapshot)` фактически прогнаны с serializable → K2 (ожидаемо для serializable). Гипотеза K1 для snapshot не верифицирована.
-3. **rewrite_deletes требует prior position deletes**: `rewrite_deletes` может работать только если в таблице уже есть position-delete файлы (созданные `mor_dml`). Для пар `rewrite_deletes×{append,su,rewrite_data,cow_dml}` тест не находит ничего для rewrite → 0 valid trials → `overlap={}`. Эти пары помечены как not-conclusive, исключены из match rate.
+> **63.3% < 95% → Критерий 2 FAIL → G1 не принят**
 
-### 4.6 Новая находка: expire не вступает в OCC-конфликт
+11 расхождений: 7 `overwrite×*` (опции не установлены) + 3 `mor_dml×{append,su,overwrite}` + 1 `mor_dml×mor_dml` (conflictDetectionFilter не покрывал committed-данные).
 
-`expire×append` дал `success` (20/20), а не K1. `ExpireSnapshots` коммитит через `ManageSnapshots` — механизм без `validateFromSnapshot()`. Поскольку expire удаляет только старые снапшоты (не data-файлы, которые читает pending), конфликт данных не возникает. Матрица исправлена: `expire×*` → success.
+### 4.3 K1 vs success: протокол определения
 
-## 5. Отклонения от ТЗ
+K1 детектируется через прокси: `status=409` в `_last_commits` с `ts ≥ trial_start_ts`. `AppendFiles`/`ReplacePartitions` при 409 молча повторяют коммит — Spark-код видит `success`. `OverwriteFiles` при K2 бросает `ValidationException` — видно в Spark.
 
-| Пункт | Что изменено | Причина | ADR |
-| --- | --- | --- | --- |
-| `overwrite×*` (serializable) → K2 | Фактически K1 | `ReplacePartitions` (`NewOverwriteFiles`/`MergeAppend`) не вызывает `validateFromSnapshot()`; `write.delete.isolation-level` влияет только на `OverwriteFiles` | ADR-004 |
-| `mor_dml×{append,su,overwrite}` (serial) → K2 | Фактически K1 | `RowDelta.validateFromSnapshot()` проверяет только удалённые ref-файлы, но НЕ новые файлы в партициях; append/su/overwrite лишь ДОБАВЛЯЮТ файлы | ADR-005 |
-| `mor_dml×mor_dml` (serial, v2) → K2 | Фактически K1 | Несколько position-delete файлов на один data-файл сосуществуют в v2; только в v3 (DV) один DV = K2 | ADR-005 |
-| `min-input-files` default=5 | Добавлена опция `min-input-files=1` | С 4 файлами/партицию rewrite_data_files ничего не переписывал | — |
+## 5. Новые находки
 
-## 6. Дополнительные находки
+### expire → success (подтверждённо, итерация 1)
 
-- `cow_dml×mor_dml` (serial): K2=10/20 и K1=10/20. Механизм K2 существует (`validateNoConflictingDeleteFiles`), но file-level overlap ненадёжно воспроизводится через bucket-based overlap. Не влияет на G1.
-- `mor_dml×overwrite` (serial): 1/20 K2 (редкий file-level overlap при overwrite), 19/20 K1. Соответствует ADR-005.
+`expire×append` дал `success` (20/20). `ExpireSnapshots` коммитит через `ManageSnapshots` —
+без `validateFromSnapshot()`, не затрагивает data-файлы. Нет OCC-конфликта с append.
+Матрица обновлена: `expire×* → success`. Не зависит от вопроса ADR-004/ADR-005.
 
-## 7. Что переносится в текст ВКР
+### rewrite_deletes — требует prior position deletes
 
-- **Эмпирическая матрица подтверждена** для ключевых сценариев: K2 воспроизводится детерминированно (match_rate=100%) для `cow_dml×{append,stream_upsert,overwrite,cow_dml,rewrite_data}` и `rewrite_data×{overwrite,cow_dml,rewrite_data}`.
-- **Новая находка ADR-004**: `ReplacePartitions` (INSERT OVERWRITE) не производит data-level валидацию при retry — исход K1. Источник: `ReplacePartitionsOperation ← MergeAppend`, нет `validateNoConflictingData()`. Сценарии S2–S5 используют CoW/MoR DML → не затрагивает.
-- **Новая находка ADR-005**: `RowDelta` (MoR DML) не валидирует новые файлы данных в сканированных партициях → K1 при `mor_dml×{append,su,overwrite}`. K2 только при удалении ref-файлов (rewrite_data, cow_dml). В v2 два параллельных position-delete потока сосуществуют (K1); K2 ожидается в v3 (DV).
-- **Метод hold-тестирования**: детерминированное воспроизведение конфликтов через HTTP-задержку коммита на уровне прокси позволяет верифицировать матрицу без модификаций Iceberg/Spark.
-- **K1-детекция**: различие «success без конфликта» и «success после retry CAS» требует HTTP-журнала прокси; Spark API это не предоставляет.
+`rewrite_deletes` работает только при наличии position-delete файлов в таблице
+(создаются `mor_dml`). Для пар без prior `mor_dml` — 0 valid trials, `overlap={}`.
+В итерации 2: пересоздавать таблицу с MoR-данными перед каждым повтором.
+
+## 6. Деления по типу пересечения
+
+Итерация 1 тестировала partition-overlap (тот же bucket). Для `mor_dml` необходим
+`predicate`-тип: committed-данные должны попадать под `WHERE`-предикат pending-запроса.
+Матрица получает новый тип пересечения `predicate` для `mor_dml×*` правил.
+
+## 7. Требования к итерации 2
+
+### 7.1 overwrite
+- Вариант A: без опций (ожидание K1)
+- Вариант B: `.option("isolation-level","serializable").option("validate-from-snapshot-id", <snapshot_id>)` (ожидание K2)
+- Вариант C: snapshot isolation (`write.delete.isolation-level=SNAPSHOT`)
+
+### 7.2 MoR DML — разделить на mor_delete, mor_update, mor_merge
+Каждый в двух вариантах данных:
+- (а) committed-данные попадают под WHERE-условие pending → ожидание K2 при serializable
+- (б) тот же bucket, другой диапазон id → ожидание K1
+
+### 7.3 CoW DML — UPDATE и MERGE раздельно (аналогично)
+
+### 7.4 Ужесточить валидность повтора
+Повтор засчитывается только если:
+- pending и committed реально изменили данные: проверять по snapshot summary
+  (`deleted-records`, `added-position-deletes`, `added-delete-files`, `deleted-data-files`)
+  в журнале прокси и истории таблицы
+- для file-overlap пар: множества файлов действительно пересекаются (по манифестам)
+
+### 7.5 Данные
+- Генерировать заново для каждого повтора; не исчерпывать
+- Пересоздавать таблицу или уникальные диапазоны id на повтор
+
+### 7.6 Snapshot isolation
+Устанавливать `write.delete.isolation-level=snapshot` как table property.
+
+### 7.7 rewrite_deletes
+Таблица в режиме MoR, создание position-delete файлов перед каждым повтором.
+
+### 7.8 Контроль для компакции
+`rewrite_data_files(..., where => 'bkt = <другой_bucket>')` → контрольные K2 = 0.
+
+### 7.9 Format v3
+Полный прогон, включая `mor×mor` и `rewrite×mor` с deletion vectors.
+
+### 7.10 Сценарные пары
+На схеме `dt × bucket(8, key)`: операции из `config/workloads` (merge_upsert, update_status,
+delete_by_keys, компакция с `where` по dt и bucket) против append из потока.
+Зафиксировать `conflictDetectionFilter` из commit message Spark — определяет реальную
+частоту K2 в сценариях S2–S5.
 
 ## 8. Следующий этап
 
-Этап 2 — Прокси каталога. Блокер: решение G1 от автора. После GO/CORRECT → рефакторинг CAPL в production-прокси (asyncpg, Prometheus, op_class classifier).
+Этап 1, итерация 2 — повторный прогон с исправленной методологией теста.
+Блокер: решение G1 (принять итерацию 2 / PIVOT).

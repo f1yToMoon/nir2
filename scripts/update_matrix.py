@@ -180,20 +180,15 @@ def _print_g1_summary(results: dict) -> None:
     Uses CORRECTED expected values from ADR-004 and ADR-005.
     Groups defined by representative K2-risk scenarios.
     """
-    # Corrections applied after empirical run (ADR-004, ADR-005):
-    # These cases were predicted K2 but empirically K1; matrix corrected.
-    CORRECTED_K1 = {
-        # ADR-004: overwrite (ReplacePartitions) → always K1, any isolation level
-        ("overwrite", None, "serializable"),
-        ("overwrite", None, "default"),
-        # ADR-005: mor_dml (RowDelta) doesn't validate new appends
-        ("mor_dml", "append",        "serializable"),
-        ("mor_dml", "stream_upsert", "serializable"),
-        ("mor_dml", "overwrite",     "serializable"),
-        ("mor_dml", "mor_dml",       "serializable"),  # v2 only; K2 expected for v3 DV
-    }
-    # New finding: expire commits via ManageSnapshots; no data-level CAS conflict with append.
-    # Predicted K1 (retry on 409), observed success (no conflict at all).
+    # ADR-004 and ADR-005 were REJECTED: iteration-1 test did not set required Spark write
+    # options (isolation-level + validate-from-snapshot-id for overwrite; conflictDetectionFilter
+    # must cover committed data for mor_dml). These corrections are removed.
+    # CORRECTED_K1 is empty for iteration-1 report (evaluate against original hypothesis).
+    CORRECTED_K1: set = set()
+
+    # Confirmed new finding: expire commits via ManageSnapshots; no data-level CAS conflict.
+    # Predicted K1 (retry on 409), observed success (no conflict at all). Not related to
+    # ADR-004/ADR-005 rejection; stands independently.
     CORRECTED_SUCCESS = {
         ("expire", "append", "serializable"),
     }

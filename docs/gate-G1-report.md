@@ -1,49 +1,44 @@
-# G1 Gate Report: Empirical Conflict Matrix
+# G1 Gate Report — итерация 1
 
 | Поле | Значение |
 | --- | --- |
 | Дата | 2026-10-23 |
 | Связан с | `docs/stage-1-report.md` |
-| ADR | ADR-004, ADR-005 |
+| ADR | ADR-004 (отклонено), ADR-005 (отклонено) |
+| Коммит | `1db94e2`, тег `stage-1` |
 
 ---
 
-## Рекомендация: CORRECT
+## Рекомендация: G1 НЕ ПРИНЯТ
 
-Критерий 1 выполнен (3/4 групп). Критерий 2 выполнен: после корректировок ADR-004, ADR-005 и исключения 9 not-conclusive кейсов match rate = 100% (30/30). Все расхождения объяснены кодом Iceberg и не затрагивают сценарии S2–S5.
+Критерий 1 выполнен (3/4 групп). Критерий 2 провален: 63.3% (19/30) против исходной гипотезы.
+Причина — методологические ошибки теста (§3 отчёта), а не неверная гипотеза.
+Требуется итерация 2 с исправленной методологией.
 
 ---
 
 ## Критерий 1: K2 подтверждён в ≥3/4 групп
 
-| # | Группа | Пара | K2/20 overlap | Итог |
+| # | Группа | Пара | K2/20 | Итог |
 | --- | --- | --- | --- | --- |
 | 1 | Компакция × CoW DML | `rewrite_data × cow_dml` | **20/20** | ✓ PASS |
-| 2 | Компакция × MoR DML | `rewrite_data × mor_dml` | **10/20** | ✗ НЕ подтверждено (50%) |
+| 2 | Компакция × MoR DML | `rewrite_data × mor_dml` | **10/20** | ✗ (file-overlap ненадёжен) |
 | 3 | CoW DML × append (serial) | `cow_dml × append` | **20/20** | ✓ PASS |
 | 4 | CoW DML × CoW DML | `cow_dml × cow_dml` | **20/20** | ✓ PASS |
 
-> **K2 подтверждён в 3/4 группах → Критерий 1 PASS (нужно ≥3)**
->
-> Группа 2 (rewrite_data×mor_dml): K2 механизм существует (10/20 = 50%), но partition-overlap в тесте не гарантирует file-level overlap. Аналогично `cow_dml×mor_dml` (тоже 50%). Это ограничение теста, не ошибка матрицы.
+> **3/4 → Критерий 1 PASS**
 
 ---
 
-## Критерий 2: ≥95% совпадений с матрицей
+## Критерий 2: ≥95% совпадений с исходной гипотезой
 
-По скорректированной матрице (ADR-004, ADR-005, новые находки):
+| Всего кейсов | Not-conclusive | Оценивается | Match | Mismatch | Match rate |
+| --- | --- | --- | --- | --- | --- |
+| 39 | 9 | 30 | 19 | 11 | **63.3%** |
 
-| Категория | Кол-во |
-| --- | --- |
-| Всего кейсов | 39 |
-| Not-conclusive (исключено из оценки) | 9 |
-| Оценивается | 30 |
-| MATCH (с учётом корректировок) | 30 |
-| MISMATCH | 0 |
+> **63.3% < 95% → Критерий 2 FAIL**
 
-> **Match rate = 30/30 = 100% → Критерий 2 PASS.**
-
-### Not-conclusive: что исключено и почему
+### Not-conclusive (9 кейсов — исключены из оценки)
 
 | Кол-во | Категория | Причина |
 | --- | --- | --- |
@@ -51,39 +46,57 @@
 | 3 | `×mor_dml` (file-overlap) | Partition-overlap ≠ file-overlap; K2 механизм подтверждён в 31–50% |
 | 4 | `rewrite_deletes×{append,su,rw,cow}` | rewrite_deletes требует prior position deletes; 0 valid trials |
 
-### Расхождения, учтённые в MATCH после коррекций (→ не MISMATCH)
+### 11 расхождений (MISMATCH против исходной гипотезы)
 
-| Кол-во пар | Причина | ADR / находка |
-| --- | --- | --- |
-| 6 пар `overwrite×*(serial)` | `ReplacePartitions` нет data-level валидации | ADR-004 |
-| 1 пара `overwrite×append(default)` | ADR-004 применим ко всем уровням изоляции | ADR-004 |
-| 3 пары `mor_dml×{append,su,overwrite}(serial)` | `RowDelta` не валидирует новые файлы | ADR-005 |
-| 1 пара `mor_dml×mor_dml(serial,v2)` | v2: несколько position-delete файлов сосуществуют | ADR-005 |
-| 1 пара `expire×append(serial)` | ExpireSnapshots → success, не K1 (нет validateFromSnapshot) | §6 |
+| Пара | Гипотеза | Факт | Причина ошибки теста | Источник |
+| --- | --- | --- | --- | --- |
+| `overwrite×append` (serial) | K2 | K1 | опции isolation-level + validate-from-snapshot-id не установлены | SparkWrite.java:347-358 |
+| `overwrite×stream_upsert` (serial) | K2 | K1 | то же | SparkWrite.java:347-358 |
+| `overwrite×overwrite` (serial) | K2 | K1 | то же | SparkWrite.java:347-358 |
+| `overwrite×cow_dml` (serial) | K2 | K1 | то же | SparkWrite.java:347-358 |
+| `overwrite×mor_dml` (serial) | K2 | K1 | то же | SparkWrite.java:347-358 |
+| `overwrite×rewrite_data` (serial) | K2 | K1 | то же | SparkWrite.java:347-358 |
+| `overwrite×append` (default) | K2 | K1 | то же | SparkWrite.java:347-358 |
+| `mor_dml×append` (serial) | K2 | K1 | committed-данные не под conflictDetectionFilter запроса | SparkPositionDeltaWrite.java:266-284 |
+| `mor_dml×stream_upsert` (serial) | K2 | K1 | то же | SparkPositionDeltaWrite.java:266-284 |
+| `mor_dml×overwrite` (serial) | K2 | K1 | то же | SparkPositionDeltaWrite.java:266-284 |
+| `mor_dml×mor_dml` (serial) | K2 | K1 | то же | SparkPositionDeltaWrite.java:266-284 |
 
 ---
 
-## Тестовые ограничения (не ошибки матрицы)
+## Тестовые ограничения
 
-1. **Snapshot isolation не проверена**: `cow_dml×{append,su}(snapshot)` тест запускался с serializable → K2. Гипотеза K1 при snapshot не верифицирована.
-2. **k2_control assertion для глобальных операций**: `rewrite_data` переписывает все партиции; контрольные попытки дают K2 → pytest FAIL. В overlap K2=100% (реальный результат).
-3. **File-level overlap для ×mor_dml**: partition-overlap (одинаковый bkt) не гарантирует, что committed position-deletes ссылаются на те же файлы, что читает pending operation.
-4. **rewrite_deletes требует prior position deletes**: для пар без mor_dml как committed, 0 valid trials → overlap={}.
+1. **overwrite без опций**: `SparkWrite.java:347-358` — data-level валидация включается только при `.option("isolation-level","serializable").option("validate-from-snapshot-id",<id>)`.
+2. **mor_dml conflictDetectionFilter**: `SparkPositionDeltaWrite.java:266-284` — `validateNoConflictingDataFiles()` фильтрует по `WHERE`-предикату. Committed-данные в том же bucket не обязательно попадают под предикат.
+3. **Snapshot isolation**: тест не устанавливал table property → 2 кейса not-conclusive.
+4. **rewrite_deletes**: 0 valid trials без prior position deletes.
+5. **k2_control assertion**: `rewrite_data` глобальна → pytest FAIL, но overlap K2=100%.
+
+---
+
+## Подтверждённые результаты итерации 1
+
+| Группа операций | Гипотеза | Факт | Статус |
+| --- | --- | --- | --- |
+| `cow_dml×{append,su,ow,cow,rw}` (serial) | K2 | K2 100% | ✓ Подтверждено |
+| `rewrite_data×{ow,cow,rw}` | K2 | K2 100% | ✓ Подтверждено |
+| `append×*`, `su×*` | K1 | K1 100% | ✓ Подтверждено |
+| `mor_dml×{cow,rw}` (serial) | K2 | K2 100% | ✓ Подтверждено |
+| `expire×*` | K1 | success 100% | новая находка — матрица исправлена |
 
 ---
 
 ## Варианты решения
 
-| | GO | CORRECT (рекомендовано) | PIVOT |
-| --- | --- | --- | --- |
-| Смысл | Продолжить без изменений | Принять ADR-004/ADR-005, перейти к Stage 2 | Пересмотреть подход |
-| Условие | Все предсказания верны | Расхождения объяснены, S2–S5 не затронуты | Фундаментальные проблемы |
-| Статус | Не применимо (есть расхождения) | **Применимо** — коррекции уже в YAML | Не обоснован |
+| | ИТЕРАЦИЯ 2 (рекомендовано) | PIVOT |
+| --- | --- | --- |
+| Смысл | Повторить этап 1 с исправленной методологией | Пересмотреть подход |
+| Условие | ADR-004/ADR-005 отклонены; исходная гипотеза верна | Фундаментальные проблемы |
+| Требования | §7 stage-1-report.md | — |
 
 ---
 
 ## Решение автора
 
-`[   ]` GO — перейти к Stage 2  
-`[   ]` CORRECT — принять ADR-004 + ADR-005, перейти к Stage 2  
+`[   ]` ИТЕРАЦИЯ 2 — повторить этап 1 с исправленной методологией теста  
 `[   ]` PIVOT — указать причину: ___________

@@ -4,7 +4,7 @@
 
 **Матрица конфликтов v2 (20 повторов на пару):**
 
-3 из 4 G1-групп подтверждены K2=100%: компакция×CoW DML, CoW DML×append(serial), CoW DML×DML. Группа компакция×MoR DML: K2=50% (механизм подтверждён, file-overlap ненадёжен в тесте). Выявлено три системных расхождения: ADR-004 (overwrite→K1, все уровни изоляции), ADR-005 (mor_dml→K1 для новых данных), expire→success (не K1). После коррекций match_rate=100% по 30/30 оцениваемых кейсов (9 not-conclusive: 2 snapshot isolation не проверена, 3 ×mor_dml file-overlap, 4 rewrite_deletes без prior position deletes). G1 gate: GO.
+Итерация 1 завершена. G1 не принят — ADR-004 и ADR-005 отклонены (противоречат SparkWrite.java:347-358 и SparkPositionDeltaWrite.java:266-284). Тест не устанавливал опции overwrite (isolation-level + validate-from-snapshot-id) и не обеспечивал попадание committed-данных под conflictDetectionFilter mor_dml. Match rate против исходной гипотезы: 63.3% (19/30, 9 not-conclusive). Критерий 1 PASS (3/4 групп). Требуется итерация 2 (§7 stage-1-report.md). Новая находка: expire→success (подтверждено, матрица обновлена). ADR-004, ADR-005 переведены в статус «Отклонено».
 
 **Компоненты этапа 1:**
 

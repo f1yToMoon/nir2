@@ -1,51 +1,26 @@
-# ADR-004: ReplacePartitions не производит K2-валидацию; матрица исправлена
+# ADR-004: ReplacePartitions не производит K2-валидацию (ОТКЛОНЕНО)
 
 | Поле | Значение |
 | --- | --- |
 | Дата | 2026-10-23 |
-| Статус | Принято |
+| Статус | **Отклонено** (2026-10-23) |
+| Причина отклонения | Противоречит исходному коду Iceberg 1.12.0 (SparkWrite.java:347-358) |
 | Этап | 1 (матрица конфликтов) |
-| Автор | агент (Claude Sonnet 4.6) |
 
-## Контекст
+## Причина отклонения
 
-В `config/conflict_matrix.yaml` правила для `overwrite` (pending) с любым committed-оператором при `isolation: serializable` предполагали исход K2 (data-level ValidationException). Это соответствовало теоретическому ожиданию: INSERT OVERWRITE при serializable должен проверять, не появились ли новые файлы в перезаписываемой партиции.
+`SparkWrite.java`, `DynamicOverwrite`, строки 347–358: валидация K2 (`validateFromSnapshot`) **включается** при наличии опций записи `isolation-level` + `validate-from-snapshot-id`. Итерация 1 теста не устанавливала эти опции → overwrite всегда выполнялся без валидации → K1.
 
-## Проблема
+Таким образом, K1 в тесте — артефакт отсутствия опций, а не поведение Iceberg по умолчанию для всех сценариев. Исходная гипотеза (K2 при правильно настроенном overwrite) остаётся в силе.
 
-Эмпирические испытания (этап 1, n=20 на пару) показали K1 вместо K2 для всех шести пар `overwrite × *` (serializable):
+## Контекст и эмпирика (итерация 1)
 
-```
-overwrite × append           : K1 (20/20)
-overwrite × stream_upsert    : K1 (20/20)
-overwrite × overwrite        : K1 (20/20)
-overwrite × cow_dml          : K1 (20/20)
-overwrite × mor_dml          : K1 (20/20)
-overwrite × rewrite_data     : K1 (или success при недостатке файлов)
-```
+Эмпирические испытания (n=20) показали K1 для всех `overwrite × *` (serializable) — из-за отсутствия опций. Данные сохранены в `results/stage-1/matrix_results.json`, итерация 1.
 
-## Анализ причины
+## Следующие шаги
 
-INSERT OVERWRITE в Spark использует `DataFrameWriterV2.overwritePartitions()` → Iceberg `ReplacePartitionsOperation`. Эта операция наследует `MergeAppend`, который:
+В итерации 2 проверить два варианта:
+1. Без опций (ожидание K1 — baseline)
+2. С `.option("isolation-level","serializable").option("validate-from-snapshot-id", <snapshot_id_на_момент_чтения>)` (ожидание K2)
 
-1. **Устанавливает `assert-ref-snapshot-id`** в commit-запросе → при гонке с committed получает 409 от каталога → K1 (proxy-detected).
-2. **Не вызывает `validateNoConflictingData()`** в retry-пути → retry всегда успешен (разрешает конфликт по принципу «последний выигрывает»).
-
-В отличие от `ReplacePartitions`, операция `OverwriteFiles` (используемая CoW DML: UPDATE / DELETE / MERGE при `copy-on-write`) вызывает `validateFromSnapshot(baseSnapshotId)` → `validateNoConflictingData()` → `ValidationException` при пересечении с committed-файлами.
-
-Свойство таблицы `write.delete.isolation-level` управляет уровнем изоляции `OverwriteFiles`, но **не** `ReplacePartitions` — последняя операция всегда ведёт себя как «last writer wins».
-
-Источники: `ReplacePartitionsOperation.java`, `OverwriteFiles.java`, `MergeAppend.java` (Iceberg b0df3ca).
-
-## Решение
-
-1. Исправить 7 правил матрицы: `overwrite × * (serializable) → K2` заменить на `outcome: K1`.
-2. Для дополнительного теста «без явной опции isolation-level» — аналогично K1.
-3. Добавить `note` в правила с объяснением поведения.
-4. Сценарии S2–S5 построены на `cow_dml`, `mor_dml`, `rewrite_data` — не затронуты; INSERT OVERWRITE в сценариях не фигурирует.
-
-## Последствия
-
-- Матрица становится точной: match_rate = 100% после исправления.
-- G1 критерий 2 (≥95%) выполняется.
-- В тексте ВКР необходимо отметить: INSERT OVERWRITE в Iceberg не защищает от конкурентных записей в ту же партицию (только последний коммит выигрывает, без исключения для клиента).
+Ссылка: `SparkWrite.java:347-358`, Iceberg client 1.12.0.
