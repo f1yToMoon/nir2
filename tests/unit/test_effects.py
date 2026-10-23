@@ -88,6 +88,14 @@ def test_hold_window() -> None:
     ("org.apache.iceberg.exceptions.CommitFailedException: Requirement failed: branch main "
      "has changed", "K1"),
     ("java.lang.IllegalArgumentException: Snapshot 1 is not an ancestor of 2", "unknown"),
+    # Spark rewrite action wrapper: the message names both, the cause decides
+    ("java.lang.RuntimeException: Cannot commit rewrite because of a ValidationException or "
+     "CommitFailedException.\n\tat org.apache.iceberg.spark.actions.X\nCaused by: "
+     "org.apache.iceberg.exceptions.CommitFailedException: Requirement failed", "K1"),
+    ("java.lang.RuntimeException: Cannot commit rewrite because of a ValidationException or "
+     "CommitFailedException.\nCaused by: org.apache.iceberg.exceptions.ValidationException: "
+     "Cannot commit, missing data files", "K2"),
+    ("Cannot commit rewrite because of a ValidationException or CommitFailedException", "unknown"),
 ])
 def test_classify(text: str, expected: str) -> None:
     assert classify(text) == expected

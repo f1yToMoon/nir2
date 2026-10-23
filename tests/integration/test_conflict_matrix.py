@@ -28,6 +28,7 @@ Env: MATRIX_TRIALS_OVERLAP (20), MATRIX_TRIALS_CONTROL (5), MATRIX_FORMAT_VERSIO
 from __future__ import annotations
 
 import contextlib
+import itertools
 import json
 import os
 import re
@@ -52,7 +53,7 @@ from runner.ops.effects import (
     removed_snapshot_ids,
     trial_outcome,
 )
-from runner.ops.errors import classify
+from runner.ops.errors import classify, root_iceberg_exception
 
 # ── endpoints ────────────────────────────────────────────────────────────────
 PROXY_URL    = os.environ.get("CAPL_PROXY_URI",   "http://capl:8180")
@@ -156,16 +157,16 @@ def _load_cases() -> list[Case]:
             variant = "nostartseq"
         rule_fv = when.get("format_version")
         rule_fvs = rule_fv if isinstance(rule_fv, list) else [rule_fv] if rule_fv else fmt_versions
-        for committed in committed_list:
-            for fv in rule_fvs:
-                if fv not in fmt_versions:
-                    continue
-                cases.append(Case(
-                    pending=rule["pending"], committed=committed,
-                    isolation=when.get("isolation", default_iso), fmt_ver=fv,
-                    overlap=rule["overlap"], expected=rule["outcome"], variant=variant,
-                    note=rule.get("note", ""),
-                ))
+        pendings = rule["pending"] if isinstance(rule["pending"], list) else [rule["pending"]]
+        for pending, committed, fv in itertools.product(pendings, committed_list, rule_fvs):
+            if fv not in fmt_versions:
+                continue
+            cases.append(Case(
+                pending=pending, committed=committed,
+                isolation=when.get("isolation", default_iso), fmt_ver=fv,
+                overlap=rule["overlap"], expected=rule["outcome"], variant=variant,
+                note=rule.get("note", ""),
+            ))
     seen: set[str] = set()
     unique: list[Case] = []
     for c in cases:
@@ -408,6 +409,8 @@ def _setup_table(spark: Any, case: Case) -> None:
         USING iceberg PARTITIONED BY (bkt)
         TBLPROPERTIES ({_tblprops(case)})
     """)
+    # an older snapshot outside all footprints, so expire has something to remove from seq 0
+    spark.sql(f"INSERT INTO {full} VALUES (-1, 9, 'seed')")
 
 
 def _trial_base(seq: int, bkt: int) -> int:
@@ -539,7 +542,11 @@ def _exec_op(spark: Any, jv: Jv, case: Case, op: str, cat: str, bkt: int, seq: i
 # ── single trial ─────────────────────────────────────────────────────────────
 
 def _exc_class(text: str) -> str:
-    m = re.search(r"((?:org\.apache\.iceberg\.exceptions|java\.lang)\.\w+)", text)
+    """Deepest Iceberg exception in the cause chain, else the first java.lang one."""
+    root = root_iceberg_exception(text)
+    if root:
+        return f"org.apache.iceberg.exceptions.{root}"
+    m = re.search(r"(java\.lang\.\w+)", text)
     return m.group(1) if m else ""
 
 
@@ -588,8 +595,9 @@ def _run_one_trial(spark: Any, jv: Jv, case: Case, seq: int, with_overlap: bool
         except Exception as exc:
             text = str(exc)
             out["op_result"] = classify(text)
-            out["exc_class"] = _exc_class(text)
+            out["exc_class"] = _exc_class(text) or type(exc).__name__
             out["exc"] = text[:800]
+            out["exc_causes"] = [c[:300] for c in re.findall(r"Caused by: ([^\n]+)", text)]
 
     thr = threading.Thread(target=_pending, daemon=True)
     thr.start()
@@ -896,8 +904,9 @@ def _sc_trial(spark: Any, jv: Jv, case: ScenarioCase, seq: int, with_overlap: bo
         except Exception as exc:
             text = str(exc)
             out["op_result"] = classify(text)
-            out["exc_class"] = _exc_class(text)
+            out["exc_class"] = _exc_class(text) or type(exc).__name__
             out["exc"] = text[:800]
+            out["exc_causes"] = [c[:300] for c in re.findall(r"Caused by: ([^\n]+)", text)]
 
     thr = threading.Thread(target=_pending, daemon=True)
     thr.start()

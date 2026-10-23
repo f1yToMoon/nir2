@@ -40,75 +40,83 @@ op_classes:
   expire:          {iceberg_api: ExpireSnapshots,   validates: false, controlled: true}
 
 rules:
+  # Итерация 3 (ревью stage-1-r1). Исходная гипотеза — версии на коммитах c6e9a4e (до опытов)
+  # и fd593a5 (после итерации 1); метрика G1 считается против них (scripts/update_matrix.py).
+  # Каждое отличие от исходной гипотезы — со ссылкой на код Iceberg 1.12.0 / Spark 4.0
+  # (third_party/iceberg-src, тег apache-iceberg-1.12.0) и номером пилота results/stage-1/pilot1.
+  # Пути: SPDW = spark/v4.0/spark/src/main/java/org/apache/iceberg/spark/source/SparkPositionDeltaWrite.java,
+  #       SW = .../spark/source/SparkWrite.java, BRD = core/.../BaseRowDelta.java,
+  #       MSP = core/.../MergingSnapshotProducer.java, UR = core/.../UpdateRequirements.java
+
   # --- pending: append / stream_upsert — не валидируют данные ---
-  - {pending: append,        committed: "*",           outcome: K1, overlap: none}
-  - {pending: stream_upsert, committed: "*",           outcome: K1, overlap: none}
+  # stream_upsert = RowDelta(addRows + equality deletes) без валидаций, как коммитит Flink
+  # (flink/v1.20/.../sink/IcebergFilesCommitter.java:361-365)
+  - {pending: append,        committed: "*", outcome: K1, overlap: none}
+  - {pending: stream_upsert, committed: "*", outcome: K1, overlap: none}
 
   # --- pending: overwrite (ReplacePartitions) без опций → K1 ---
-  # Итерация 1: подтверждено K1 (20/20). SparkWrite.java:347-358: без опций нет валидации.
+  # SW:350-358: validateFromSnapshot/validateNoConflictingData только при заданных isolation-level
+  # и validate-from-snapshot-id (опции записи); по умолчанию — без валидации.
   - {pending: overwrite, committed: [append, stream_upsert, overwrite, cow_dml, mor_dml, rewrite_data],
      outcome: K1, overlap: partition, when: {isolation: serializable},
-     note: "без опций: DynamicOverwrite не вызывает validateFromSnapshot → K1 (SparkWrite.java:347-358; итер.1 подтверждено 20/20)"}
+     note: "без опций записи валидации нет (SW:350-358)"}
   - {pending: overwrite, committed: [append, stream_upsert],
      outcome: K1, overlap: partition, when: {isolation: snapshot}}
 
-  # --- pending: overwrite_opts (ReplacePartitions) С опциями → K2 ---
-  # Гипотеза итерации 2: с isolation-level + validate-from-snapshot-id → K2.
+  # --- pending: overwrite_opts (ReplacePartitions с isolation-level=serializable и
+  #     validate-from-snapshot-id = текущий снапшот до операции) → K2 ---
   - {pending: overwrite_opts, committed: [append, stream_upsert, overwrite, cow_dml, mor_dml, rewrite_data],
      outcome: K2, overlap: partition, when: {isolation: serializable},
-     note: "гипотеза: SparkWrite.java:347-358 — validateFromSnapshot включается через опции"}
+     note: "SW:350-356 validateNoConflictingData/Deletes по заменяемым партициям"}
 
   # --- pending: cow_dml ---
   - {pending: cow_dml, committed: [append, stream_upsert, overwrite],
      outcome: K2, overlap: partition, when: {isolation: serializable}}
-  - {pending: cow_dml, committed: [append, stream_upsert],
-     outcome: K1, overlap: partition, when: {isolation: snapshot},
-     note: "iter2 подтверждено K1 (20/20): write.delete.isolation-level=snapshot отключает validateNoConflictingAppends → нет K2; iter1-результат был неверным (методология)"}
+  - {pending: cow_dml, committed: [append],
+     outcome: K1, overlap: partition, when: {isolation: snapshot}}
+  - {pending: cow_dml, committed: [stream_upsert],
+     outcome: K2, overlap: partition, when: {isolation: snapshot},
+     note: "отличие от гипотезы (K1): при snapshot CoW вызывает validateNoConflictingDeletes (SW:527); equality deletes upsert попадают под conflictDetectionFilter. Пилот: 3/3 K2 (v2, v3)"}
   - {pending: cow_dml, committed: [cow_dml, rewrite_data], outcome: K2, overlap: file, symmetric: true}
   - {pending: cow_dml, committed: [mor_dml], outcome: K2, overlap: file,
-     note: "новые delete-файлы для прочитанных файлов"}
+     note: "новые delete-файлы для переписываемых файлов (validateNoConflictingDeletes)"}
 
-  # --- pending: mor_dml (общее правило, итерация 1) ---
-  # Итерация 2 использует разбивку на mor_delete / mor_update / mor_merge.
-  # iter2: MoR DELETE не вызывает validateNoConflictingDataFiles (scan null или не используется) → K1 везде.
+  # --- pending: mor_dml (= MoR DELETE, частичное удаление строк файла) ---
+  # Итерация 2 («MoR DELETE → K1») — артефакт: удалялись все строки файла → metadata delete.
+  # SPDW:282-284: validateNoConflictingDataFiles при SERIALIZABLE для любой команды, включая DELETE;
+  # SPDW:269: validateDataFilesExist(referencedDataFiles) всегда.
   - {pending: mor_dml, committed: [append, stream_upsert, overwrite],
-     outcome: K1, overlap: predicate,
-     note: "iter2 подтверждено K1 (20/20): MoR DELETE не проверяет conflictDetectionFilter — scan null или validateNoConflictingDataFiles не вызывается для DELETE-команды"}
+     outcome: K2, overlap: predicate, when: {isolation: serializable},
+     note: "SPDW:282-284; пилот 3/3 K2 (v2, v3)"}
   - {pending: mor_dml, committed: [append, stream_upsert],
      outcome: K1, overlap: none, when: {isolation: snapshot}}
-  - {pending: mor_dml, committed: [cow_dml, rewrite_data], outcome: K1, overlap: file,
-     note: "iter2 K1 (20/20): pending DELETE не валидирует file-конфликты; обратное направление (cow_dml/rewrite_data×mor_dml) — K2 (подтверждено отдельными правилами)"}
-  - {pending: mor_dml, committed: [mor_dml], outcome: K1, overlap: file,
-     note: "iter2 K1 (20/20): DELETE×DELETE — нет взаимной валидации position deletes"}
+  - {pending: mor_dml, committed: [cow_dml, rewrite_data], outcome: K2, overlap: file, symmetric: true,
+     note: "файлы, на которые ссылаются position deletes, удалены: validateDataFilesExist (SPDW:269)"}
+  - {pending: mor_dml, committed: [mor_dml], outcome: K1, overlap: file, when: {format_version: 2},
+     note: "отличие от гипотезы (K2): DELETE не вызывает validateNoConflictingDeleteFiles (SPDW:277-280); в v2 допускаются два файла position deletes на один data-файл"}
+  - {pending: mor_dml, committed: [mor_dml], outcome: K2, overlap: file, when: {format_version: 3},
+     note: "v3: не более одного DV на data-файл — validateAddedDVs вызывается всегда (BRD:172, MSP:909-915)"}
 
-  # --- pending: mor_delete (MoR DELETE) ---
-  # iter2: MoR DELETE не вызывает validateNoConflictingDataFiles → K1 для всех committed-операций.
-  # Причина: SparkPositionDeltaWrite для DELETE-команды не использует scan для conflict detection.
+  # --- pending: mor_delete / mor_update / mor_merge — подтипы mor_dml (оператор SQL) ---
   - {pending: mor_delete, committed: [append, stream_upsert, overwrite],
-     outcome: K1, overlap: predicate, when: {isolation: serializable},
-     note: "iter2 K1 (20/20): MoR DELETE не валидирует new data files — validateNoConflictingDataFiles не вызывается или scan null"}
+     outcome: K2, overlap: predicate, when: {isolation: serializable}, note: "SPDW:282-284"}
   - {pending: mor_delete, committed: [append, stream_upsert],
      outcome: K1, overlap: none, when: {isolation: snapshot}}
-  - {pending: mor_delete, committed: [cow_dml, rewrite_data], outcome: K1, overlap: file,
-     note: "iter2 K1 (20/20): pending DELETE не валидирует file-конфликты"}
-  - {pending: mor_delete, committed: [mor_delete], outcome: K1, overlap: file,
-     note: "iter2 v2 K1 (20/20): два position-delete потока — нет конфликта"}
-  - {pending: mor_delete, committed: [mor_delete], outcome: K1, overlap: file,
-     when: {format_version: 3},
-     note: "iter2 v3 K1 (20/20): DV — нет взаимной валидации"}
-  - {pending: mor_delete, committed: [mor_update, mor_merge], outcome: K1, overlap: predicate,
-     note: "iter2 K1 (20/20): DELETE не валидирует новые data-файлы от UPDATE/MERGE"}
+  - {pending: mor_delete, committed: [cow_dml, rewrite_data], outcome: K2, overlap: file, note: "SPDW:269"}
+  - {pending: mor_delete, committed: [mor_delete], outcome: K1, overlap: file, when: {format_version: 2},
+     note: "SPDW:277-280"}
+  - {pending: mor_delete, committed: [mor_delete], outcome: K2, overlap: file, when: {format_version: 3},
+     note: "BRD:172, MSP:909-915"}
+  - {pending: mor_delete, committed: [mor_update, mor_merge], outcome: K2, overlap: predicate,
+     note: "новые data-файлы UPDATE/MERGE под фильтром DELETE: SPDW:282-284"}
 
-  # --- pending: mor_update (MoR UPDATE) ---
   - {pending: mor_update, committed: [append, stream_upsert, overwrite],
-     outcome: K2, overlap: predicate, when: {isolation: serializable},
-     note: "validateNoConflictingDataFiles с conflictDetectionFilter"}
+     outcome: K2, overlap: predicate, when: {isolation: serializable}}
   - {pending: mor_update, committed: [cow_dml, rewrite_data], outcome: K2, overlap: file}
   - {pending: mor_update, committed: [mor_delete], outcome: K2, overlap: file,
-     note: "committed DELETE создаёт delete-файлы для файлов, читаемых UPDATE (validateNoConflictingDeleteFiles)"}
+     note: "validateNoConflictingDeleteFiles для UPDATE/MERGE (SPDW:277-280)"}
   - {pending: mor_update, committed: [mor_update, mor_merge], outcome: K2, overlap: predicate}
 
-  # --- pending: mor_merge (MoR MERGE) ---
   - {pending: mor_merge, committed: [append, stream_upsert, overwrite],
      outcome: K2, overlap: predicate, when: {isolation: serializable}}
   - {pending: mor_merge, committed: [cow_dml, rewrite_data], outcome: K2, overlap: file}
@@ -125,30 +133,32 @@ rules:
   - {pending: rewrite_data, committed: [mor_dml], outcome: K2, overlap: file, symmetric: true,
      note: "новые position deletes / DV для переписываемых файлов"}
 
-  # --- pending: rewrite_deletes ---
-  # Требует наличия position-delete файлов (создаются only mor_dml).
-  # Итерация 1: overlap={} для всех пар без prior mor_dml → not conclusive.
-  - {pending: rewrite_deletes, committed: [mor_dml, rewrite_data, cow_dml], outcome: K2, overlap: file}
-  - {pending: rewrite_deletes, committed: [append, stream_upsert], outcome: K1, overlap: none}
+  # --- pending: rewrite_deletes (только v2) ---
+  # v3: при одних DV rewrite_position_delete_files ничего не коммитит
+  # (RewritePositionDeleteFilesSparkAction.java:121-124); пилот v3: коммита нет.
+  - {pending: rewrite_deletes, committed: [mor_dml], outcome: K2, overlap: file,
+     when: {format_version: 2},
+     note: "MoR DELETE заменяет delete-файл того же data-файла (SPDW:255-258, removeDeletes) → ValidationException «Missing required files to delete»"}
+  - {pending: rewrite_deletes, committed: [rewrite_data, cow_dml], outcome: K1, overlap: file,
+     when: {format_version: 2},
+     note: "отличие от гипотезы (K2): BaseRewriteFiles.validate (core/.../BaseRewriteFiles.java:135-142) проверяет только заменённые data-файлы; переписывание одних delete-файлов не валидируется → коммитятся «висячие» deletes. Пилот 3/3 K1 при доказанном file-перекрытии"}
+  - {pending: rewrite_deletes, committed: [append, stream_upsert], outcome: K1, overlap: none,
+     when: {format_version: 2}}
 
-  # --- pending: expire ---
-  # Итерация 1 (b0df3ca, v2): expire×append даёт success (не K1) — подтверждено 20/20.
-  # ExpireSnapshots без validateFromSnapshot(); удаляет старые снапшоты, не data-файлы.
-  # ГИПОТЕЗА: success распространяется на все committed-операции — проверить в итерации 2.
+  # --- expire (older_than = момент запуска, retain_last = 1) ---
+  # Тело коммита expire: только remove-snapshots; требования — только assert-table-uuid
+  # (UR:50-58; remove-snapshots не добавляет требований, UR:93-115). Ссылку main expire не
+  # меняет → assert-ref-snapshot-id операции над данными выполняется.
   - {pending: expire, committed: "*", outcome: success, overlap: none,
-     note: "гипотеза (×append подтверждено 20/20, итер.1); expire не вступает в OCC-конфликт; проверить ×cow_dml/rewrite_data/mor_dml"}
+     note: "отличие от c6e9a4e (K1): UR:50-58, 93-115 — нет требования к main"}
+  - {pending: [rewrite_data, cow_dml, mor_dml], committed: expire, outcome: success, overlap: none,
+     note: "базовый снапшот = текущий, expire его не удаляет; main не меняется"}
+  # append в другую партицию + expire: базовый снапшот pending удалён (проверяется по телу коммита)
+  - {pending: [rewrite_data, cow_dml], committed: append_expire, outcome: K1, overlap: none,
+     note: "исследовательский (гипотезы нет; c6e9a4e: «проверить»): история валидации доходит до снапшота, чей parent = базовый (MSP:990-994) → проверка проходит"}
+  - {pending: mor_update, committed: append_expire, outcome: "error:IllegalArgumentException", overlap: none,
+     note: "исследовательский: RowDelta требует, чтобы базовый снапшот был предком текущего (BRD:134-139); удалённый снапшот не найден → IllegalArgumentException без повтора: работа потеряна, как при K2, но вне классов K1/K2"}
 
-  # --- expire в обратную сторону (committed = expire) ---
-  # iter2: expire не изменяет текущий data-snapshot (ExpireSnapshots обновляет только metadata,
-  # не меняет current snapshot ID) → OCC CAS-проверка для data-операций не срабатывает → success.
-  - {pending: rewrite_data, committed: expire, outcome: success, overlap: none,
-     note: "iter2 success (20/20): expire не меняет current snapshot ID → нет CAS 409 для data-op"}
-  - {pending: cow_dml, committed: expire, outcome: success, overlap: none,
-     note: "iter2 success (20/20)"}
-  - {pending: mor_dml, committed: expire, outcome: success, overlap: none,
-     note: "iter2 success (20/20)"}
-
-# Заполняется на этапе 1
 verified:
   - {"pending": "append", "committed": "append", "isolation": "serializable", "format_version": 2, "client": "1.12.0", "catalog_server": "b0df3ca", "trials": 20, "observed": {"K1": 20}, "matches": true, "date": "2026-10-23"}
   - {"pending": "stream_upsert", "committed": "append", "isolation": "serializable", "format_version": 2, "client": "1.12.0", "catalog_server": "b0df3ca", "trials": 20, "observed": {"K1": 20}, "matches": true, "date": "2026-10-23"}
