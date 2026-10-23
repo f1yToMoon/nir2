@@ -224,8 +224,9 @@ def _setup_table(spark: Any, case: Case, need_delete_files: bool = False) -> Non
         USING iceberg PARTITIONED BY (bkt)
         TBLPROPERTIES ({tprops})
     """)
-    # Insert initial rows: bkt 0 and bkt 1 (4 small files each for compaction tests)
-    batches = 4 if case.pending in ("rewrite_data", "rewrite_deletes") else 1
+    # Insert initial rows: 4 small files each if either op is compaction/rewrite
+    _rw_ops = {"rewrite_data", "rewrite_deletes"}
+    batches = 4 if (_rw_ops & {case.pending, case.committed}) else 1
     for b in range(batches):
         for bkt in (0, 1):
             off = b * 100
@@ -288,7 +289,10 @@ def _exec_op(
 
     elif op == "rewrite_data":
         spark.sql(f"""
-            CALL {cat}.system.rewrite_data_files(table => '{NS}.{table}')
+            CALL {cat}.system.rewrite_data_files(
+                table => '{NS}.{table}',
+                options => map('min-input-files','1')
+            )
         """)
 
     elif op == "rewrite_deletes":
@@ -311,15 +315,17 @@ def _run_one_trial(
     seq: int,
     with_overlap: bool,
 ) -> dict[str, Any]:
-    """Run one trial; return {'outcome': 'K1'|'K2'|'success'|'error', 'exc': str}."""
+    """Run one trial; return outcome dict with validity flag.
+
+    validity=True  → held + committed_ok; counts toward match rate
+    validity=False → hold missed or committed failed; recorded separately
+    """
     pending_bkt   = 0
     committed_bkt = 0 if with_overlap else 1   # no overlap → different partition
 
-    # 1. Count existing pending commits to detect new arrival
-    before_commits = requests.get(
-        f"{ADV_URL}/_capl/debug/last-commits", timeout=10
-    ).json()
-    pre_count = sum(1 for c in before_commits if c["slot"] == PENDING_SLOT)
+    # 1. Record timestamp before hold to identify new commits for this trial
+    import time as _time
+    trial_start_ts = round(_time.time() * 1000)  # milliseconds
 
     # 2. Register hold
     r = requests.post(
@@ -343,7 +349,7 @@ def _run_one_trial(
     thr = threading.Thread(target=_pending, daemon=True)
     thr.start()
 
-    # 3. Wait for pending commit to arrive at proxy (max 45 s)
+    # 3. Poll proxy until pending commit held (max 45 s)
     held = False
     deadline = time.monotonic() + 45
     while time.monotonic() < deadline:
@@ -351,13 +357,16 @@ def _run_one_trial(
         commits = requests.get(
             f"{ADV_URL}/_capl/debug/last-commits", timeout=10
         ).json()
-        cur_count = sum(1 for c in commits if c["slot"] == PENDING_SLOT)
-        if cur_count > pre_count:
+        new_pending = [
+            c for c in commits
+            if c.get("slot") == PENDING_SLOT and c.get("ts", 0) >= trial_start_ts
+        ]
+        if new_pending:
             held = True
             break
 
     if not held:
-        # Pending op failed before reaching commit (or expired); release and collect
+        # Pending op failed before reaching commit; release and collect
         with contextlib.suppress(Exception):
             requests.delete(
                 f"{ADV_URL}/v1/debug/hold/{PENDING_SLOT}", timeout=5
@@ -366,13 +375,19 @@ def _run_one_trial(
         if "result" not in outcome:
             outcome["result"] = "no_commit"
         outcome["held"] = False
+        outcome["valid"] = False
         return outcome
 
     outcome["held"] = True
 
-    # 4. Execute committed operation (different slot, no hold)
-    with contextlib.suppress(Exception):
+    # 4. Execute committed operation while pending is held
+    committed_ok = False
+    try:
         _exec_op(spark, case.committed, CAT_C, case.table_name, committed_bkt, seq)
+        committed_ok = True
+    except Exception:
+        pass
+    outcome["committed_ok"] = committed_ok
 
     # 5. Release hold → pending proceeds
     with contextlib.suppress(Exception):
@@ -384,6 +399,24 @@ def _run_one_trial(
     thr.join(timeout=60)
     if "result" not in outcome:
         outcome["result"] = "timeout"
+
+    # 7. Detect K1 from HTTP 409: Spark retries transparently after 409.
+    #    Check proxy log for any 409 on pending slot commits from this trial.
+    if outcome.get("result") == "success":
+        all_commits = requests.get(
+            f"{ADV_URL}/_capl/debug/last-commits", timeout=10
+        ).json()
+        trial_pending = [
+            c for c in all_commits
+            if c.get("slot") == PENDING_SLOT and c.get("ts", 0) >= trial_start_ts
+        ]
+        got_409 = any(c.get("status") == 409 for c in trial_pending)
+        if got_409:
+            outcome["result"] = "K1"
+            outcome["k1_via_proxy"] = True
+
+    # validity: held AND committed succeeded (so conflict scenario is real)
+    outcome["valid"] = held and committed_ok
 
     return outcome
 
@@ -399,49 +432,63 @@ def test_pair(spark: Any, case: Case) -> None:
     need_deletes = case.pending == "rewrite_deletes"
     _setup_table(spark, case, need_delete_files=need_deletes)
 
-    overlap_outcomes: list[str] = []
+    overlap_valid:   list[str] = []   # valid trials (held + committed_ok)
+    overlap_invalid: list[dict] = []  # invalid trials (not counted)
     control_outcomes: list[str] = []
+
+    def _refill(seq: int) -> None:
+        """Keep enough small files so rewrite/dml ops always have data to act on."""
+        full = f"{CAT_P}.{NS}.{case.table_name}"
+        roff = 20000 + seq * 100
+        for bkt in (0, 1):
+            spark.sql(f"""
+                INSERT INTO {full}
+                SELECT (id + {roff}) AS id, {bkt} AS bkt,
+                       CONCAT('refill-{seq}-', CAST(id + {roff} AS STRING)) AS val
+                FROM RANGE(10)
+            """)
+        if case.pending == "rewrite_deletes" or case.committed == "rewrite_deletes":
+            spark.sql(f"DELETE FROM {full} WHERE bkt = 0 AND id >= {roff} AND id < {roff + 5}")
 
     # --- overlap trials ---
     for seq in range(TRIALS_OVERLAP):
         result = _run_one_trial(spark, case, seq, with_overlap=True)
-        overlap_outcomes.append(result.get("result", "error"))
-        # After each trial refresh table data so pending has something to act on
-        if case.pending in ("mor_dml", "cow_dml", "rewrite_data", "rewrite_deletes"):
-            full = f"{CAT_P}.{NS}.{case.table_name}"
-            roff = 20000 + seq * 50
-            spark.sql(f"""
-                INSERT INTO {full}
-                SELECT (id + {roff}) AS id, 0 AS bkt,
-                       CONCAT('refill-{seq}-', CAST(id + {roff} AS STRING)) AS val
-                FROM RANGE(20)
-            """)
+        if result.get("valid", True):
+            overlap_valid.append(result.get("result", "error"))
+        else:
+            overlap_invalid.append(result)
+        _rw_ops_refill = {"mor_dml", "cow_dml", "rewrite_data", "rewrite_deletes"}
+        if _rw_ops_refill & {case.pending, case.committed}:
+            _refill(seq)
 
     # --- control trials (no overlap) ---
     for seq in range(TRIALS_CONTROL):
         result = _run_one_trial(spark, case, 1000 + seq, with_overlap=False)
         control_outcomes.append(result.get("result", "error"))
 
-    # --- aggregate ---
-    overlap_counts  = dict(Counter(overlap_outcomes))
+    # --- aggregate (valid trials only) ---
+    overlap_counts  = dict(Counter(overlap_valid))
     control_counts  = dict(Counter(control_outcomes))
 
     expected = case.expected
-    match_rate = overlap_counts.get(expected, 0) / max(len(overlap_outcomes), 1)
+    valid_n = len(overlap_valid)
+    match_rate = overlap_counts.get(expected, 0) / max(valid_n, 1)
 
     _all_results[case.case_id] = {
-        "pending":         case.pending,
-        "committed":       case.committed,
-        "isolation":       case.isolation,
-        "format_version":  case.fmt_ver,
-        "overlap":         case.overlap,
-        "expected":        expected,
-        "overlap_counts":  overlap_counts,
-        "control_counts":  control_counts,
-        "trials_overlap":  TRIALS_OVERLAP,
-        "trials_control":  TRIALS_CONTROL,
-        "match_rate":      round(match_rate, 3),
-        "matches":         match_rate >= 0.95,
+        "pending":          case.pending,
+        "committed":        case.committed,
+        "isolation":        case.isolation,
+        "format_version":   case.fmt_ver,
+        "overlap":          case.overlap,
+        "expected":         expected,
+        "overlap_counts":   overlap_counts,
+        "overlap_invalid":  len(overlap_invalid),
+        "control_counts":   control_counts,
+        "trials_overlap":   TRIALS_OVERLAP,
+        "trials_control":   TRIALS_CONTROL,
+        "valid_trials":     valid_n,
+        "match_rate":       round(match_rate, 3),
+        "matches":          match_rate >= 0.95,
     }
 
     # Persist results incrementally
@@ -449,12 +496,14 @@ def test_pair(spark: Any, case: Case) -> None:
     with open(RESULTS_FILE, "w") as fh:
         json.dump(_all_results, fh, indent=2)
 
-    # Assert ≥ 95% match rate
-    assert match_rate >= 0.95, (
-        f"Case {case.case_id}: expected {expected} in ≥95% of overlap trials, "
-        f"got {overlap_counts} (match_rate={match_rate:.2%})"
+    assert valid_n >= max(TRIALS_OVERLAP // 2, 3), (
+        f"Case {case.case_id}: only {valid_n}/{TRIALS_OVERLAP} valid trials "
+        f"(invalid={len(overlap_invalid)}); too few to judge"
     )
-    # Control: should NOT be K2 (no overlap → no data conflict)
+    assert match_rate >= 0.95, (
+        f"Case {case.case_id}: expected {expected} in ≥95% of valid overlap trials, "
+        f"got {overlap_counts} (valid={valid_n}, match_rate={match_rate:.2%})"
+    )
     if expected == "K2":
         k2_control = control_counts.get("K2", 0)
         assert k2_control == 0, (

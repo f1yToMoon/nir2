@@ -88,21 +88,26 @@ async def proxy(request: Request, path: str) -> Response:
     is_commit = request.method == "POST" and (
         COMMIT_RE.match("/" + path) or TXN_COMMIT_RE.match("/" + path)
     )
+    entry: dict[str, Any] | None = None
     if is_commit:
         slot   = request.headers.get("X-CAPL-Slot", "")
         writer = request.headers.get("X-CAPL-Writer", "")
         run    = request.headers.get("X-CAPL-Run", "")
         log.info("commit_attempt", path="/" + path, slot=slot, writer=writer, run=run)
-        _last_commits.append(
-            {"path": "/" + path, "slot": slot, "writer": writer, "run": run}
-        )
+        import time as _time
+        entry = {"path": "/" + path, "slot": slot, "writer": writer, "run": run,
+                 "status": None, "hold_ms": None,
+                 "ts": round(_time.time() * 1000)}
+        _last_commits.append(entry)
         # Hold: if this slot is registered, wait until released or timeout
         if slot in _holds:
             evt = _holds[slot]
+            t0 = asyncio.get_event_loop().time()
             try:
                 await asyncio.wait_for(evt.wait(), timeout=HOLD_MAX_S)
             except TimeoutError:
                 log.warning("hold_timeout", slot=slot, max_s=HOLD_MAX_S)
+            entry["hold_ms"] = round((asyncio.get_event_loop().time() - t0) * 1000)
 
     upstream_resp = await _client.request(
         method=request.method,
@@ -110,6 +115,8 @@ async def proxy(request: Request, path: str) -> Response:
         headers=headers,
         content=body,
     )
+    if entry is not None:
+        entry["status"] = upstream_resp.status_code
 
     resp_headers = {
         k: v
@@ -135,6 +142,13 @@ async def healthz() -> dict[str, str]:
 @advisor_app.get("/_capl/debug/last-commits")
 async def debug_last_commits() -> list[dict[str, Any]]:
     return list(_last_commits)
+
+
+@advisor_app.delete("/_capl/debug/last-commits")
+async def debug_clear_commits() -> dict[str, Any]:
+    n = len(_last_commits)
+    _last_commits.clear()
+    return {"cleared": n}
 
 
 class HoldRequest(BaseModel):
