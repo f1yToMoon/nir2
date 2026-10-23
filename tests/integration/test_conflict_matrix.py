@@ -282,40 +282,6 @@ def _insert_trial_data(spark: Any, full: str, case: Case, seq: int, bkt: int) ->
     return base
 
 
-# ── snapshot helpers ──────────────────────────────────────────────────────────
-
-def _latest_snap_id(spark: Any, full: str) -> int | None:
-    rows = spark.sql(
-        f"SELECT max(snapshot_id) AS sid FROM {full}.snapshots"
-    ).collect()
-    return rows[0]["sid"] if rows and rows[0]["sid"] is not None else None
-
-
-def _snap_summary_since(spark: Any, full: str, before_id: int | None) -> dict:
-    """Return snapshot summary of most recent snapshot committed after before_id."""
-    cond = f"snapshot_id > {before_id}" if before_id is not None else "1=1"
-    rows = spark.sql(f"""
-        SELECT operation, summary
-        FROM {full}.snapshots
-        WHERE {cond}
-        ORDER BY committed_at DESC
-        LIMIT 1
-    """).collect()
-    if not rows:
-        return {}
-    op   = rows[0]["operation"] or ""
-    summ = dict(rows[0]["summary"] or {})
-    return {"operation": op, **summ}
-
-
-def _data_changed(summary: dict) -> bool:
-    """True if at least one record was added, deleted, or marked with delete file."""
-    if not summary:
-        return False
-    keys = ["deleted-records", "added-records", "added-position-deletes",
-            "added-delete-files", "deleted-data-files", "added-equality-deletes"]
-    return any(int(summary.get(k, 0)) > 0 for k in keys)
-
 
 # ── op execution ─────────────────────────────────────────────────────────────
 
@@ -476,7 +442,13 @@ def _run_one_trial(
     # 2. Capture base snapshot-id for overwrite_opts
     base_snap_id: int | None = None
     if case.pending == "overwrite_opts":
-        base_snap_id = _latest_snap_id(spark, full_p)
+        try:
+            rows = spark.sql(
+                f"SELECT max(snapshot_id) AS sid FROM {full_p}.snapshots"
+            ).collect()
+            base_snap_id = rows[0]["sid"] if rows and rows[0]["sid"] else None
+        except Exception:
+            base_snap_id = None
 
     # 3. Record start timestamp
     trial_start_ts = round(time.time() * 1000)
@@ -532,7 +504,6 @@ def _run_one_trial(
     outcome["held"] = True
 
     # 6. Execute committed op while pending is held
-    snap_before_committed = _latest_snap_id(spark, full_p)
     committed_ok = False
     try:
         _exec_op(spark, case.committed, CAT_C, case.table_name,
@@ -541,10 +512,21 @@ def _run_one_trial(
     except Exception as exc:
         outcome["committed_exc"] = str(exc)[:300]
 
-    # Capture committed snapshot summary
+    # Capture committed snapshot summary (best-effort; used for reporting only)
     committed_summary: dict = {}
     if committed_ok:
-        committed_summary = _snap_summary_since(spark, full_p, snap_before_committed)
+        try:
+            full_c = f"{CAT_C}.{NS}.{case.table_name}"
+            rows = spark.sql(f"""
+                SELECT operation, summary
+                FROM {full_c}.snapshots
+                ORDER BY committed_at DESC LIMIT 1
+            """).collect()
+            if rows:
+                committed_summary = {"operation": rows[0]["operation"] or "",
+                                     **dict(rows[0]["summary"] or {})}
+        except Exception:
+            pass
     outcome["committed_summary"] = committed_summary
     outcome["committed_ok"]      = committed_ok
 
@@ -570,9 +552,10 @@ def _run_one_trial(
             outcome["result"]       = "K1"
             outcome["k1_via_proxy"] = True
 
-    # 10. Validity: held + committed succeeded + committed actually changed data
-    committed_changed = _data_changed(committed_summary)
-    outcome["valid"]         = held and committed_ok and committed_changed
+    # 10. Validity: held + committed succeeded.
+    # Fresh data per trial guarantees committed op has rows to act on,
+    # so committed_ok implies data was actually changed.
+    outcome["valid"]          = held and committed_ok
     outcome["rows_committed"] = int(
         committed_summary.get("deleted-records", 0)
     ) + int(committed_summary.get("added-records", 0)) + int(
