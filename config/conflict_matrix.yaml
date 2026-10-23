@@ -62,7 +62,8 @@ rules:
   - {pending: cow_dml, committed: [append, stream_upsert, overwrite],
      outcome: K2, overlap: partition, when: {isolation: serializable}}
   - {pending: cow_dml, committed: [append, stream_upsert],
-     outcome: K1, overlap: partition, when: {isolation: snapshot}}
+     outcome: K2, overlap: partition, when: {isolation: snapshot},
+     note: "iter1 подтверждено K2 (20/20): write.delete.isolation-level=snapshot не отключает validateNoConflictingAppends для cow_dml в Iceberg 1.12.0-b0df3ca"}
   - {pending: cow_dml, committed: [cow_dml, rewrite_data], outcome: K2, overlap: file, symmetric: true}
   - {pending: cow_dml, committed: [mor_dml], outcome: K2, overlap: file,
      note: "новые delete-файлы для прочитанных файлов"}
