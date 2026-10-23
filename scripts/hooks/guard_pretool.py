@@ -6,6 +6,8 @@
    и, для этапов 1 и 4, без решения автора в отчёте контрольной точки (GO/CORRECT/PIVOT).
 2. Попытку агента отметить «Решение автора» в docs/gate-G*-report.md (Edit/Write/Bash).
 3. Изменение уже записанного файла ревью (ревью неизменяемы; новое мнение — новый раунд).
+4. Изменение агентом механизма приёмки: хуков, настроек Claude, ревьюера, скиллов, docs/REVIEWER.md.
+   Эти файлы меняет только автор, вручную, вне Claude.
 """
 from __future__ import annotations
 
@@ -28,6 +30,21 @@ from review_lib import (  # noqa: E402
 ROOT = Path(os.environ.get("CLAUDE_PROJECT_DIR", ".")).resolve()
 TAG_RE = re.compile(r"\bgit\s+tag\b(?![^;&|]*\s-d\b)[^;&|]*?\bstage-(\d+)\b")
 GATE_FILE_RE = re.compile(r"docs/gate-G\d-report\.md")
+PROTECTED_RE = re.compile(
+    r"(^|[\s'\"=/])("
+    r"\.claude/settings(\.local)?\.json|\.claude/agents/|\.claude/skills/|"
+    r"scripts/hooks/|docs/REVIEWER\.md"
+    r")"
+)
+WRITE_CMD_RE = re.compile(
+    r"(sed\s+-i|perl\s+-p?i|\btee\b|>>?|\brm\b|\bmv\b|\bcp\b|git\s+rm|git\s+checkout|"
+    r"git\s+restore|chmod|truncate|python3?\s+-c|\bln\b)"
+)
+PROTECTED_MSG = (
+    "Запрещено: файлы механизма приёмки (.claude/settings*.json, .claude/agents/, .claude/skills/, "
+    "scripts/hooks/, docs/REVIEWER.md) меняет только автор вручную. Если правило мешает, "
+    "опиши проблему в отчёте этапа и остановись."
+)
 
 
 def block(msg: str) -> None:
@@ -76,6 +93,8 @@ def main() -> None:
             check_tag(int(m.group(1)))
         if GATE_FILE_RE.search(cmd) and text_sets_decision(cmd):
             block("Запрещено: отмечать «Решение автора» в отчёте контрольной точки может только автор.")
+        if PROTECTED_RE.search(cmd) and WRITE_CMD_RE.search(cmd):
+            block(PROTECTED_MSG)
         if re.search(r"docs/reviews/stage-\d+-r\d+\.md", cmd) and re.search(
             r"(sed\s+-i|>\s*docs/reviews|tee\s+docs/reviews|rm\s|git\s+rm|mv\s)", cmd
         ):
@@ -88,6 +107,8 @@ def main() -> None:
         new_text = tin.get("new_string") or tin.get("content") or ""
         if tool == "MultiEdit":
             new_text = "\n".join(e.get("new_string", "") for e in tin.get("edits", []))
+        if PROTECTED_RE.search("/" + rel.replace(os.sep, "/")):
+            block(PROTECTED_MSG)
         if GATE_FILE_RE.search(rel) and text_sets_decision(new_text):
             block("Запрещено: отмечать «Решение автора» в отчёте контрольной точки может только автор. "
                   "Оставь поле пустым и попроси автора.")
