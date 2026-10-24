@@ -3,7 +3,7 @@
 | Поле | Значение |
 | --- | --- |
 | Дата | 2026-10-24 |
-| Данные | `results/stage-1/iter4/` (прогон `make matrix-verify NAME=iter4` на коммите `e4c4096`, 186 кейсов, 4600 повторов в парах + 10 одиночных), воспроизводит `results/stage-1/iter3/`; отчёт `docs/stage-1-report.md` |
+| Данные | `results/stage-1/iter5/` (прогон `make matrix-verify NAME=iter5` на коммите `286d1bf`, 188 парных кейсов — 90 различных пар операций, 4700 повторов, все валидны, + 10 одиночных повторов), исходы общих кейсов совпадают с `iter3` и `iter4`; отчёт `docs/stage-1-report.md` |
 | Рекомендация агента | CORRECT |
 | Решение автора | _заполняет автор_ |
 
@@ -12,9 +12,9 @@
 | Критерий | Порог | Фактическое значение | Выполнен |
 | --- | --- | --- | --- |
 | К2 подтверждён для групп пар сценариев S2–S5: компакция × CoW DML, компакция × MoR DML, DML × append при `serializable`, DML × DML | ≥ 3 из 4 групп | 4 из 4; в каждой группе есть пары с K2 в 20/20 валидных повторах (v2 и v3), в том числе на схеме таблицы сценариев (компакция ⇄ MERGE, компакция ⇄ MoR UPDATE), см. отчёт §4.1 | да |
-| Наблюдаемые исходы совпадают с ожидаемыми (исходная гипотеза) | ≥ 95 % повторов | **72,9 %** (1240/1700, 62/85 пар) против `c6e9a4e` (до опытов) на исходных классах операций; 80,0 % (1360/1700) против `fd593a5` (уже содержит поправку итерации 1 по expire). Справочно, с вариантами операций, сопоставленными классам гипотезы после пилота: 84,5 % / 89,3 % — не метрика G1 | нет |
+| Наблюдаемые исходы совпадают с ожидаемыми (исходная гипотеза) | ≥ 95 % повторов | **72,9 %** (1240/1700, 62 из 85 кейсов «пара × формат × изоляция») против `c6e9a4e` (до опытов) на исходных классах операций; 80,0 % (1360/1700) против `fd593a5` (уже содержит поправку итерации 1 по expire). Справочно, с вариантами операций, сопоставленными классам гипотезы после пилота: 83,0 % / 87,5 % — не метрика G1 | нет |
 
-Доверительные интервалы не приводятся: исходы внутри каждой пары детерминированы (во всех 186 кейсах 20 из 20 валидных повторов дали один и тот же исход; 174 кейса, общие с `iter3`, дали те же исходы), разброс между повторами отсутствует.
+Доверительные интервалы не приводятся: исходы внутри каждой пары детерминированы (во всех 188 парных кейсах 20 из 20 валидных повторов дали один и тот же исход; общие кейсы `iter3`, `iter4`, `iter5` дали те же исходы), разброс между повторами отсутствует.
 
 ## 2. Подробности
 
@@ -22,21 +22,21 @@
 
 | Пары | Повторов | Гипотеза → факт | Механизм |
 | --- | --- | --- | --- |
-| `overwrite` (DataFrame `overwritePartitions()`) без опций записи × 6 операций (v2, v3) | 240 | K2 → K1 | валидацию `ReplacePartitions` включает опция записи `isolation-level` (`SparkWrite.java:353-356`); с ней и `validate-from-snapshot-id` — K2 20/20; SQL `INSERT OVERWRITE` опций не передаёт — K1 20/20 |
+| `overwrite` (DataFrame `overwritePartitions()`) без опций записи × 6 операций (v2, v3) | 240 | K2 → K1 | валидацию `ReplacePartitions` включает опция записи `isolation-level` (`SparkWrite.java:353-356`); с ней и `validate-from-snapshot-id` — K2 20/20; SQL `INSERT OVERWRITE` без `WITH (…)` — K1 20/20, с `WITH ('isolation-level'=…, 'validate-from-snapshot-id'=…)` — K2 20/20 |
 | `expire` × {append, cow_dml, rewrite_data} (v2, v3) | 120 | K1 → success | у коммита expire нет требования к `main` (`UpdateRequirements.java:50-58, 93-115`) |
 | `cow_dml × stream_upsert`, snapshot (v2, v3) | 40 | K1 → K2 | `validateNoConflictingDeletes` при snapshot (`SparkWrite.java:527`) |
 | `mor_dml × mor_dml` (MoR DELETE × DELETE), v2 (то же у `mor_delete × mor_delete`, вне основной метрики) | 20 | K2 → K1 | DELETE не проверяет delete-файлы (`SparkPositionDeltaWrite.java:277-280`); в v3 — K2 (`validateAddedDVs`) |
 | `rewrite_deletes × {rewrite_data, cow_dml}`, v2 | 40 | K2 → K1 | `BaseRewriteFiles.java:135-142` |
 
-Итого 460 несовпавших повторов из 1700 (23 пары из 85). Из пар групп критерия 1 расходится только MoR DELETE × DELETE в v2 (группа DML × DML подтверждена остальными парами, в том числе той же парой в v3). Сценарные пары (S2, S3, S5): DML × append — K2 20/20, компакция × append — K1 20/20; MERGE без целевого предиката имеет фильтр конфликтов `true` и конфликтует с любым append (контроль K2 5/5).
+Итого 460 несовпавших повторов из 1700 (23 кейса из 85). Из пар групп критерия 1 расходится только MoR DELETE × DELETE в v2 (группа DML × DML подтверждена остальными парами, в том числе той же парой в v3). Сценарные пары (S2, S3, S5): DML × append — K2 20/20, компакция × append — K1 20/20; MERGE без целевого предиката имеет фильтр конфликтов `true` и конфликтует с любым append (контроль K2 5/5).
 
-Тепловые карты: `results/stage-1/iter4/heatmap-v2.png`, `heatmap-v3.png`; метрика: `results/stage-1/iter4/g1.json`, `update_matrix.out`.
+Тепловые карты: `results/stage-1/iter5/heatmap-v2.png`, `heatmap-v3.png`; метрика: `results/stage-1/iter5/g1.json`, `update_matrix.out`.
 
 ## 3. Риски при продолжении
 
-- Сценарий S4 `reprocess_day` (`type: overwrite`, `params: {isolation_level_option: serializable}`) без `validate-from-snapshot-id` будет отказывать с `ValidationException` на каждом запуске, даже без параллельных операций: история валидации берётся от начала таблицы (`SparkWrite.java:349-356`, `MergingSnapshotProducer.java:967-994`). Проверено опытом: `test_overwrite_iso_only`, 10/10 повторов (v2, v3), ни одного коммита в журнале прокси. Метрики S4 были бы искажены ложными К2.
+- Сценарий S4 `reprocess_day` (`type: overwrite`, `params: {isolation_level_option: serializable}`) без `validate-from-snapshot-id` будет отказывать с `ValidationException` на каждом запуске, даже без параллельных операций: история валидации берётся от начала таблицы (`SparkWrite.java:349-356`, `MergingSnapshotProducer.java:967-994`). Проверено опытом: `test_overwrite_iso_only`, 10/10 повторов (v2, v3), ни одного коммита в журнале прокси. Метрики S4 были бы искажены ложными К2. Опции можно задать и в SQL: `INSERT OVERWRITE t WITH ('isolation-level'='serializable', 'validate-from-snapshot-id'=<снапшот планирования>) PARTITION (…)` — проверено кейсом `insert_overwrite_opts` (K2 20/20, контроль K1).
 - Сценарий S3 `delete_rewrite` (`rewrite_deletes`) в варианте `v3_deletion_vectors` ничего не коммитит.
-- Новый класс исхода (MoR-операция отказывает с `IllegalArgumentException` после удаления её базового снапшота) не описан в ТЗ и не учитывается метками runner (`ValidationException` / `CommitFailedException`).
+- Новый класс исхода (MoR-операция отказывает с `IllegalArgumentException` после удаления её базового снапшота) введён в классификатор `runner/ops/errors.py` (`base_expired`), но не описан в ТЗ: AGENTS.md, ограничение 6, знает только `ValidationException` → `data_conflict` и `CommitFailedException` → `retry_exhausted`.
 - Данные этапа малы (десятки строк на файл); частота конфликтов при реальных объёмах — предмет этапов 3–4.
 
 ## 4. Варианты действий

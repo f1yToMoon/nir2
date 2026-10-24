@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 2026-10-24 — этап 1, итерация 5 (ответ на ревью stage-1-r3)
+
+- SQL `INSERT OVERWRITE … WITH ('isolation-level', 'validate-from-snapshot-id')` (`insert_overwrite_opts`): K2 20/20, контроль K1; утверждение «SQL не передаёт опции записи» снято (ADR-006, отчёт G1).
+- `insert_overwrite(_opts)` сопоставлены классу `overwrite` в метрике; контроль сценарных пар засевается двумя файлами на партицию.
+- Полный прогон `results/stage-1/iter5/` (188 парных кейсов, 4700/4700 повторов валидны); G1-2 на исходных классах — 72,9 % / 80,0 %.
+- S1-R3-02 решено автором (`1885bc5`).
+
 ## 2026-10-24 — этап 1, итерация 4 (ответ на ревью stage-1-r2)
 
 - Механизм `overwrite` исправлен: валидацию `ReplacePartitions` включает одна опция `isolation-level`; без `validate-from-snapshot-id` — ложный К2 без параллельных операций (опыт `test_overwrite_iso_only`, 10/10). Риск S4 в отчёте G1 переписан.

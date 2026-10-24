@@ -1,11 +1,11 @@
-# Отчёт по этапу 1: Эмпирическая матрица конфликтов — итерации 3–4
+# Отчёт по этапу 1: Эмпирическая матрица конфликтов — итерации 3–5
 
 | Поле | Значение |
 | --- | --- |
 | Даты | 2026-10-22 — 2026-10-24 |
-| Коммит / тег | итоговый прогон `iter4` на `e4c4096` (результаты `6915446`); прогон `iter3` на `d28f773` (результаты `9bdc43b`), пилоты `93bd283`; тега нет (G1 — решение автора) |
+| Коммит / тег | итоговый прогон `iter5` на `286d1bf` (результаты `596332d`); прогоны `iter4` на `e4c4096` (`6915446`), `iter3` на `d28f773` (результаты `9bdc43b`), пилоты `93bd283`; тега нет (G1 — решение автора) |
 | Версии | клиент Iceberg 1.12.0 (`iceberg-spark-runtime-4.0_2.13-1.12.0`), Spark 4.0.1 (кластер `spark://spark-master:7077`, 2 воркера), сервер каталога — REST fixture `b0df3ca`, SeaweedFS 4.48; Flink в этапе не используется (см. §5) |
-| Статус | Итерации 3–4 завершены; критерий G1-2 против исходной гипотезы не выполнен (72,9 % на исходных классах операций), см. `docs/gate-G1-report.md` |
+| Статус | Итерации 3–5 завершены; критерий G1-2 против исходной гипотезы не выполнен (72,9 % на исходных классах операций), см. `docs/gate-G1-report.md` |
 
 ## 1. Цель этапа
 
@@ -20,11 +20,13 @@
 - `src/runner/ops/errors.py`: класс исхода — по самому глубокому `org.apache.iceberg.exceptions.*` в цепочке `Caused by` (обёртка Spark-действий компакции называет оба класса в тексте); класс `base_expired` для `Snapshot … is not an ancestor of …` (`BaseRowDelta.java:134-139`).
 - `tests/integration/test_conflict_matrix.py` — переписан (см. §3), `tests/integration/log4j2-matrix.properties` — захват commit message Spark с `conflictDetectionFilter`.
 - `scripts/update_matrix.py`: метрика G1 против исходной гипотезы (`c6e9a4e`, `fd593a5`), основная — на исходных классах операций; тепловые карты v2/v3, `g1.json`; `scripts/matrix_verify.sh` + `make matrix-verify`: v2 и v3 параллельно (разные Spark-приложения и слоты удержания).
-- `config/conflict_matrix.yaml`: `format_versions: [2, 3]`, правила исправлены по пилоту, каждое отличие от гипотезы — со ссылкой `файл:строка`; `verified` — 186 записей.
+- `config/conflict_matrix.yaml`: `format_versions: [2, 3]`, правила исправлены по пилоту, каждое отличие от гипотезы — со ссылкой `файл:строка`; `verified` — 190 записей.
 - `docs/decisions/ADR-006-matrix-iter3-corrections.md` — все исправления матрицы.
 - Unit-тесты: `tests/unit/test_effects.py`, `tests/unit/test_proxy_digest.py` (19 тестов; до итерации 3 `make test-unit` падал с кодом 5 — 0 тестов).
 
 Итерация 4 (ответ на ревью r2): исправлено описание механизма `overwrite` и добавлен опыт `test_overwrite_iso_only`; кейсы SQL `INSERT OVERWRITE … PARTITION`; сценарные пары компакция ⇄ MERGE/UPDATE на схеме сценариев; попытки коммита в сценарных повторах; основная метрика G1-2 — на исходных классах; полный перепрогон `iter4`.
+
+Итерация 5 (ответ на ревью r3): SQL `INSERT OVERWRITE … WITH (…)` (`insert_overwrite_opts`), исправлены формулировки о SQL; `insert_overwrite(_opts)` сопоставлены классу `overwrite` в `HYP_CLASS`; контроль сценарных пар засевается двумя файлами на партицию «другого дня»; полный перепрогон `iter5`.
 
 ## 3. Методика повтора и проверки валидности
 
@@ -40,25 +42,25 @@
 | expire реально удалил снапшоты | `remove-snapshots` с ≥ 1 id в теле; для `append_expire` — базовый снапшот pending среди удалённых |
 | пересечение есть (повтор с пересечением) / нет (контроль) | следы из манифестов обоих снапшотов (py4j `SnapshotParser.fromJson` + `addedDataFiles/removedDataFiles/addedDeleteFiles/removedDeleteFiles`); манифесты pending читаются, пока он удержан. `file` — пересечение множеств затронутых data-файлов (удалённые + цели delete-файлов; для v2 position deletes цели читаются из колонки `file_path`), `partition` — пересечение партиций, `predicate` — границы id новых файлов committed пересекают предикат pending |
 
-Операции: MoR DELETE удаляет 10 из 48 (12 в компакционных кейсах) строк файла; MERGE содержит целевой предикат в `ON`; `overwrite_opts` — DataFrame `overwritePartitions()` с опциями `isolation-level=serializable` и `validate-from-snapshot-id` = текущий снапшот, прочитанный через Java API; `insert_overwrite` — SQL `INSERT OVERWRITE … PARTITION (bkt = …)`; `expire` — `older_than` = момент запуска (строка `YYYY-MM-DD HH:MM:SS.mmm`, UTC), `retain_last => 1`; `stream_upsert` — `RowDelta(addRows + equality deletes)` через Java API без валидаций, как коммитит Flink (`flink/v1.20/.../IcebergFilesCommitter.java:361-365`); `cow_dml` использует UPDATE или MERGE так, чтобы оператор не совпадал с MoR-оператором пары (режим записи задаётся на оператор).
+Операции: MoR DELETE удаляет 10 из 48 (12 в компакционных кейсах) строк файла; MERGE содержит целевой предикат в `ON`; `overwrite_opts` — DataFrame `overwritePartitions()` с опциями `isolation-level=serializable` и `validate-from-snapshot-id` = текущий снапшот, прочитанный через Java API; `insert_overwrite` — SQL `INSERT OVERWRITE … PARTITION (bkt = …)` без опций; `insert_overwrite_opts` — то же с `WITH ('isolation-level' = 'serializable', 'validate-from-snapshot-id' = <текущий снапшот>)`; `expire` — `older_than` = момент запуска (строка `YYYY-MM-DD HH:MM:SS.mmm`, UTC), `retain_last => 1`; `stream_upsert` — `RowDelta(addRows + equality deletes)` через Java API без валидаций, как коммитит Flink (`flink/v1.20/.../IcebergFilesCommitter.java:361-365`); `cow_dml` использует UPDATE или MERGE так, чтобы оператор не совпадал с MoR-оператором пары (режим записи задаётся на оператор).
 
-Проверка способна упасть (P3): в пилотах она отклонила 86 повторов («no file overlap» до чтения `file_path`, «no remove-snapshots update», «pending not held» у `rewrite_deletes` в v3; `results/stage-1/iter3/pilot1`, `pilot2`); в `iter4` — 3 контрольных повтора (§4).
+Проверка способна упасть (P3): в пилотах она отклонила 86 повторов («no file overlap» до чтения `file_path`, «no remove-snapshots update», «pending not held» у `rewrite_deletes` в v3; `results/stage-1/iter3/pilot1`, `pilot2`); в `iter4` — 3 контрольных повтора (одиночный файл на партицию «другого дня» — binpack не переписывает, `SizeBasedFileRewritePlanner.java:189-191`); после засева двумя файлами в `iter5` — 0.
 
 ## 4. Результаты проверок
 
-| Проверка (из плана) | Тип | Ожидаемо | Фактически (`iter4`) | Итог |
+| Проверка (из плана) | Тип | Ожидаемо | Фактически (`iter5`) | Итог |
 | --- | --- | --- | --- | --- |
-| `make matrix-verify` — тест проходит, YAML обновлён | auto | тест проходит | v2: `98 passed, 1 warning in 2829.97s`; v3: `88 passed, 1 warning in 2318.87s`; `verified` — 186 записей; все 186 кейсов совпадают с исправленной матрицей | PASS |
-| ≥ 20 повторов на пару + контроль | auto | 20 + контроль | 20 + 5 на каждый из 184 парных кейсов (4600 повторов: 3680 с пересечением, 920 контрольных); + 2 × 5 повторов `overwrite_iso_only` без параллельной операции. Валидны 4597; отклонены 3 контрольных повтора (seq 1000) в парах `DML × compaction_where`: в «другом дне» по одному файлу на партицию, binpack группу из одного файла не переписывает (`SizeBasedFileRewritePlanner.java:189-191`, `group.size() > 1`) → коммита committed нет | PASS |
+| `make matrix-verify` — тест проходит, YAML обновлён | auto | тест проходит | v2: `100 passed, 1 warning in 2855.62s`; v3: `90 passed, 1 warning in 2352.31s`; `verified` — 190 записей; все 190 кейсов совпадают с исправленной матрицей | PASS |
+| ≥ 20 повторов на пару + контроль | auto | 20 + контроль | 20 + 5 на каждый из 188 парных кейсов (4700 повторов: 3760 с пересечением, 940 контрольных); + 2 × 5 повторов `overwrite_iso_only` без параллельной операции. Валидны **4700 из 4700** | PASS |
 | Контроль без пересечения: K2 = 0 | auto | 0 | K2 = 0 во всех кейсах, кроме `merge_upsert_unscoped` (5/5, задано до прогона, §4.3) | PASS |
 | Каждое расхождение объяснено кодом | manual | ссылка класс/метод | ADR-006, комментарии правил в YAML | PASS |
 | G1-1: K2 в ≥ 3 из 4 групп | auto | ≥ 3 | 4/4 (§4.1) | PASS |
-| G1-2: совпадение с исходной гипотезой | auto | ≥ 95 % повторов | **72,9 %** (1240/1700, 62/85 пар) против `c6e9a4e` на исходных классах операций; 80,0 % (1360/1700) против `fd593a5` | **FAIL** |
+| G1-2: совпадение с исходной гипотезой | auto | ≥ 95 % повторов | **72,9 %** (1240/1700; 62 из 85 кейсов «пара × формат × изоляция») против `c6e9a4e` на исходных классах операций; 80,0 % (1360/1700) против `fd593a5` | **FAIL** |
 | `make lint typecheck test-unit` | auto | зелёные | `All checks passed!`; `Success: no issues found in 3 source files`; `19 passed` | PASS |
 
-Команды: `make up`, `make smoke` (11 PASS / 0 FAIL; первый запуск сразу после старта стенда — 10 / 1, повторный — 11 / 0), `make matrix-verify NAME=iter4` (логи `results/stage-1/iter4/pytest-v{2,3}.log.gz`, вывод `update_matrix.out`, `g1.json`).
+Команды: `make up`, `make smoke` (11 PASS / 0 FAIL; первый запуск сразу после старта стенда — 10 / 1, повторный — 11 / 0), `make matrix-verify NAME=iter5` (логи `results/stage-1/iter5/pytest-v{2,3}.log.gz`, вывод `update_matrix.out`, `g1.json`).
 
-Воспроизводимость: 174 кейса, общие для `iter3` и `iter4`, дали одинаковые исходы в повторах с пересечением и одинаковое число K2 в контроле (у двух кейсов `mor_update × append_expire` изменилась только метка: `error:IllegalArgumentException` → `base_expired`). Во всех 186 кейсах 20 из 20 валидных повторов дали один исход.
+Воспроизводимость: 186 кейсов, общие для `iter4` и `iter5`, дали одинаковые исходы в повторах с пересечением и одинаковое число K2 в контроле; 174 кейса, общие для `iter3` и `iter4`, — тоже (у двух кейсов `mor_update × append_expire` изменилась только метка: `error:IllegalArgumentException` → `base_expired`). Во всех 188 парных кейсах 20 из 20 валидных повторов дали один исход.
 
 ### 4.1 G1, критерий 1
 
@@ -73,16 +75,16 @@
 
 Сравнение — по каждому валидному повтору с пересечением (`scripts/update_matrix.py`, `g1_metric`; при нескольких подходящих правилах берётся наиболее специфичное).
 
-Основная метрика — только кейсы, у которых обе операции принадлежат исходным классам гипотезы (`append, stream_upsert, overwrite, cow_dml, mor_dml, rewrite_data, rewrite_deletes, expire`), без сценарных кейсов. Кейсы без правила в гипотезе (6: `* × expire`) исключены.
+Кейс — пара операций (pending, committed) × формат × уровень изоляции (× вариант); различных пар операций в прогоне 90, из них в исходных классах — 41 (91 кейс, из них 85 с правилом в гипотезе). Основная метрика — только кейсы, у которых обе операции принадлежат исходным классам гипотезы (`append, stream_upsert, overwrite, cow_dml, mor_dml, rewrite_data, rewrite_deletes, expire`), без сценарных кейсов. Кейсы без правила в гипотезе (6: `* × expire`) исключены.
 
-| Гипотеза | Совпало повторов | Пар (≥ 95 %) | Расходятся (кейсов × 20 повторов) |
+| Гипотеза | Совпало повторов | Кейсов (≥ 95 %) | Расходятся (кейсов × 20 повторов) |
 | --- | --- | --- | --- |
 | `c6e9a4e` (до опытов) | 1240 / 1700 = **72,9 %** | 62 / 85 | overwrite без опций × 6 операций (12), expire × {append, cow_dml, rewrite_data} (6), `cow_dml × stream_upsert` snapshot (2), MoR DELETE × DELETE v2 (1), `rewrite_deletes × {rewrite_data, cow_dml}` (2) |
 | `fd593a5` (после итерации 1) | 1360 / 1700 = **80,0 %** | 68 / 85 | то же без expire |
 
-Отдельно — с вариантами операций, добавленными после пилота и сопоставленными классам гипотезы (`mor_delete/update/merge`, `update_status` → `mor_dml`; `overwrite_opts`, `insert_overwrite` → `overwrite`; `merge_upsert*`, `delete_by_keys` → `cow_dml`; `compaction_where` → `rewrite_data`): 2840/3360 = 84,5 % (`c6e9a4e`), 3000/3360 = 89,3 % (`fd593a5`). Эти числа не являются метрикой G1: в частности, `overwrite_opts` построен так, чтобы выполнялось условие гипотезы «overwrite → K2».
+Отдельно — с вариантами операций, добавленными после пилота и сопоставленными классам гипотезы (`mor_delete/update/merge`, `update_status` → `mor_dml`; `overwrite_opts`, `insert_overwrite`, `insert_overwrite_opts` → `overwrite`; `merge_upsert*`, `delete_by_keys` → `cow_dml`; `compaction_where` → `rewrite_data`; `scripts/update_matrix.py:HYP_CLASS`): 2920/3520 = 83,0 % (`c6e9a4e`), 3080/3520 = 87,5 % (`fd593a5`). Без гипотезы (не входят ни в одну строку): `* × expire`, `* × append_expire`, `overwrite_iso_only`. Эти числа не являются метрикой G1: в частности, `overwrite_opts` построен так, чтобы выполнялось условие гипотезы «overwrite → K2».
 
-Порог 95 % не выполнен ни в одном варианте подсчёта. Расходящиеся пары и их механизмы — ADR-006. Исправленная матрица отдельно: 186/186 кейсов совпадают с ней (регрессионная проверка, не метрика G1).
+Порог 95 % не выполнен ни в одном варианте подсчёта. Расходящиеся пары и их механизмы — ADR-006. Исправленная матрица отдельно: 190/190 кейсов совпадают с ней (регрессионная проверка, не метрика G1).
 
 ### 4.3 Сценарные пары (схема `dt × bucket(8, key)` из `_base.yaml`)
 
@@ -94,19 +96,19 @@
 | S5 `delete_by_keys` × append | v2 | K2 20/20 | K1 5/5 | `key in (k₀, k₀+5, …, k₀+45)` |
 | S2/S3 компакция `where dt = <день>` × append | v2, v3 | K1 20/20 | K1 5/5 | — (RewriteFiles) |
 | S2 компакция × `merge_upsert` | v2 | K2 20/20 | K1 5/5 | — |
-| S2 `merge_upsert` × компакция | v2 | K2 20/20 | K1 4/4 валидных | `dt == 20787` |
+| S2 `merge_upsert` × компакция | v2 | K2 20/20 | K1 5/5 | `dt == 20787` |
 | S3 компакция × `update_status` | v2, v3 | K2 20/20 | K1 5/5 | — |
-| S3 `update_status` × компакция | v2, v3 | K2 20/20 | K1 4/4 валидных | `dt == 20787 and key …` |
+| S3 `update_status` × компакция | v2, v3 | K2 20/20 | K1 5/5 | `dt == 20787 and key …` |
 
 20787 — 2026-11-30 в днях от эпохи. Фильтр конфликтов MERGE строится только из целевых предикатов скана (`SW:445-455`); без литерального предиката на целевую таблицу он равен `true`, и MERGE конфликтует с любым append в таблицу. Предикат `t.dt = …` сужает его до партиций дня, но не до ключей.
 
 ### 4.4 Тексты исключений (для `runner/ops/errors.py`)
 
-K2 — `org.apache.iceberg.exceptions.ValidationException` (2125 повторов, из них 5 — контроль unscoped MERGE). Сообщения:
+K2 — `org.apache.iceberg.exceptions.ValidationException` (2205 повторов, из них 5 — контроль unscoped MERGE). Сообщения:
 
 | Сообщение | Повторов | Где возникает |
 | --- | --- | --- |
-| `Found conflicting files that can contain records matching <filter>` | 985 | новые data-файлы под фильтром (CoW/MoR DML × append/upsert/overwrite; `overwrite_opts` — фильтр по партициям) |
+| `Found conflicting files that can contain records matching <filter>` | 1065 | новые data-файлы под фильтром (CoW/MoR DML × append/upsert/overwrite; `overwrite_opts`, `insert_overwrite_opts` — фильтр по партициям) |
 | `Cannot commit, missing data files` | 520 | файлы, на которые ссылаются deletes, удалены (MoR × CoW/компакция) |
 | `Missing required files to delete` | 220 | удаляемые файлы уже удалены (компакция × компакция/CoW, `rewrite_deletes × mor_dml`) |
 | `Found new conflicting delete files that can apply to records matching …` | 120 | MoR UPDATE/MERGE × новые deletes |
@@ -114,7 +116,7 @@ K2 — `org.apache.iceberg.exceptions.ValidationException` (2125 повторо�
 | `Found conflicting deleted files that can apply to records matching …` | 40 | |
 | `Found concurrently added DV for …` | 40 | v3, DV × DV |
 
-Компакция (`rewrite_data_files`, `rewrite_position_delete_files`) оборачивает и `ValidationException`, и `CommitFailedException` в `RuntimeException: Cannot commit rewrite because of a ValidationException or CommitFailedException…` (`RewriteDataFilesSparkAction.java:306-314`, `RewritePositionDeleteFilesSparkAction.java:238-248`); класс определяется по `Caused by`. K1 — HTTP 409 на первую попытку в журнале прокси (2072 повтора `[409, 200]`); исчерпания повторов (`CommitFailedException`) не наблюдалось. `base_expired` — `IllegalArgumentException: Snapshot … is not an ancestor of …` (50 повторов, MoR после удаления базового снапшота, ADR-006). `overwrite_iso_only` — `ValidationException` в 10/10 повторах без параллельной операции, ни одного коммита в журнале прокси.
+Компакция (`rewrite_data_files`, `rewrite_position_delete_files`) оборачивает и `ValidationException`, и `CommitFailedException` в `RuntimeException: Cannot commit rewrite because of a ValidationException or CommitFailedException…` (`RewriteDataFilesSparkAction.java:306-314`, `RewritePositionDeleteFilesSparkAction.java:238-248`); класс определяется по `Caused by`. K1 — HTTP 409 на первую попытку в журнале прокси (2095 повторов `[409, 200]`); исчерпания повторов (`CommitFailedException`) не наблюдалось. `base_expired` — `IllegalArgumentException: Snapshot … is not an ancestor of …` (50 повторов, MoR после удаления базового снапшота, ADR-006). `overwrite_iso_only` — `ValidationException` в 10/10 повторах без параллельной операции, ни одного коммита в журнале прокси.
 
 ## 5. Отклонения от ТЗ
 
@@ -133,9 +135,9 @@ K2 — `org.apache.iceberg.exceptions.ValidationException` (2125 повторо�
 
 ## 7. Что переносится в текст ВКР
 
-В данной работе эмпирическая матрица конфликтов оптимистичного контроля параллелизма (Optimistic Concurrency Control, OCC) построена для Apache Iceberg 1.12.0 (Spark 4.0, форматы таблиц v2 и v3) по 184 парам операций с 20 повторами с пересечением и 5 контрольными повторами на пару; валидность каждого повтора подтверждена по телам коммитов и манифестам снапшотов (4597 из 4600 повторов). Конфликт данных (К2) воспроизводится детерминированно (20 из 20 повторов) во всех четырёх группах пар, лежащих в основе сценариев: компакция × CoW DML, компакция × MoR DML, DML × append при уровне изоляции `serializable` и DML × DML, в том числе на схеме таблицы сценариев. Таким образом, проблема, решаемая в работе, существует.
+В данной работе эмпирическая матрица конфликтов оптимистичного контроля параллелизма (Optimistic Concurrency Control, OCC) построена для Apache Iceberg 1.12.0 (Spark 4.0, форматы таблиц v2 и v3) по 188 кейсам (90 различных пар операций в форматах v2 и v3, при разных уровнях изоляции и вариантах операций) с 20 повторами с пересечением и 5 контрольными повторами на кейс; валидность каждого из 4700 повторов подтверждена по телам коммитов и манифестам снапшотов. Конфликт данных (К2) воспроизводится детерминированно (20 из 20 повторов) во всех четырёх группах пар, лежащих в основе сценариев: компакция × CoW DML, компакция × MoR DML, DML × append при уровне изоляции `serializable` и DML × DML, в том числе на схеме таблицы сценариев. Таким образом, проблема, решаемая в работе, существует.
 
-Исходная гипотеза о матрице подтвердилась в 72,9 % повторов (62 из 85 пар исходных классов операций). Расхождения объясняются кодом валидации конкретной версии: во-первых, перезапись партиций (`ReplacePartitions`) проверяет конфликты только при опции записи `isolation-level`, а без указания начального снапшота проверяет всю историю партиции и отказывает даже без параллельных операций; во-вторых, MoR DELETE в формате v2 не проверяет параллельные delete-файлы, тогда как в v3 ограничение «один вектор удалений на файл» делает ту же пару конфликтной; в-третьих, переписывание delete-файлов не проверяет удаление data-файлов, на которые они ссылаются; в-четвёртых, удаление снапшотов (`expire_snapshots`) не порождает конфликта каталога, однако удаление базового снапшота MoR-операции приводит к её отказу без повтора.
+Исходная гипотеза о матрице подтвердилась в 72,9 % повторов (62 из 85 кейсов исходных классов операций). Расхождения объясняются кодом валидации конкретной версии: во-первых, перезапись партиций проверяет конфликты только при опции записи `isolation-level` (в DataFrame API и в SQL через `INSERT OVERWRITE … WITH (…)`), а без указания начального снапшота проверяет всю историю партиции и отказывает даже без параллельных операций; во-вторых, MoR DELETE в формате v2 не проверяет параллельные delete-файлы, тогда как в v3 ограничение «один вектор удалений на файл» делает ту же пару конфликтной; в-третьих, переписывание delete-файлов не проверяет удаление data-файлов, на которые они ссылаются; в-четвёртых, удаление снапшотов (`expire_snapshots`) не порождает конфликта каталога, однако удаление базового снапшота MoR-операции приводит к её отказу без повтора.
 
 Фильтр обнаружения конфликтов (`conflictDetectionFilter`) строится из предикатов скана целевой таблицы; для MERGE без предиката на целевую таблицу он вырождается в `true`, и операция конфликтует с любой параллельной записью в таблицу.
 
@@ -195,3 +197,14 @@ K2 — `org.apache.iceberg.exceptions.ValidationException` (2125 повторо�
 | S1-R2-08 | Класс исхода `base_expired` в `runner/ops/errors.py` (регулярное выражение `Snapshot … is not an ancestor of …`), unit-тест | `403a80e` | `mor_update × append_expire`: `base_expired` 20/20 + 5/5 (v2, v3) |
 
 Предложения ревьюера в `docs/REVIEWER.md` (дополнения к P6 и P8) переданы автору; файл защищён от изменений агентом.
+
+### Ревью `docs/reviews/stage-1-r3.md`
+
+| ID | Что сделано | Где (файл, коммит) | Подтверждено числом |
+| --- | --- | --- | --- |
+| S1-R3-01 | Замечание верно. Утверждение «SQL не передаёт опции записи» снято. K1 у SQL `INSERT OVERWRITE` без `WITH` — следствие отсутствия опции `isolation-level` (`SW:393-402`), а не ограничение SQL. Добавлен кейс `insert_overwrite_opts`: `INSERT OVERWRITE t WITH ('isolation-level' = 'serializable', 'validate-from-snapshot-id' = <текущий снапшот>) PARTITION (bkt = …)`. Исправлены ADR-006 (таблица, «Последствия»), отчёт G1 §2 и §3 (риск S4: опции задаются и в SQL), комментарии YAML и теста | `tests/integration/test_conflict_matrix.py` (`_exec_op`), `config/conflict_matrix.yaml`; `286d1bf` | `iter5`: `insert_overwrite_opts × {append, cow_dml}` — K2 20/20 (v2, v3), контроль K1 5/5; без `WITH` — K1 20/20 |
+| S1-R3-02 | Решено автором: удаление `# noqa` в файлах хуков подтверждено, хуки обновлены автором (`1885bc5`). Агент больше не запускает `ruff --fix` по `scripts/` | — | — |
+| S1-R3-03 | `insert_overwrite` и `insert_overwrite_opts` сопоставлены классу `overwrite` в `HYP_CLASS`; в §4.2 перечислены кейсы «без гипотезы» | `scripts/update_matrix.py` (`286d1bf`) | справочная строка: 2920/3520 = 83,0 % (`c6e9a4e`), 3080/3520 = 87,5 % (`fd593a5`); основная не изменилась — 72,9 % / 80,0 % |
+| S1-R3-04 | Везде «кейс» (пара × формат × изоляция × вариант) отличён от пары операций: 188 парных кейсов, 90 различных пар; в метрике G1-2 — 85 кейсов (41 пара) | `docs/stage-1-report.md` §4, §4.2, §7, `docs/gate-G1-report.md` | подсчёт по `iter5/v{2,3}/matrix_results.json.gz` |
+| S1-R3-05 | Контроль сценарных пар засевает «другой день» двумя файлами на партицию; компакция в контроле коммитит с первого повтора | `_sc_trial` (`286d1bf`) | `iter5`: контроль валиден 5/5 во всех 13 сценарных кейсах; невалидных повторов 0 из 4700 (в `iter4` — 3) |
+| S1-R3-06 | Формулировка исправлена: класс `base_expired` введён в `runner/ops/errors.py`, но не описан в ТЗ (AGENTS.md, ограничение 6) | `docs/gate-G1-report.md` §3 | — |
