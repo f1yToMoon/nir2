@@ -36,7 +36,8 @@ MIN_VALID = 10
 HYP_CLASS: dict[str, str] = {
     "mor_delete": "mor_dml", "mor_update": "mor_dml", "mor_merge": "mor_dml",
     "update_status": "mor_dml",
-    "overwrite_opts": "overwrite",
+    "overwrite_opts": "overwrite", "insert_overwrite": "overwrite",
+    "insert_overwrite_opts": "overwrite",
     "merge_upsert": "cow_dml", "merge_upsert_unscoped": "cow_dml", "delete_by_keys": "cow_dml",
     "compaction_where": "rewrite_data",
 }

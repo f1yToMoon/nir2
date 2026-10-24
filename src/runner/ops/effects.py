@@ -31,6 +31,7 @@ OP_KIND: dict[str, str] = {
     "overwrite":            "overwrite",
     "overwrite_opts":       "overwrite",
     "insert_overwrite":     "overwrite",
+    "insert_overwrite_opts": "overwrite",
     "cow_dml":              "cow_dml",
     "merge_upsert":         "cow_dml",
     "merge_upsert_unscoped": "cow_dml",

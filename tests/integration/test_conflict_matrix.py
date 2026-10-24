@@ -485,11 +485,17 @@ def _exec_op(spark: Any, jv: Jv, case: Case, op: str, cat: str, bkt: int, seq: i
         """)
     elif op == "stream_upsert":
         _upsert_java(jv, jv.table(cat, table), bkt, lo, seq)
-    elif op == "insert_overwrite":
-        # SQL, static partition overwrite → OverwriteByFilter (SparkWrite.java:374-404);
-        # SQL cannot pass write options, so isolation-level is never set
+    elif op in ("insert_overwrite", "insert_overwrite_opts"):
+        # SQL, static partition overwrite → OverwriteByFilter (SparkWrite.java:374-404).
+        # Validation is enabled only by the write option isolation-level (SparkWrite.java:
+        # 393-402); SQL passes write options with INSERT OVERWRITE t WITH (...) (Spark 4.0).
+        opts = ""
+        if op == "insert_overwrite_opts":
+            assert base_snapshot_id is not None, "insert_overwrite_opts needs the base snapshot id"
+            opts = (f"WITH ('isolation-level' = 'serializable', "
+                    f"'validate-from-snapshot-id' = '{base_snapshot_id}')")
         spark.sql(f"""
-            INSERT OVERWRITE {full} PARTITION (bkt = {bkt})
+            INSERT OVERWRITE {full} {opts} PARTITION (bkt = {bkt})
             SELECT CAST({lo} + id AS INT), CONCAT('{op}-{seq}-', CAST(id AS STRING))
             FROM RANGE({DML_ROWS})
         """)
@@ -958,7 +964,12 @@ def _sc_trial(spark: Any, jv: Jv, case: ScenarioCase, seq: int, with_overlap: bo
                   f"{_sc_rows(k0 + i * (SC_ROWS // 4), SC_ROWS // 4, SC_DAY, f'seed-{seq}')}")
     c_k0, c_day = (k0, SC_DAY) if with_overlap else (k0 + 500_000, SC_OTHER_DAY)
     if not with_overlap:
-        spark.sql(f"INSERT INTO {full_p} {_sc_rows(c_k0, SC_ROWS // 4, c_day, f'seed-{seq}')}")
+        # two files per partition of the other day: binpack skips single-file groups
+        # (SizeBasedFileRewritePlanner.java:189-191), compaction there must commit
+        for i in range(2):
+            half = SC_KEYS // 2
+            spark.sql(f"INSERT INTO {full_p} "
+                      f"{_sc_rows(c_k0 + i * half, half, c_day, f'seed-{seq}')}")
 
     t_start = round(time.time() * 1000)
     r = requests.post(f"{ADV_URL}/v1/debug/hold",

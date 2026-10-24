@@ -66,10 +66,14 @@ rules:
   - {pending: overwrite, committed: [append, stream_upsert],
      outcome: K1, overlap: partition, when: {isolation: snapshot}}
 
-  # --- SQL INSERT OVERWRITE ... PARTITION (статический режим → OverwriteByFilter, SW:374-404):
-  # SQL не передаёт опции записи → isolation-level не задан → валидации нет
+  # --- SQL INSERT OVERWRITE ... PARTITION (статический режим → OverwriteByFilter, SW:374-404).
+  # Валидацию включает опция записи isolation-level (SW:393-402). В SQL опции записи задаются
+  # INSERT OVERWRITE t WITH (...) (Spark 4.0); без WITH опции не заданы → валидации нет → K1.
   - {pending: insert_overwrite, committed: [append, cow_dml], outcome: K1, overlap: partition,
-     when: {isolation: serializable}, note: "SW:390-401: валидации только при опции isolation-level"}
+     when: {isolation: serializable}, note: "без WITH (...) опция isolation-level не задана (SW:393-402)"}
+  - {pending: insert_overwrite_opts, committed: [append, cow_dml], outcome: K2, overlap: partition,
+     when: {isolation: serializable},
+     note: "WITH ('isolation-level'='serializable','validate-from-snapshot-id'=<base>): та же валидация, что у DataFrame (SW:393-402)"}
 
   # --- pending: overwrite_opts (ReplacePartitions с isolation-level=serializable и
   #     validate-from-snapshot-id = текущий снапшот до операции) → K2 ---
