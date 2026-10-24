@@ -1,4 +1,4 @@
-# ADR-006: Исправления матрицы конфликтов по итерации 3 этапа 1
+# ADR-006: Исправления матрицы конфликтов по итерациям 3–4 этапа 1
 
 **Статус:** Предложено (ждёт решения автора на G1)
 **Дата:** 2026-10-23
@@ -6,7 +6,7 @@
 
 ## Контекст
 
-Итерация 3 этапа 1 (`make matrix-verify NAME=iter3`, коммит `d28f773`, результаты `results/stage-1/iter3/`) проверила 174 пары (форматы v2 и v3, 20 повторов с пересечением + 5 контрольных), все 4350 повторов валидны по данным (журнал прокси, манифесты снапшотов). Исходная гипотеза (`config/conflict_matrix.yaml` на `c6e9a4e`) совпала с наблюдениями в 84,0 % валидных повторов (2720/3240) — ниже порога G1 (95 %). Ниже — все отличия, каждое объяснено кодом Iceberg 1.12.0 / Spark 4.0 (`third_party/iceberg-src`, тег `apache-iceberg-1.12.0`).
+Итерация 4 этапа 1 (`make matrix-verify NAME=iter4`, коммит `e4c4096`, результаты `results/stage-1/iter4/`; повторяет итерацию 3 `results/stage-1/iter3/` с теми же исходами и добавляет кейсы по ревью stage-1-r2) проверила 186 кейсов (форматы v2 и v3, 20 повторов с пересечением + 5 контрольных); валидны по данным (журнал прокси, манифесты снапшотов) 4597 из 4600 повторов. На исходных классах операций гипотезы (`config/conflict_matrix.yaml` на `c6e9a4e`) совпадение — 72,9 % валидных повторов (1240/1700, 62 из 85 пар), ниже порога G1 (95 %). Ниже — все отличия, каждое объяснено кодом Iceberg 1.12.0 / Spark 4.0 (`third_party/iceberg-src`, тег `apache-iceberg-1.12.0`).
 
 Сокращения путей: `SW` = `spark/v4.0/spark/src/main/java/org/apache/iceberg/spark/source/SparkWrite.java`, `SPDW` = `.../SparkPositionDeltaWrite.java`, `BRD` = `core/src/main/java/org/apache/iceberg/BaseRowDelta.java`, `BRF` = `core/.../BaseRewriteFiles.java`, `MSP` = `core/.../MergingSnapshotProducer.java`, `UR` = `core/.../UpdateRequirements.java`.
 
