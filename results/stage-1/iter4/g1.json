@@ -1,0 +1,1286 @@
+{
+ "groups": {
+  "компакция x CoW DML": {
+   "members": [
+    {
+     "case": "cow_dml_x_rewrite_data_serializable_v2",
+     "k2": 20,
+     "valid": 20,
+     "confirmed": true
+    },
+    {
+     "case": "cow_dml_x_rewrite_data_serializable_v3",
+     "k2": 20,
+     "valid": 20,
+     "confirmed": true
+    },
+    {
+     "case": "rewrite_data_x_cow_dml_serializable_v2",
+     "k2": 20,
+     "valid": 20,
+     "confirmed": true
+    },
+    {
+     "case": "rewrite_data_x_cow_dml_serializable_v3",
+     "k2": 20,
+     "valid": 20,
+     "confirmed": true
+    },
+    {
+     "case": "sc_S2_compaction_where_x_merge_upsert_v2",
+     "k2": 20,
+     "valid": 20,
+     "confirmed": true
+    },
+    {
+     "case": "sc_S2_merge_upsert_x_compaction_where_v2",
+     "k2": 20,
+     "valid": 20,
+     "confirmed": true
+    }
+   ],
+   "confirmed": true
+  },
+  "компакция x MoR DML": {
+   "members": [
+    {
+     "case": "mor_delete_x_rewrite_data_serializable_v2",
+     "k2": 20,
+     "valid": 20,
+     "confirmed": true
+    },
+    {
+     "case": "mor_delete_x_rewrite_data_serializable_v3",
+     "k2": 20,
+     "valid": 20,
+     "confirmed": true
+    },
+    {
+     "case": "mor_dml_x_rewrite_data_serializable_v2",
+     "k2": 20,
+     "valid": 20,
+     "confirmed": true
+    },
+    {
+     "case": "mor_dml_x_rewrite_data_serializable_v3",
+     "k2": 20,
+     "valid": 20,
+     "confirmed": true
+    },
+    {
+     "case": "mor_merge_x_rewrite_data_serializable_v2",
+     "k2": 20,
+     "valid": 20,
+     "confirmed": true
+    },
+    {
+     "case": "mor_merge_x_rewrite_data_serializable_v3",
+     "k2": 20,
+     "valid": 20,
+     "confirmed": true
+    },
+    {
+     "case": "mor_update_x_rewrite_data_serializable_v2",
+     "k2": 20,
+     "valid": 20,
+     "confirmed": true
+    },
+    {
+     "case": "mor_update_x_rewrite_data_serializable_v3",
+     "k2": 20,
+     "valid": 20,
+     "confirmed": true
+    },
+    {
+     "case": "rewrite_data_x_mor_dml_serializable_v2",
+     "k2": 20,
+     "valid": 20,
+     "confirmed": true
+    },
+    {
+     "case": "rewrite_data_x_mor_dml_serializable_v3",
+     "k2": 20,
+     "valid": 20,
+     "confirmed": true
+    },
+    {
+     "case": "sc_S3_compaction_where_x_update_status_v2",
+     "k2": 20,
+     "valid": 20,
+     "confirmed": true
+    },
+    {
+     "case": "sc_S3_compaction_where_x_update_status_v3",
+     "k2": 20,
+     "valid": 20,
+     "confirmed": true
+    },
+    {
+     "case": "sc_S3_update_status_x_compaction_where_v2",
+     "k2": 20,
+     "valid": 20,
+     "confirmed": true
+    },
+    {
+     "case": "sc_S3_update_status_x_compaction_where_v3",
+     "k2": 20,
+     "valid": 20,
+     "confirmed": true
+    }
+   ],
+   "confirmed": true
+  },
+  "DML x append (serializable)": {
+   "members": [
+    {
+     "case": "cow_dml_x_append_serializable_v2",
+     "k2": 20,
+     "valid": 20,
+     "confirmed": true
+    },
+    {
+     "case": "cow_dml_x_append_serializable_v3",
+     "k2": 20,
+     "valid": 20,
+     "confirmed": true
+    },
+    {
+     "case": "mor_delete_x_append_serializable_v2",
+     "k2": 20,
+     "valid": 20,
+     "confirmed": true
+    },
+    {
+     "case": "mor_delete_x_append_serializable_v3",
+     "k2": 20,
+     "valid": 20,
+     "confirmed": true
+    },
+    {
+     "case": "mor_dml_x_append_serializable_v2",
+     "k2": 20,
+     "valid": 20,
+     "confirmed": true
+    },
+    {
+     "case": "mor_dml_x_append_serializable_v3",
+     "k2": 20,
+     "valid": 20,
+     "confirmed": true
+    },
+    {
+     "case": "mor_merge_x_append_serializable_v2",
+     "k2": 20,
+     "valid": 20,
+     "confirmed": true
+    },
+    {
+     "case": "mor_merge_x_append_serializable_v3",
+     "k2": 20,
+     "valid": 20,
+     "confirmed": true
+    },
+    {
+     "case": "mor_update_x_append_serializable_v2",
+     "k2": 20,
+     "valid": 20,
+     "confirmed": true
+    },
+    {
+     "case": "mor_update_x_append_serializable_v3",
+     "k2": 20,
+     "valid": 20,
+     "confirmed": true
+    },
+    {
+     "case": "sc_S2_merge_upsert_unscoped_x_append_v2",
+     "k2": 20,
+     "valid": 20,
+     "confirmed": true
+    },
+    {
+     "case": "sc_S2_merge_upsert_x_append_v2",
+     "k2": 20,
+     "valid": 20,
+     "confirmed": true
+    },
+    {
+     "case": "sc_S3_update_status_x_append_v2",
+     "k2": 20,
+     "valid": 20,
+     "confirmed": true
+    },
+    {
+     "case": "sc_S3_update_status_x_append_v3",
+     "k2": 20,
+     "valid": 20,
+     "confirmed": true
+    },
+    {
+     "case": "sc_S5_delete_by_keys_x_append_v2",
+     "k2": 20,
+     "valid": 20,
+     "confirmed": true
+    }
+   ],
+   "confirmed": true
+  },
+  "DML x DML": {
+   "members": [
+    {
+     "case": "cow_dml_x_cow_dml_serializable_v2",
+     "k2": 20,
+     "valid": 20,
+     "confirmed": true
+    },
+    {
+     "case": "cow_dml_x_cow_dml_serializable_v3",
+     "k2": 20,
+     "valid": 20,
+     "confirmed": true
+    },
+    {
+     "case": "cow_dml_x_mor_dml_serializable_v2",
+     "k2": 20,
+     "valid": 20,
+     "confirmed": true
+    },
+    {
+     "case": "cow_dml_x_mor_dml_serializable_v3",
+     "k2": 20,
+     "valid": 20,
+     "confirmed": true
+    },
+    {
+     "case": "mor_delete_x_cow_dml_serializable_v2",
+     "k2": 20,
+     "valid": 20,
+     "confirmed": true
+    },
+    {
+     "case": "mor_delete_x_cow_dml_serializable_v3",
+     "k2": 20,
+     "valid": 20,
+     "confirmed": true
+    },
+    {
+     "case": "mor_delete_x_mor_delete_serializable_v2",
+     "k2": 0,
+     "valid": 20,
+     "confirmed": false
+    },
+    {
+     "case": "mor_delete_x_mor_delete_serializable_v3",
+     "k2": 20,
+     "valid": 20,
+     "confirmed": true
+    },
+    {
+     "case": "mor_delete_x_mor_merge_serializable_v2",
+     "k2": 20,
+     "valid": 20,
+     "confirmed": true
+    },
+    {
+     "case": "mor_delete_x_mor_merge_serializable_v3",
+     "k2": 20,
+     "valid": 20,
+     "confirmed": true
+    },
+    {
+     "case": "mor_delete_x_mor_update_serializable_v2",
+     "k2": 20,
+     "valid": 20,
+     "confirmed": true
+    },
+    {
+     "case": "mor_delete_x_mor_update_serializable_v3",
+     "k2": 20,
+     "valid": 20,
+     "confirmed": true
+    },
+    {
+     "case": "mor_dml_x_cow_dml_serializable_v2",
+     "k2": 20,
+     "valid": 20,
+     "confirmed": true
+    },
+    {
+     "case": "mor_dml_x_cow_dml_serializable_v3",
+     "k2": 20,
+     "valid": 20,
+     "confirmed": true
+    },
+    {
+     "case": "mor_dml_x_mor_dml_serializable_v2",
+     "k2": 0,
+     "valid": 20,
+     "confirmed": false
+    },
+    {
+     "case": "mor_dml_x_mor_dml_serializable_v3",
+     "k2": 20,
+     "valid": 20,
+     "confirmed": true
+    },
+    {
+     "case": "mor_merge_x_cow_dml_serializable_v2",
+     "k2": 20,
+     "valid": 20,
+     "confirmed": true
+    },
+    {
+     "case": "mor_merge_x_cow_dml_serializable_v3",
+     "k2": 20,
+     "valid": 20,
+     "confirmed": true
+    },
+    {
+     "case": "mor_merge_x_mor_delete_serializable_v2",
+     "k2": 20,
+     "valid": 20,
+     "confirmed": true
+    },
+    {
+     "case": "mor_merge_x_mor_delete_serializable_v3",
+     "k2": 20,
+     "valid": 20,
+     "confirmed": true
+    },
+    {
+     "case": "mor_merge_x_mor_merge_serializable_v2",
+     "k2": 20,
+     "valid": 20,
+     "confirmed": true
+    },
+    {
+     "case": "mor_merge_x_mor_merge_serializable_v3",
+     "k2": 20,
+     "valid": 20,
+     "confirmed": true
+    },
+    {
+     "case": "mor_merge_x_mor_update_serializable_v2",
+     "k2": 20,
+     "valid": 20,
+     "confirmed": true
+    },
+    {
+     "case": "mor_merge_x_mor_update_serializable_v3",
+     "k2": 20,
+     "valid": 20,
+     "confirmed": true
+    },
+    {
+     "case": "mor_update_x_cow_dml_serializable_v2",
+     "k2": 20,
+     "valid": 20,
+     "confirmed": true
+    },
+    {
+     "case": "mor_update_x_cow_dml_serializable_v3",
+     "k2": 20,
+     "valid": 20,
+     "confirmed": true
+    },
+    {
+     "case": "mor_update_x_mor_delete_serializable_v2",
+     "k2": 20,
+     "valid": 20,
+     "confirmed": true
+    },
+    {
+     "case": "mor_update_x_mor_delete_serializable_v3",
+     "k2": 20,
+     "valid": 20,
+     "confirmed": true
+    },
+    {
+     "case": "mor_update_x_mor_merge_serializable_v2",
+     "k2": 20,
+     "valid": 20,
+     "confirmed": true
+    },
+    {
+     "case": "mor_update_x_mor_merge_serializable_v3",
+     "k2": 20,
+     "valid": 20,
+     "confirmed": true
+    },
+    {
+     "case": "mor_update_x_mor_update_serializable_v2",
+     "k2": 20,
+     "valid": 20,
+     "confirmed": true
+    },
+    {
+     "case": "mor_update_x_mor_update_serializable_v3",
+     "k2": 20,
+     "valid": 20,
+     "confirmed": true
+    }
+   ],
+   "confirmed": true
+  }
+ },
+ "hypothesis": {
+  "fd593a5": {
+   "ref": "fd593a5",
+   "original_only": true,
+   "trial_match": 1360,
+   "trial_total": 1700,
+   "trial_rate": 0.8,
+   "pairs_match": 68,
+   "pairs_total": 85,
+   "mismatches": [
+    {
+     "case": "cow_dml_x_stream_upsert_snapshot_v2",
+     "hyp": "K1",
+     "observed": {
+      "K2": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "cow_dml_x_stream_upsert_snapshot_v3",
+     "hyp": "K1",
+     "observed": {
+      "K2": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "mor_dml_x_mor_dml_serializable_v2",
+     "hyp": "K2",
+     "observed": {
+      "K1": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "overwrite_x_append_serializable_v2",
+     "hyp": "K2",
+     "observed": {
+      "K1": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "overwrite_x_append_serializable_v3",
+     "hyp": "K2",
+     "observed": {
+      "K1": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "overwrite_x_cow_dml_serializable_v2",
+     "hyp": "K2",
+     "observed": {
+      "K1": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "overwrite_x_cow_dml_serializable_v3",
+     "hyp": "K2",
+     "observed": {
+      "K1": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "overwrite_x_mor_dml_serializable_v2",
+     "hyp": "K2",
+     "observed": {
+      "K1": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "overwrite_x_mor_dml_serializable_v3",
+     "hyp": "K2",
+     "observed": {
+      "K1": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "overwrite_x_overwrite_serializable_v2",
+     "hyp": "K2",
+     "observed": {
+      "K1": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "overwrite_x_overwrite_serializable_v3",
+     "hyp": "K2",
+     "observed": {
+      "K1": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "overwrite_x_rewrite_data_serializable_v2",
+     "hyp": "K2",
+     "observed": {
+      "K1": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "overwrite_x_rewrite_data_serializable_v3",
+     "hyp": "K2",
+     "observed": {
+      "K1": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "overwrite_x_stream_upsert_serializable_v2",
+     "hyp": "K2",
+     "observed": {
+      "K1": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "overwrite_x_stream_upsert_serializable_v3",
+     "hyp": "K2",
+     "observed": {
+      "K1": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "rewrite_deletes_x_cow_dml_serializable_v2",
+     "hyp": "K2",
+     "observed": {
+      "K1": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "rewrite_deletes_x_rewrite_data_serializable_v2",
+     "hyp": "K2",
+     "observed": {
+      "K1": 20
+     },
+     "valid": 20,
+     "match": 0
+    }
+   ],
+   "no_hypothesis": [
+    "cow_dml_x_expire_serializable_v2",
+    "cow_dml_x_expire_serializable_v3",
+    "mor_dml_x_expire_serializable_v2",
+    "mor_dml_x_expire_serializable_v3",
+    "rewrite_data_x_expire_serializable_v2",
+    "rewrite_data_x_expire_serializable_v3"
+   ],
+   "not_conclusive": []
+  },
+  "c6e9a4e": {
+   "ref": "c6e9a4e",
+   "original_only": true,
+   "trial_match": 1240,
+   "trial_total": 1700,
+   "trial_rate": 0.7294117647058823,
+   "pairs_match": 62,
+   "pairs_total": 85,
+   "mismatches": [
+    {
+     "case": "cow_dml_x_stream_upsert_snapshot_v2",
+     "hyp": "K1",
+     "observed": {
+      "K2": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "cow_dml_x_stream_upsert_snapshot_v3",
+     "hyp": "K1",
+     "observed": {
+      "K2": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "expire_x_append_serializable_v2",
+     "hyp": "K1",
+     "observed": {
+      "success": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "expire_x_append_serializable_v3",
+     "hyp": "K1",
+     "observed": {
+      "success": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "expire_x_cow_dml_serializable_v2",
+     "hyp": "K1",
+     "observed": {
+      "success": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "expire_x_cow_dml_serializable_v3",
+     "hyp": "K1",
+     "observed": {
+      "success": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "expire_x_rewrite_data_serializable_v2",
+     "hyp": "K1",
+     "observed": {
+      "success": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "expire_x_rewrite_data_serializable_v3",
+     "hyp": "K1",
+     "observed": {
+      "success": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "mor_dml_x_mor_dml_serializable_v2",
+     "hyp": "K2",
+     "observed": {
+      "K1": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "overwrite_x_append_serializable_v2",
+     "hyp": "K2",
+     "observed": {
+      "K1": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "overwrite_x_append_serializable_v3",
+     "hyp": "K2",
+     "observed": {
+      "K1": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "overwrite_x_cow_dml_serializable_v2",
+     "hyp": "K2",
+     "observed": {
+      "K1": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "overwrite_x_cow_dml_serializable_v3",
+     "hyp": "K2",
+     "observed": {
+      "K1": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "overwrite_x_mor_dml_serializable_v2",
+     "hyp": "K2",
+     "observed": {
+      "K1": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "overwrite_x_mor_dml_serializable_v3",
+     "hyp": "K2",
+     "observed": {
+      "K1": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "overwrite_x_overwrite_serializable_v2",
+     "hyp": "K2",
+     "observed": {
+      "K1": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "overwrite_x_overwrite_serializable_v3",
+     "hyp": "K2",
+     "observed": {
+      "K1": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "overwrite_x_rewrite_data_serializable_v2",
+     "hyp": "K2",
+     "observed": {
+      "K1": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "overwrite_x_rewrite_data_serializable_v3",
+     "hyp": "K2",
+     "observed": {
+      "K1": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "overwrite_x_stream_upsert_serializable_v2",
+     "hyp": "K2",
+     "observed": {
+      "K1": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "overwrite_x_stream_upsert_serializable_v3",
+     "hyp": "K2",
+     "observed": {
+      "K1": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "rewrite_deletes_x_cow_dml_serializable_v2",
+     "hyp": "K2",
+     "observed": {
+      "K1": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "rewrite_deletes_x_rewrite_data_serializable_v2",
+     "hyp": "K2",
+     "observed": {
+      "K1": 20
+     },
+     "valid": 20,
+     "match": 0
+    }
+   ],
+   "no_hypothesis": [
+    "cow_dml_x_expire_serializable_v2",
+    "cow_dml_x_expire_serializable_v3",
+    "mor_dml_x_expire_serializable_v2",
+    "mor_dml_x_expire_serializable_v3",
+    "rewrite_data_x_expire_serializable_v2",
+    "rewrite_data_x_expire_serializable_v3"
+   ],
+   "not_conclusive": []
+  }
+ },
+ "hypothesis_with_mapped": {
+  "fd593a5": {
+   "ref": "fd593a5",
+   "original_only": false,
+   "trial_match": 3000,
+   "trial_total": 3360,
+   "trial_rate": 0.8928571428571429,
+   "pairs_match": 150,
+   "pairs_total": 168,
+   "mismatches": [
+    {
+     "case": "cow_dml_x_stream_upsert_snapshot_v2",
+     "hyp": "K1",
+     "observed": {
+      "K2": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "cow_dml_x_stream_upsert_snapshot_v3",
+     "hyp": "K1",
+     "observed": {
+      "K2": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "mor_delete_x_mor_delete_serializable_v2",
+     "hyp": "K2",
+     "observed": {
+      "K1": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "mor_dml_x_mor_dml_serializable_v2",
+     "hyp": "K2",
+     "observed": {
+      "K1": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "overwrite_x_append_serializable_v2",
+     "hyp": "K2",
+     "observed": {
+      "K1": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "overwrite_x_append_serializable_v3",
+     "hyp": "K2",
+     "observed": {
+      "K1": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "overwrite_x_cow_dml_serializable_v2",
+     "hyp": "K2",
+     "observed": {
+      "K1": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "overwrite_x_cow_dml_serializable_v3",
+     "hyp": "K2",
+     "observed": {
+      "K1": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "overwrite_x_mor_dml_serializable_v2",
+     "hyp": "K2",
+     "observed": {
+      "K1": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "overwrite_x_mor_dml_serializable_v3",
+     "hyp": "K2",
+     "observed": {
+      "K1": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "overwrite_x_overwrite_serializable_v2",
+     "hyp": "K2",
+     "observed": {
+      "K1": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "overwrite_x_overwrite_serializable_v3",
+     "hyp": "K2",
+     "observed": {
+      "K1": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "overwrite_x_rewrite_data_serializable_v2",
+     "hyp": "K2",
+     "observed": {
+      "K1": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "overwrite_x_rewrite_data_serializable_v3",
+     "hyp": "K2",
+     "observed": {
+      "K1": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "overwrite_x_stream_upsert_serializable_v2",
+     "hyp": "K2",
+     "observed": {
+      "K1": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "overwrite_x_stream_upsert_serializable_v3",
+     "hyp": "K2",
+     "observed": {
+      "K1": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "rewrite_deletes_x_cow_dml_serializable_v2",
+     "hyp": "K2",
+     "observed": {
+      "K1": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "rewrite_deletes_x_rewrite_data_serializable_v2",
+     "hyp": "K2",
+     "observed": {
+      "K1": 20
+     },
+     "valid": 20,
+     "match": 0
+    }
+   ],
+   "no_hypothesis": [
+    "cow_dml_x_append_expire_serializable_v2",
+    "cow_dml_x_append_expire_serializable_v3",
+    "cow_dml_x_expire_serializable_v2",
+    "cow_dml_x_expire_serializable_v3",
+    "insert_overwrite_x_append_serializable_v2",
+    "insert_overwrite_x_append_serializable_v3",
+    "insert_overwrite_x_cow_dml_serializable_v2",
+    "insert_overwrite_x_cow_dml_serializable_v3",
+    "mor_dml_x_expire_serializable_v2",
+    "mor_dml_x_expire_serializable_v3",
+    "mor_update_x_append_expire_serializable_v2",
+    "mor_update_x_append_expire_serializable_v3",
+    "rewrite_data_x_append_expire_serializable_v2",
+    "rewrite_data_x_append_expire_serializable_v3",
+    "rewrite_data_x_expire_serializable_v2",
+    "rewrite_data_x_expire_serializable_v3"
+   ],
+   "not_conclusive": []
+  },
+  "c6e9a4e": {
+   "ref": "c6e9a4e",
+   "original_only": false,
+   "trial_match": 2840,
+   "trial_total": 3360,
+   "trial_rate": 0.8452380952380952,
+   "pairs_match": 142,
+   "pairs_total": 168,
+   "mismatches": [
+    {
+     "case": "cow_dml_x_stream_upsert_snapshot_v2",
+     "hyp": "K1",
+     "observed": {
+      "K2": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "cow_dml_x_stream_upsert_snapshot_v3",
+     "hyp": "K1",
+     "observed": {
+      "K2": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "expire_x_append_serializable_v2",
+     "hyp": "K1",
+     "observed": {
+      "success": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "expire_x_append_serializable_v3",
+     "hyp": "K1",
+     "observed": {
+      "success": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "expire_x_cow_dml_serializable_v2",
+     "hyp": "K1",
+     "observed": {
+      "success": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "expire_x_cow_dml_serializable_v3",
+     "hyp": "K1",
+     "observed": {
+      "success": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "expire_x_mor_delete_serializable_v2",
+     "hyp": "K1",
+     "observed": {
+      "success": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "expire_x_mor_delete_serializable_v3",
+     "hyp": "K1",
+     "observed": {
+      "success": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "expire_x_rewrite_data_serializable_v2",
+     "hyp": "K1",
+     "observed": {
+      "success": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "expire_x_rewrite_data_serializable_v3",
+     "hyp": "K1",
+     "observed": {
+      "success": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "mor_delete_x_mor_delete_serializable_v2",
+     "hyp": "K2",
+     "observed": {
+      "K1": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "mor_dml_x_mor_dml_serializable_v2",
+     "hyp": "K2",
+     "observed": {
+      "K1": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "overwrite_x_append_serializable_v2",
+     "hyp": "K2",
+     "observed": {
+      "K1": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "overwrite_x_append_serializable_v3",
+     "hyp": "K2",
+     "observed": {
+      "K1": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "overwrite_x_cow_dml_serializable_v2",
+     "hyp": "K2",
+     "observed": {
+      "K1": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "overwrite_x_cow_dml_serializable_v3",
+     "hyp": "K2",
+     "observed": {
+      "K1": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "overwrite_x_mor_dml_serializable_v2",
+     "hyp": "K2",
+     "observed": {
+      "K1": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "overwrite_x_mor_dml_serializable_v3",
+     "hyp": "K2",
+     "observed": {
+      "K1": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "overwrite_x_overwrite_serializable_v2",
+     "hyp": "K2",
+     "observed": {
+      "K1": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "overwrite_x_overwrite_serializable_v3",
+     "hyp": "K2",
+     "observed": {
+      "K1": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "overwrite_x_rewrite_data_serializable_v2",
+     "hyp": "K2",
+     "observed": {
+      "K1": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "overwrite_x_rewrite_data_serializable_v3",
+     "hyp": "K2",
+     "observed": {
+      "K1": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "overwrite_x_stream_upsert_serializable_v2",
+     "hyp": "K2",
+     "observed": {
+      "K1": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "overwrite_x_stream_upsert_serializable_v3",
+     "hyp": "K2",
+     "observed": {
+      "K1": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "rewrite_deletes_x_cow_dml_serializable_v2",
+     "hyp": "K2",
+     "observed": {
+      "K1": 20
+     },
+     "valid": 20,
+     "match": 0
+    },
+    {
+     "case": "rewrite_deletes_x_rewrite_data_serializable_v2",
+     "hyp": "K2",
+     "observed": {
+      "K1": 20
+     },
+     "valid": 20,
+     "match": 0
+    }
+   ],
+   "no_hypothesis": [
+    "cow_dml_x_append_expire_serializable_v2",
+    "cow_dml_x_append_expire_serializable_v3",
+    "cow_dml_x_expire_serializable_v2",
+    "cow_dml_x_expire_serializable_v3",
+    "insert_overwrite_x_append_serializable_v2",
+    "insert_overwrite_x_append_serializable_v3",
+    "insert_overwrite_x_cow_dml_serializable_v2",
+    "insert_overwrite_x_cow_dml_serializable_v3",
+    "mor_dml_x_expire_serializable_v2",
+    "mor_dml_x_expire_serializable_v3",
+    "mor_update_x_append_expire_serializable_v2",
+    "mor_update_x_append_expire_serializable_v3",
+    "rewrite_data_x_append_expire_serializable_v2",
+    "rewrite_data_x_append_expire_serializable_v3",
+    "rewrite_data_x_expire_serializable_v2",
+    "rewrite_data_x_expire_serializable_v3"
+   ],
+   "not_conclusive": []
+  }
+ }
+}
