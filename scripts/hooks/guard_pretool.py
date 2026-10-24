@@ -8,6 +8,7 @@
 3. Изменение уже записанного файла ревью (ревью неизменяемы; новое мнение — новый раунд).
 4. Изменение агентом механизма приёмки: хуков, настроек Claude, ревьюера, скиллов, docs/REVIEWER.md.
    Эти файлы меняет только автор, вручную, вне Claude.
+5. Коммит, в который попали изменения этих файлов (даже сделанные массовой командой вроде ruff --fix).
 """
 from __future__ import annotations
 
@@ -22,6 +23,7 @@ from review_lib import (
     ACCEPTING,
     GATE_BY_STAGE,
     author_decision,
+    git,
     latest_review,
     review_covers_head,
     text_sets_decision,
@@ -37,8 +39,18 @@ PROTECTED_RE = re.compile(
     r")"
 )
 WRITE_CMD_RE = re.compile(
-    r"(sed\s+-i|perl\s+-p?i|\btee\b|>>?|\brm\b|\bmv\b|\bcp\b|git\s+rm|git\s+checkout|"
-    r"git\s+restore|chmod|truncate|python3?\s+-c|\bln\b)"
+    r"(sed\s+-i|perl\s+-p?i|\btee\b|>>?|\brm\b|\bmv\b|\bcp\b|git\s+rm|chmod|truncate|"
+    r"python3?\s+-c|\bln\b|git\s+checkout\s+(?!HEAD\b|--)\S|--source[= ](?!HEAD\b))"
+)
+COMMIT_RE = re.compile(r"\bgit\s+commit\b")
+PROTECTED_PATH_RE = re.compile(
+    r"^(\.claude/settings(\.local)?\.json|\.claude/agents/|\.claude/skills/|scripts/hooks/|docs/REVIEWER\.md)"
+)
+COMMIT_MSG = (
+    "Коммит запрещён: в нём изменены файлы механизма приёмки ({files}). Их меняет только автор вручную. "
+    "Вероятно, их задела массовая команда (ruff --fix, форматтер, sed по маске). Верни их к версии HEAD: "
+    "`git restore --staged --worktree -- <файлы>` и повтори коммит. "
+    "Если изменение нужно — опиши его в отчёте и попроси автора."
 )
 PROTECTED_MSG = (
     "Запрещено: файлы механизма приёмки (.claude/settings*.json, .claude/agents/, .claude/skills/, "
@@ -79,6 +91,20 @@ def check_tag(stage: int) -> None:
             )
 
 
+def check_commit(cmd: str) -> None:
+    staged = git(ROOT, "diff", "--cached", "--name-only").splitlines()
+    files = set(staged)
+    if re.search(r"\bgit\s+commit\b[^;&|]*\s(-a|--all|-[a-zA-Z]*a[a-zA-Z]*)\b", cmd):
+        files |= set(git(ROOT, "diff", "--name-only").splitlines())
+    if re.search(r"\bgit\s+add\b", cmd):
+        # «git add ... && git commit» в одной команде: учесть изменения рабочего дерева и новые файлы
+        files |= set(git(ROOT, "diff", "--name-only").splitlines())
+        files |= set(git(ROOT, "ls-files", "--others", "--exclude-standard").splitlines())
+    bad = sorted(f for f in files if f and PROTECTED_PATH_RE.match(f))
+    if bad:
+        block(COMMIT_MSG.format(files=", ".join(bad)))
+
+
 def main() -> None:
     try:
         data = json.load(sys.stdin)
@@ -91,6 +117,8 @@ def main() -> None:
         cmd = tin.get("command", "") or ""
         for m in TAG_RE.finditer(cmd):
             check_tag(int(m.group(1)))
+        if COMMIT_RE.search(cmd):
+            check_commit(cmd)
         if GATE_FILE_RE.search(cmd) and text_sets_decision(cmd):
             block("Запрещено: отмечать «Решение автора» в отчёте контрольной точки может только автор.")
         if PROTECTED_RE.search(cmd) and WRITE_CMD_RE.search(cmd):
