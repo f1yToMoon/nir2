@@ -1,0 +1,122 @@
+[
+ {
+  "method": "GET",
+  "path": "/v1/config",
+  "proxy": [
+   200,
+   "66e34a9071f4634ab8eb4537e1d62f362622e26a1a8ac1df56778616a6aefa36"
+  ],
+  "direct": [
+   200,
+   "66e34a9071f4634ab8eb4537e1d62f362622e26a1a8ac1df56778616a6aefa36"
+  ],
+  "same_status": true,
+  "same_headers": true,
+  "same_body": true
+ },
+ {
+  "method": "GET",
+  "path": "/v1/namespaces/stage2",
+  "proxy": [
+   200,
+   "3bfc6e00831c1f54766977f9659051a7808180821dfdbdbd666097d5d4285528"
+  ],
+  "direct": [
+   200,
+   "3bfc6e00831c1f54766977f9659051a7808180821dfdbdbd666097d5d4285528"
+  ],
+  "same_status": true,
+  "same_headers": true,
+  "same_body": true
+ },
+ {
+  "method": "GET",
+  "path": "/v1/namespaces/stage2/tables/resp_1793474358",
+  "proxy": [
+   200,
+   "eb991ff44bbbbebffd8b8e5c6831be00d4b2f7b61544042f23397bcb9e54a3c2"
+  ],
+  "direct": [
+   200,
+   "eb991ff44bbbbebffd8b8e5c6831be00d4b2f7b61544042f23397bcb9e54a3c2"
+  ],
+  "same_status": true,
+  "same_headers": true,
+  "same_body": true
+ },
+ {
+  "method": "GET",
+  "path": "/v1/namespaces/stage2/tables/no_such_table",
+  "proxy": [
+   404,
+   "6403ff7ee4845a97caad7eaa7863f17777ee30f238db6a62d3fa409268a3a168"
+  ],
+  "direct": [
+   404,
+   "6403ff7ee4845a97caad7eaa7863f17777ee30f238db6a62d3fa409268a3a168"
+  ],
+  "same_status": true,
+  "same_headers": true,
+  "same_body": true
+ },
+ {
+  "method": "HEAD",
+  "path": "/v1/namespaces/stage2/tables/resp_1793474358",
+  "proxy": [
+   204,
+   "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  ],
+  "direct": [
+   204,
+   "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  ],
+  "same_status": true,
+  "same_headers": true,
+  "same_body": true
+ },
+ {
+  "method": "POST",
+  "path": "/v1/namespaces/stage2/tables/resp_1793474358",
+  "proxy": [
+   409,
+   "8e1367d6bbe1cbc4f8506f7900da94b03fd01609c6b5359a8d03534bcec9079b"
+  ],
+  "direct": [
+   409,
+   "8e1367d6bbe1cbc4f8506f7900da94b03fd01609c6b5359a8d03534bcec9079b"
+  ],
+  "same_status": true,
+  "same_headers": true,
+  "same_body": true
+ },
+ {
+  "method": "POST",
+  "path": "/v1/namespaces/stage2/tables/no_such_table",
+  "proxy": [
+   404,
+   "4b65ae3825f50441acb962a8d5ac7518961cd9f99573988af87b8b2fc2618463"
+  ],
+  "direct": [
+   404,
+   "4b65ae3825f50441acb962a8d5ac7518961cd9f99573988af87b8b2fc2618463"
+  ],
+  "same_status": true,
+  "same_headers": true,
+  "same_body": true
+ },
+ {
+  "method": "POST",
+  "path": "/v1/namespaces/stage2/tables/resp_1793474358",
+  "proxy": [
+   500,
+   "524c6b64f252ed8f4ce3efd98336620564b4d035770708c431846e770530cc16"
+  ],
+  "direct": [
+   500,
+   "524c6b64f252ed8f4ce3efd98336620564b4d035770708c431846e770530cc16"
+  ],
+  "same_status": true,
+  "same_headers": true,
+  "same_body": true
+ }
+]

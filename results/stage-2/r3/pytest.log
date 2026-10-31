@@ -1,0 +1,108 @@
+...F.                                                                    [100%]
+=================================== FAILURES ===================================
+________________________ test_overhead_bypass_vs_proxy _________________________
+
+    def test_overhead_bypass_vs_proxy() -> None:
+        """Latency of the commit request (RestCatalog.commit_table: one POST) for fast appends of the
+        same data, alternating proxy/bypass, N_BENCH commits each; overhead = proxy - bypass."""
+        import pyarrow as pa
+        from pyiceberg.schema import Schema
+        from pyiceberg.types import LongType, NestedField
+    
+        schema = Schema(NestedField(1, "id", LongType(), required=False))
+        cats = {"proxy": _pyiceberg(PROXY_URL, "bench"), "bypass": _pyiceberg(DIRECT_URL)}
+        tables, lat = {}, {"proxy": [], "bypass": []}
+        for name, cat in cats.items():
+            cat.create_namespace_if_not_exists(NS)
+            tname = f"{NS}.bench_{name}_{int(time.time())}"
+            tables[name] = cat.create_table(tname, schema)
+            orig = cat.commit_table
+    
+            def timed(*a: Any, _orig: Any = orig, _name: str = name, **k: Any) -> Any:
+                t0 = time.perf_counter()
+                try:
+                    return _orig(*a, **k)
+                finally:
+                    if timed.on:  # type: ignore[attr-defined]
+                        lat[_name].append((time.perf_counter() - t0) * 1000)
+    
+            timed.on = False  # type: ignore[attr-defined]
+            cat.commit_table = timed
+        data = pa.table({"id": pa.array([1, 2, 3], pa.int64())})
+        rng = random.Random(SEED)
+        over_before = (_metric("capl_proxy_overhead_seconds_sum"), _metric("capl_proxy_overhead_seconds_count"))
+        for i in range(N_BENCH + 50):
+            order = ["proxy", "bypass"]
+            rng.shuffle(order)
+            for name in order:
+                cats[name].commit_table.on = i >= 50          # 50 warm-up commits per path
+                tables[name].append(data)
+        over_after = (_metric("capl_proxy_overhead_seconds_sum"), _metric("capl_proxy_overhead_seconds_count"))
+        p, b = lat["proxy"], lat["bypass"]
+        rep = {
+            "n_per_path": len(p), "unit": "ms",
+            "proxy": {"p50": _q(p, .5), "p95": _q(p, .95), "p99": _q(p, .99), "mean": statistics.fmean(p)},
+            "bypass": {"p50": _q(b, .5), "p95": _q(b, .95), "p99": _q(b, .99), "mean": statistics.fmean(b)},
+            "proxy_internal_overhead_mean_ms": 1000 * (over_after[0] - over_before[0])
+            / max(1.0, over_after[1] - over_before[1]),
+        }
+        rep["overhead_p50"] = rep["proxy"]["p50"] - rep["bypass"]["p50"]
+        rep["overhead_p95"] = rep["proxy"]["p95"] - rep["bypass"]["p95"]
+        # bootstrap 95 % CI of the p50/p95 differences
+        boot = random.Random(SEED)
+        d50, d95 = [], []
+        for _ in range(2000):
+            ps = [boot.choice(p) for _ in p]
+            bs = [boot.choice(b) for _ in b]
+            d50.append(_q(ps, .5) - _q(bs, .5))
+            d95.append(_q(ps, .95) - _q(bs, .95))
+        rep["overhead_p50_ci95"] = [_q(d50, .025), _q(d50, .975)]
+        rep["overhead_p95_ci95"] = [_q(d95, .025), _q(d95, .975)]
+        rep["nfr1"] = {"p50_le_5ms": rep["overhead_p50"] <= 5, "p95_le_15ms": rep["overhead_p95"] <= 15}
+        # trend with table state (S2-R1-02): the k-th measured commit is made on a table with
+        # k + 50 + 1 snapshots; windows of 100 commits, difference of medians, least-squares slope
+        win = 100
+        windows = []
+        for w0 in range(0, len(p) - win + 1, win):
+            pw, bw = p[w0:w0 + win], b[w0:w0 + win]
+            windows.append({"snapshots_mid": w0 + win // 2 + 51, "proxy_p50": _q(pw, .5),
+                            "bypass_p50": _q(bw, .5), "diff_p50": _q(pw, .5) - _q(bw, .5),
+                            "paired_median_diff": statistics.median(x - y for x, y in zip(pw, bw, strict=True))})
+        xs = [w["snapshots_mid"] for w in windows]
+        ys = [w["diff_p50"] for w in windows]
+        mx, my = statistics.fmean(xs), statistics.fmean(ys)
+        sxx = sum((x - mx) ** 2 for x in xs)
+        slope = sum((x - mx) * (y - my) for x, y in zip(xs, ys, strict=True)) / sxx
+        rep["trend"] = {"windows": windows, "slope_ms_per_1000_snapshots": 1000 * slope,
+                        "intercept_ms": my - slope * mx,
+                        "r": slope * (sxx ** 0.5) / (sum((y - my) ** 2 for y in ys) ** 0.5 or 1.0)}
+        meta = requests.get(f"{DIRECT_URL}/v1/namespaces/{NS}/tables/{tables['proxy'].name()[-1]}",
+                            timeout=30)
+        rep["commit_response_bytes_at_end"] = len(meta.content)
+        rep["last_window_diff_p50"] = windows[-1]["diff_p50"]
+        _save("overhead.json", rep)
+        _save("overhead_raw.json", lat)
+        assert len(p) == len(b) == N_BENCH
+        assert rep["overhead_p50"] <= 5.0, rep
+        assert rep["overhead_p95"] <= 15.0, rep
+        # NFR-1 also holds at the end of the series (largest metadata), not only on average
+>       assert rep["last_window_diff_p50"] <= 5.0, rep["trend"]
+E       AssertionError: {'windows': [{'snapshots_mid': 101, 'proxy_p50': 11.76386699808063, 'bypass_p50': 10.67246700040414, 'diff_p50': 1.091... ...], 'slope_ms_per_1000_snapshots': 3.469797359647458, 'intercept_ms': -1.2490965382274526, 'r': 0.41248607566629364}
+E       assert 11.579838999750791 <= 5.0
+
+tests/integration/test_proxy_stage2.py:509: AssertionError
+=============================== warnings summary ===============================
+../usr/local/lib/python3.10/dist-packages/_pytest/config/__init__.py:1464
+  /usr/local/lib/python3.10/dist-packages/_pytest/config/__init__.py:1464: PytestConfigWarning: Unknown config option: asyncio_default_fixture_loop_scope
+  
+    self._warn_or_fail_if_strict(f"Unknown config option: {key}\n")
+
+../usr/local/lib/python3.10/dist-packages/_pytest/config/__init__.py:1464
+  /usr/local/lib/python3.10/dist-packages/_pytest/config/__init__.py:1464: PytestConfigWarning: Unknown config option: asyncio_mode
+  
+    self._warn_or_fail_if_strict(f"Unknown config option: {key}\n")
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/integration/test_proxy_stage2.py::test_overhead_bypass_vs_proxy
+1 failed, 4 passed, 2 warnings in 5726.60s (1:35:26)

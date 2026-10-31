@@ -1,0 +1,3 @@
+{'enrich': 'on', 'snapshots_proxy_table': 3200, 'proxy_p50': 142.8625805019692, 'bypass_p50': 115.41378149922821, 'diff_p50': 27.448799002740998, 'paired_median_diff': 9.518031500192592}
+{'enrich': 'off', 'snapshots_proxy_table': 3350, 'proxy_p50': 147.86551150064042, 'bypass_p50': 144.52240399987204, 'diff_p50': 3.343107500768383, 'paired_median_diff': 2.6865810013987357}
+canceled

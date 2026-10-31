@@ -100,7 +100,8 @@ test-e2e: ## E2E: короткие прогоны всех сценариев
 	$(RUNNER) pytest -q tests/e2e
 
 lint: ## ruff
-	$(VENV_BIN)ruff check src tests
+	$(VENV_BIN)ruff check src tests scripts/update_matrix.py scripts/capture_commit_fixtures.py \
+	  scripts/overhead_enricher_ablation.py
 
 typecheck: ## mypy
 	$(VENV_BIN)mypy --strict src/capl

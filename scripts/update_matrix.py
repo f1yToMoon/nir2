@@ -127,7 +127,8 @@ def g1_metric(results: dict[str, Any], ref: str, original_only: bool) -> dict[st
         rows.append({"case": cid, "hyp": exp, "observed": dict(Counter(t["outcome"] for t in vt)),
                      "valid": len(vt), "match": m})
     pairs_ok = sum(1 for x in rows if x["match"] / x["valid"] >= 0.95)
-    return {"ref": ref, "original_only": original_only, "trial_match": trials_match, "trial_total": trials_total,
+    return {"ref": ref, "original_only": original_only,
+            "trial_match": trials_match, "trial_total": trials_total,
             "trial_rate": trials_match / max(trials_total, 1),
             "pairs_match": pairs_ok, "pairs_total": len(rows),
             "mismatches": [x for x in rows if x["match"] / x["valid"] < 0.95],
