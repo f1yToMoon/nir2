@@ -1,0 +1,29 @@
+{
+ "name": "java_multi_table_transaction",
+ "source": "java",
+ "operation": "RESTCatalog.commitTransaction(TableCommit x2), FastAppend in each",
+ "format_version": 2,
+ "path": "/v1/transactions/commit",
+ "kind": "transaction",
+ "headers": {
+  "X-CAPL-Slot": "fixtures",
+  "X-CAPL-Writer": "test"
+ },
+ "status": 204,
+ "expected": {
+  "kind": "transaction",
+  "tables": [
+   "fx.txn_a",
+   "fx.txn_b"
+  ],
+  "op_class": "append",
+  "iceberg_op": "append",
+  "has_deletes": false,
+  "is_flink": false
+ },
+ "note": "",
+ "captured_at": "2026-10-31T14:57:46Z",
+ "git_sha": "unknown",
+ "iceberg_client": "1.12.0",
+ "body": "{\"table-changes\":[{\"identifier\":{\"namespace\":[\"fx\"],\"name\":\"txn_a\"},\"requirements\":[{\"type\":\"assert-table-uuid\",\"uuid\":\"8909c6ea-dbaf-4b5b-8767-60070038d8bb\"},{\"type\":\"assert-ref-snapshot-id\",\"ref\":\"main\",\"snapshot-id\":2028324446823080776}],\"updates\":[{\"action\":\"add-snapshot\",\"snapshot\":{\"sequence-number\":5,\"snapshot-id\":8625129278438712392,\"parent-snapshot-id\":2028324446823080776,\"timestamp-ms\":1793458666211,\"summary\":{\"operation\":\"append\",\"manifests-created\":\"1\",\"manifests-kept\":\"4\",\"manifests-replaced\":\"0\",\"added-data-files\":\"1\",\"added-records\":\"3\",\"added-files-size\":\"964\",\"changed-partition-count\":\"1\",\"total-records\":\"43\",\"total-files-size\":\"16356\",\"total-data-files\":\"17\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"engine-version\":\"4.0.1\",\"app-id\":\"app-20261031145736-0008\",\"engine-name\":\"spark\",\"iceberg-version\":\"Apache Iceberg 1.12.0 (commit 212aa894e919ff9fdf89160da4aadcbe6858ac01)\",\"app-name\":\"capture-commit-fixtures\"},\"manifest-list\":\"s3://warehouse/fx/txn_a/metadata/snap-8625129278438712392-1-aadf800b-6e7d-4745-9380-dd177f9ab426.avro\",\"schema-id\":0}},{\"action\":\"set-snapshot-ref\",\"ref-name\":\"main\",\"snapshot-id\":8625129278438712392,\"type\":\"branch\"}]},{\"identifier\":{\"namespace\":[\"fx\"],\"name\":\"txn_b\"},\"requirements\":[{\"type\":\"assert-table-uuid\",\"uuid\":\"6faf3b02-e70b-4aeb-b009-2f9d65bafb72\"},{\"type\":\"assert-ref-snapshot-id\",\"ref\":\"main\",\"snapshot-id\":8046851867135500262}],\"updates\":[{\"action\":\"add-snapshot\",\"snapshot\":{\"sequence-number\":5,\"snapshot-id\":198330873687696521,\"parent-snapshot-id\":8046851867135500262,\"timestamp-ms\":1793458666278,\"summary\":{\"operation\":\"append\",\"manifests-created\":\"1\",\"manifests-kept\":\"4\",\"manifests-replaced\":\"0\",\"added-data-files\":\"1\",\"added-records\":\"3\",\"added-files-size\":\"964\",\"changed-partition-count\":\"1\",\"total-records\":\"43\",\"total-files-size\":\"16356\",\"total-data-files\":\"17\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"engine-version\":\"4.0.1\",\"app-id\":\"app-20261031145736-0008\",\"engine-name\":\"spark\",\"iceberg-version\":\"Apache Iceberg 1.12.0 (commit 212aa894e919ff9fdf89160da4aadcbe6858ac01)\",\"app-name\":\"capture-commit-fixtures\"},\"manifest-list\":\"s3://warehouse/fx/txn_b/metadata/snap-198330873687696521-1-c375e594-e992-4865-8c1c-b6351b5b848d.avro\",\"schema-id\":0}},{\"action\":\"set-snapshot-ref\",\"ref-name\":\"main\",\"snapshot-id\":198330873687696521,\"type\":\"branch\"}]}]}"
+}

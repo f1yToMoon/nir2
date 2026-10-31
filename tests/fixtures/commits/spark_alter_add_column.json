@@ -1,0 +1,24 @@
+{
+ "name": "spark_alter_add_column",
+ "source": "spark",
+ "operation": "ALTER TABLE ADD COLUMN",
+ "format_version": 2,
+ "path": "/v1/namespaces/fx/tables/alter",
+ "kind": "table",
+ "headers": {
+  "X-CAPL-Slot": "fixtures",
+  "X-CAPL-Writer": "test"
+ },
+ "status": 200,
+ "expected": {
+  "op_class": "metadata",
+  "iceberg_op": null,
+  "has_deletes": false,
+  "is_flink": false
+ },
+ "note": "",
+ "captured_at": "2026-10-31T14:57:14Z",
+ "git_sha": "unknown",
+ "iceberg_client": "1.12.0",
+ "body": "{\"requirements\":[{\"type\":\"assert-table-uuid\",\"uuid\":\"4b0fc524-b818-4a67-a595-fbf885954832\"},{\"type\":\"assert-last-assigned-field-id\",\"last-assigned-field-id\":3},{\"type\":\"assert-current-schema-id\",\"current-schema-id\":0}],\"updates\":[{\"action\":\"add-schema\",\"schema\":{\"type\":\"struct\",\"schema-id\":1,\"fields\":[{\"id\":1,\"name\":\"id\",\"required\":false,\"type\":\"long\"},{\"id\":2,\"name\":\"bkt\",\"required\":false,\"type\":\"int\"},{\"id\":3,\"name\":\"val\",\"required\":false,\"type\":\"string\"},{\"id\":4,\"name\":\"extra\",\"required\":false,\"type\":\"int\"}]},\"last-column-id\":4},{\"action\":\"set-current-schema\",\"schema-id\":-1}]}"
+}

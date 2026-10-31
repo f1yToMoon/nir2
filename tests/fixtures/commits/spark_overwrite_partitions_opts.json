@@ -1,0 +1,24 @@
+{
+ "name": "spark_overwrite_partitions_opts",
+ "source": "spark",
+ "operation": "DataFrame overwritePartitions() with isolation-level + validate-from-snapshot-id",
+ "format_version": 2,
+ "path": "/v1/namespaces/fx/tables/overwrite_dyn",
+ "kind": "table",
+ "headers": {
+  "X-CAPL-Slot": "fixtures",
+  "X-CAPL-Writer": "test"
+ },
+ "status": 200,
+ "expected": {
+  "op_class": "overwrite",
+  "iceberg_op": "overwrite",
+  "has_deletes": false,
+  "is_flink": false
+ },
+ "note": "",
+ "captured_at": "2026-10-31T14:56:56Z",
+ "git_sha": "unknown",
+ "iceberg_client": "1.12.0",
+ "body": "{\"requirements\":[{\"type\":\"assert-table-uuid\",\"uuid\":\"24b9ae41-58ec-4480-bc88-76daa9dd430e\"},{\"type\":\"assert-ref-snapshot-id\",\"ref\":\"main\",\"snapshot-id\":4102527035167630427}],\"updates\":[{\"action\":\"add-snapshot\",\"snapshot\":{\"sequence-number\":5,\"snapshot-id\":891585369696131725,\"parent-snapshot-id\":4102527035167630427,\"timestamp-ms\":1793458616722,\"summary\":{\"operation\":\"overwrite\",\"spark.app.id\":\"app-20261031145645-0007\",\"replace-partitions\":\"true\",\"manifests-created\":\"5\",\"manifests-kept\":\"0\",\"manifests-replaced\":\"4\",\"added-data-files\":\"2\",\"deleted-data-files\":\"8\",\"added-records\":\"5\",\"deleted-records\":\"20\",\"added-files-size\":\"1922\",\"removed-files-size\":\"7696\",\"changed-partition-count\":\"1\",\"total-records\":\"25\",\"total-files-size\":\"9618\",\"total-data-files\":\"10\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"engine-version\":\"4.0.1\",\"app-id\":\"app-20261031145645-0007\",\"engine-name\":\"spark\",\"iceberg-version\":\"Apache Iceberg 1.12.0 (commit 212aa894e919ff9fdf89160da4aadcbe6858ac01)\",\"app-name\":\"capture-commit-fixtures\"},\"manifest-list\":\"s3://warehouse/fx/overwrite_dyn/metadata/snap-891585369696131725-1-c7d728b8-8433-4fe9-af9c-86e11d1815de.avro\",\"schema-id\":0}},{\"action\":\"set-snapshot-ref\",\"ref-name\":\"main\",\"snapshot-id\":891585369696131725,\"type\":\"branch\"}]}"
+}

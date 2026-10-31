@@ -1,0 +1,24 @@
+{
+ "name": "spark_expire_snapshots",
+ "source": "spark",
+ "operation": "CALL expire_snapshots",
+ "format_version": 2,
+ "path": "/v1/namespaces/fx/tables/expire",
+ "kind": "table",
+ "headers": {
+  "X-CAPL-Slot": "fixtures",
+  "X-CAPL-Writer": "test"
+ },
+ "status": 200,
+ "expected": {
+  "op_class": "expire",
+  "iceberg_op": null,
+  "has_deletes": false,
+  "is_flink": false
+ },
+ "note": "",
+ "captured_at": "2026-10-31T14:57:13Z",
+ "git_sha": "unknown",
+ "iceberg_client": "1.12.0",
+ "body": "{\"requirements\":[{\"type\":\"assert-table-uuid\",\"uuid\":\"3dda9b18-dd13-46f4-8ebb-f93a3ff8d66e\"}],\"updates\":[{\"action\":\"remove-snapshots\",\"snapshot-ids\":[548259899345693345]},{\"action\":\"remove-snapshots\",\"snapshot-ids\":[3503033425324311513]},{\"action\":\"remove-snapshots\",\"snapshot-ids\":[7319736390900202541]}]}"
+}

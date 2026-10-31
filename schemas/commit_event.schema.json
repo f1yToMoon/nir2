@@ -13,7 +13,7 @@
     "sequence_number": {"type": "integer"},
     "committed_at": {"type": "number", "description": "Unix epoch, с (время ответа 200 каталога)"},
     "iceberg_op": {"enum": ["append", "overwrite", "replace", "delete"]},
-    "op_class": {"enum": ["append", "stream_upsert", "overwrite", "cow_dml", "mor_dml", "rewrite_data", "rewrite_deletes", "expire", "unknown"]},
+    "op_class": {"enum": ["append", "stream_upsert", "overwrite", "cow_dml", "mor_dml", "rewrite_data", "rewrite_deletes", "expire", "metadata", "unknown"]},
     "op_id": {"type": ["string", "null"]},
     "writer_class": {"enum": ["stream", "batch_dml", "maintenance", "user", "unknown"]},
     "writer_id": {"type": ["string", "null"], "description": "flink.job-id, слот runner или spark.app.id"},

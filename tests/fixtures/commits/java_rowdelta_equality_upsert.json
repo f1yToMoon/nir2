@@ -1,0 +1,24 @@
+{
+ "name": "java_rowdelta_equality_upsert",
+ "source": "java",
+ "operation": "RowDelta(addRows + equality deletes), Iceberg Java API",
+ "format_version": 2,
+ "path": "/v1/namespaces/fx/tables/upsert_java",
+ "kind": "table",
+ "headers": {
+  "X-CAPL-Slot": "fixtures",
+  "X-CAPL-Writer": "test"
+ },
+ "status": 200,
+ "expected": {
+  "op_class": "stream_upsert",
+  "iceberg_op": "overwrite",
+  "has_deletes": true,
+  "is_flink": false
+ },
+ "note": "",
+ "captured_at": "2026-10-31T14:57:15Z",
+ "git_sha": "unknown",
+ "iceberg_client": "1.12.0",
+ "body": "{\"requirements\":[{\"type\":\"assert-table-uuid\",\"uuid\":\"d5cd6861-9668-4b6d-b525-6c1be5a6343a\"},{\"type\":\"assert-ref-snapshot-id\",\"ref\":\"main\",\"snapshot-id\":5664612423813449306}],\"updates\":[{\"action\":\"add-snapshot\",\"snapshot\":{\"sequence-number\":5,\"snapshot-id\":7097331049599050122,\"parent-snapshot-id\":5664612423813449306,\"timestamp-ms\":1793458635764,\"summary\":{\"operation\":\"overwrite\",\"manifests-created\":\"2\",\"manifests-kept\":\"4\",\"manifests-replaced\":\"0\",\"added-data-files\":\"1\",\"added-equality-delete-files\":\"1\",\"added-delete-files\":\"1\",\"added-records\":\"1\",\"added-files-size\":\"1816\",\"added-equality-deletes\":\"1\",\"changed-partition-count\":\"1\",\"total-records\":\"41\",\"total-files-size\":\"16679\",\"total-data-files\":\"17\",\"total-delete-files\":\"1\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"1\",\"engine-version\":\"4.0.1\",\"app-id\":\"app-20261031145645-0007\",\"engine-name\":\"spark\",\"iceberg-version\":\"Apache Iceberg 1.12.0 (commit 212aa894e919ff9fdf89160da4aadcbe6858ac01)\",\"app-name\":\"capture-commit-fixtures\"},\"manifest-list\":\"s3://warehouse/fx/upsert_java/metadata/snap-7097331049599050122-1-1ea24a22-a9e7-4eed-a44f-3d6a1d2d3232.avro\",\"schema-id\":0}},{\"action\":\"set-snapshot-ref\",\"ref-name\":\"main\",\"snapshot-id\":7097331049599050122,\"type\":\"branch\"}]}"
+}

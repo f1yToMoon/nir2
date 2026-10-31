@@ -98,6 +98,12 @@ def build_advisor_app(svc: ProxyService, advisor: DebugHoldAdvisor, flush: Any =
         svc.integrity_sample_rate = rate
         return {"sample_rate": rate}
 
+    @app.put("/_capl/debug/keep-bodies")
+    async def keep_bodies(on: bool) -> dict[str, Any]:
+        """Keep a read-only copy of each commit body in last-commits (fixture capture)."""
+        svc.keep_bodies = on
+        return {"keep_bodies": on}
+
     @app.post("/v1/debug/hold")
     async def hold_start(req: HoldRequest) -> dict[str, Any]:
         """Arm a hold on the slot: its next commit waits until released, until a successful

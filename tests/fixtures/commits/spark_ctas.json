@@ -1,0 +1,24 @@
+{
+ "name": "spark_ctas",
+ "source": "spark",
+ "operation": "CREATE TABLE AS SELECT (create transaction)",
+ "format_version": 2,
+ "path": "/v1/namespaces/fx/tables/ctas",
+ "kind": "table",
+ "headers": {
+  "X-CAPL-Slot": "fixtures",
+  "X-CAPL-Writer": "test"
+ },
+ "status": 200,
+ "expected": {
+  "op_class": "append",
+  "iceberg_op": "append",
+  "has_deletes": false,
+  "is_flink": false
+ },
+ "note": "",
+ "captured_at": "2026-10-31T14:57:13Z",
+ "git_sha": "unknown",
+ "iceberg_client": "1.12.0",
+ "body": "{\"requirements\":[{\"type\":\"assert-create\"}],\"updates\":[{\"action\":\"assign-uuid\",\"uuid\":\"789a0cca-ccda-49de-9cb4-9a1bb5886bae\"},{\"action\":\"upgrade-format-version\",\"format-version\":2},{\"action\":\"add-schema\",\"schema\":{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"id\",\"required\":false,\"type\":\"long\"},{\"id\":2,\"name\":\"val\",\"required\":false,\"type\":\"string\"}]},\"last-column-id\":2},{\"action\":\"set-current-schema\",\"schema-id\":-1},{\"action\":\"add-spec\",\"spec\":{\"spec-id\":0,\"fields\":[]}},{\"action\":\"set-default-spec\",\"spec-id\":-1},{\"action\":\"add-sort-order\",\"sort-order\":{\"order-id\":0,\"fields\":[]}},{\"action\":\"set-default-sort-order\",\"sort-order-id\":-1},{\"action\":\"set-location\",\"location\":\"s3://warehouse/fx/ctas\"},{\"action\":\"set-properties\",\"updates\":{\"owner\":\"root\",\"created-at\":\"2026-10-31T14:57:13.712250758Z\",\"write.parquet.compression-codec\":\"zstd\"}},{\"action\":\"add-snapshot\",\"snapshot\":{\"sequence-number\":1,\"snapshot-id\":8281861200614231184,\"timestamp-ms\":1793458633786,\"summary\":{\"operation\":\"append\",\"spark.app.id\":\"app-20261031145645-0007\",\"manifests-created\":\"1\",\"manifests-kept\":\"0\",\"manifests-replaced\":\"0\",\"added-data-files\":\"1\",\"added-records\":\"1\",\"added-files-size\":\"638\",\"changed-partition-count\":\"1\",\"total-records\":\"1\",\"total-files-size\":\"638\",\"total-data-files\":\"1\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"engine-version\":\"4.0.1\",\"app-id\":\"app-20261031145645-0007\",\"engine-name\":\"spark\",\"iceberg-version\":\"Apache Iceberg 1.12.0 (commit 212aa894e919ff9fdf89160da4aadcbe6858ac01)\",\"app-name\":\"capture-commit-fixtures\"},\"manifest-list\":\"s3://warehouse/fx/ctas/metadata/snap-8281861200614231184-1-c5362e7b-ec9e-45f8-8907-6f3a670b7517.avro\",\"schema-id\":0}},{\"action\":\"set-snapshot-ref\",\"ref-name\":\"main\",\"snapshot-id\":8281861200614231184,\"type\":\"branch\"}]}"
+}

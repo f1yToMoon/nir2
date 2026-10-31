@@ -199,6 +199,7 @@ class ProxyService:
                                  cfg.proxy.metrics_report_path_regex)
         self.last_commits: deque[dict[str, Any]] = deque(maxlen=500)
         self.integrity_failures: deque[dict[str, Any]] = deque(maxlen=100)
+        self.keep_bodies = False      # debug: keep a copy of commit bodies (fixture capture)
         self._rng = rng or random.Random()
         hn = cfg.proxy.headers
         self._h_slot, self._h_writer, self._h_run = hn.slot.lower(), hn.writer.lower(), hn.run.lower()
@@ -357,6 +358,8 @@ class ProxyService:
             entry.update(commit_digest(body))
         except Exception as exc:
             metrics.FAIL_OPEN.labels(stage="digest", reason=type(exc).__name__).inc()
+        if self.keep_bodies:
+            entry["body"] = body.decode("utf-8", "replace")
         self.last_commits.append(entry)
 
         hold = NO_HOLD
@@ -406,7 +409,7 @@ class ProxyService:
                 "sequence_number": c.sequence_number, "iceberg_op": c.iceberg_op,
                 "op_class": c.op_class, "summary": c.summary or None, "error_type": error_type,
             })
-            if status == 200 and self.enricher is not None and c.new_snapshot_id is not None \
+            if 200 <= status < 300 and self.enricher is not None and c.new_snapshot_id is not None \
                     and c.manifest_list:
                 self.enricher.submit(EnrichJob(
                     run_id=run_id or None, table=c.table, snapshot_id=c.new_snapshot_id,
@@ -415,7 +418,7 @@ class ProxyService:
                     op_id=op_id or c.op_id, writer_class=writer or ("stream" if c.is_flink else None),
                     writer_id=c.flink_job_id or slot or c.summary.get("spark.app.id"),
                     committed_at_ms=responded_ms))
-        if status == 200 and slot:
+        if 200 <= status < 300 and slot:
             self.gates.on_commit_succeeded(slot)
 
 

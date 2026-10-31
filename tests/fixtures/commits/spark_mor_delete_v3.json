@@ -1,0 +1,24 @@
+{
+ "name": "spark_mor_delete_v3",
+ "source": "spark",
+ "operation": "MoR DELETE (DV)",
+ "format_version": 3,
+ "path": "/v1/namespaces/fx/tables/mor_delete_v3",
+ "kind": "table",
+ "headers": {
+  "X-CAPL-Slot": "fixtures",
+  "X-CAPL-Writer": "test"
+ },
+ "status": 200,
+ "expected": {
+  "op_class": "mor_dml",
+  "iceberg_op": "delete",
+  "has_deletes": true,
+  "is_flink": false
+ },
+ "note": "",
+ "captured_at": "2026-10-31T14:57:07Z",
+ "git_sha": "unknown",
+ "iceberg_client": "1.12.0",
+ "body": "{\"requirements\":[{\"type\":\"assert-table-uuid\",\"uuid\":\"e1c02d15-de9a-4654-94e3-21f1ab0fcbfc\"},{\"type\":\"assert-ref-snapshot-id\",\"ref\":\"main\",\"snapshot-id\":5239608760031145390}],\"updates\":[{\"action\":\"add-snapshot\",\"snapshot\":{\"sequence-number\":5,\"snapshot-id\":4746989773597548660,\"parent-snapshot-id\":5239608760031145390,\"timestamp-ms\":1793458627084,\"summary\":{\"operation\":\"delete\",\"spark.app.id\":\"app-20261031145645-0007\",\"manifests-created\":\"1\",\"manifests-kept\":\"4\",\"manifests-replaced\":\"0\",\"added-delete-files\":\"1\",\"added-dvs\":\"1\",\"added-files-size\":\"42\",\"added-position-deletes\":\"1\",\"changed-partition-count\":\"1\",\"total-records\":\"40\",\"total-files-size\":\"15434\",\"total-data-files\":\"16\",\"total-delete-files\":\"1\",\"total-position-deletes\":\"1\",\"total-equality-deletes\":\"0\",\"engine-version\":\"4.0.1\",\"app-id\":\"app-20261031145645-0007\",\"engine-name\":\"spark\",\"iceberg-version\":\"Apache Iceberg 1.12.0 (commit 212aa894e919ff9fdf89160da4aadcbe6858ac01)\",\"app-name\":\"capture-commit-fixtures\"},\"manifest-list\":\"s3://warehouse/fx/mor_delete_v3/metadata/snap-4746989773597548660-1-cc79d2b8-ac53-4692-a653-9df139196e24.avro\",\"schema-id\":0,\"first-row-id\":40,\"added-rows\":0}},{\"action\":\"set-snapshot-ref\",\"ref-name\":\"main\",\"snapshot-id\":4746989773597548660,\"type\":\"branch\"}]}"
+}

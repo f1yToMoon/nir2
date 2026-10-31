@@ -1,0 +1,24 @@
+{
+ "name": "spark_append_v3",
+ "source": "spark",
+ "operation": "INSERT INTO",
+ "format_version": 3,
+ "path": "/v1/namespaces/fx/tables/append_v3",
+ "kind": "table",
+ "headers": {
+  "X-CAPL-Slot": "fixtures",
+  "X-CAPL-Writer": "test"
+ },
+ "status": 200,
+ "expected": {
+  "op_class": "append",
+  "iceberg_op": "append",
+  "has_deletes": false,
+  "is_flink": false
+ },
+ "note": "",
+ "captured_at": "2026-10-31T14:56:55Z",
+ "git_sha": "unknown",
+ "iceberg_client": "1.12.0",
+ "body": "{\"requirements\":[{\"type\":\"assert-table-uuid\",\"uuid\":\"fc48c870-619f-4cb2-b614-7df655900783\"},{\"type\":\"assert-ref-snapshot-id\",\"ref\":\"main\",\"snapshot-id\":7278643090048861561}],\"updates\":[{\"action\":\"add-snapshot\",\"snapshot\":{\"sequence-number\":5,\"snapshot-id\":6994566010409217010,\"parent-snapshot-id\":7278643090048861561,\"timestamp-ms\":1793458615427,\"summary\":{\"operation\":\"append\",\"spark.app.id\":\"app-20261031145645-0007\",\"manifests-created\":\"1\",\"manifests-kept\":\"4\",\"manifests-replaced\":\"0\",\"added-data-files\":\"1\",\"added-records\":\"1\",\"added-files-size\":\"855\",\"changed-partition-count\":\"1\",\"total-records\":\"41\",\"total-files-size\":\"16247\",\"total-data-files\":\"17\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"engine-version\":\"4.0.1\",\"app-id\":\"app-20261031145645-0007\",\"engine-name\":\"spark\",\"iceberg-version\":\"Apache Iceberg 1.12.0 (commit 212aa894e919ff9fdf89160da4aadcbe6858ac01)\",\"app-name\":\"capture-commit-fixtures\"},\"manifest-list\":\"s3://warehouse/fx/append_v3/metadata/snap-6994566010409217010-1-ce015bbd-c164-416b-8b8c-a41e26badb1f.avro\",\"schema-id\":0,\"first-row-id\":40,\"added-rows\":1}},{\"action\":\"set-snapshot-ref\",\"ref-name\":\"main\",\"snapshot-id\":6994566010409217010,\"type\":\"branch\"}]}"
+}

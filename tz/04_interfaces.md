@@ -48,12 +48,13 @@
 | `overwrite` | `added-equality-deletes` > 0 | `stream_upsert` | `RowDelta` с equality deletes (Flink upsert) |
 | `overwrite` | `added-position-deletes`/`added-dvs` > 0 | `mor_dml` (UPDATE/MERGE) | `RowDelta` с data- и delete-файлами (`BaseRowDelta.java:59`) |
 | `overwrite` | `replace-partitions = true` | `overwrite` | `ReplacePartitions` (`BaseReplacePartitions.java:46`) |
-| `overwrite` | иначе | `cow_dml` (или `overwrite` по фильтру) | `OverwriteFiles` (`BaseOverwriteFiles.java:50-55`) |
+| `overwrite` | иначе | `cow_dml` (в том числе статический `INSERT OVERWRITE … PARTITION`: тот же класс коммита `OverwriteFiles`, по телу не отличим; истинный тип даёт привязка слот → op_id) | `OverwriteFiles` (`BaseOverwriteFiles.java:50-55`) |
 | `delete` | `added-position-deletes`/`added-dvs` > 0 | `mor_dml` (DELETE) | `RowDelta` только с delete-файлами (`BaseRowDelta.java:55-57`) |
-| `delete` | иначе | `delete` (metadata delete / CoW, удаляющий файлы целиком) | `StreamingDelete`, `OverwriteFiles` без добавленных файлов |
+| `delete` | иначе | `cow_dml` (metadata delete / CoW, удаляющий файлы целиком) | `StreamingDelete`, `OverwriteFiles` без добавленных файлов |
+| нет `add-snapshot`, нет `remove-snapshots` | — | `metadata` (схема, свойства) | `UpdateSchema`, `UpdateProperties` |
 | нет `add-snapshot`, есть `remove-snapshots` | — | `expire` | `ExpireSnapshots` (тело — только `remove-snapshots`, ADR-006) |
 
-Признак `has_deletes` (добавлены delete-файлы) и `is_flink` (`flink.job-id` в summary) сохраняются отдельно. Окончательная проверка таблицы — на фикстурах реальных тел коммитов этапов 0–2 (`tests/unit/test_commit_parser.py`).
+Признак `has_deletes` (добавлены delete-файлы) и `is_flink` (`flink.job-id` в summary) сохраняются отдельно. Таблица проверена на 24 фикстурах реальных тел коммитов (Spark 4.0, Flink, Java API; `tests/fixtures/commits`, `scripts/capture_commit_fixtures.py`, `tests/unit/test_commit_parser.py`). Транзакционный коммит каталог подтверждает кодом 204 (не 200).
 
 ### 1.3. Заголовки
 
