@@ -1,0 +1,26 @@
+{
+ "name": "spark_cow_dml_merge_insert_only",
+ "source": "spark",
+ "operation": "MERGE with inserts only (copy-on-write)",
+ "format_version": 2,
+ "path": "/v1/namespaces/fx/tables/merge_insert_only_cow_dml",
+ "kind": "table",
+ "headers": {
+  "X-CAPL-Slot": "fixtures",
+  "X-CAPL-Writer": "test"
+ },
+ "status": 200,
+ "expected": {
+  "op_class": "append",
+  "iceberg_op": "append",
+  "has_deletes": false,
+  "true_class": "cow_dml",
+  "ambiguity": "data_files_added_only",
+  "is_flink": false
+ },
+ "note": "",
+ "captured_at": "2026-10-31T15:43:35Z",
+ "git_sha": "35538524b074349ed83e940c6d8f0119f9b7bf02",
+ "iceberg_client": "1.12.0",
+ "body": "{\"requirements\":[{\"type\":\"assert-table-uuid\",\"uuid\":\"c6bf8406-d56c-49fa-bdf8-2fe4d806f7b9\"},{\"type\":\"assert-ref-snapshot-id\",\"ref\":\"main\",\"snapshot-id\":1656244763373539132}],\"updates\":[{\"action\":\"add-snapshot\",\"snapshot\":{\"sequence-number\":5,\"snapshot-id\":4275440452787749481,\"parent-snapshot-id\":1656244763373539132,\"timestamp-ms\":1793461415897,\"summary\":{\"operation\":\"append\",\"spark.app.id\":\"app-20261031154318-0017\",\"manifests-created\":\"1\",\"manifests-kept\":\"4\",\"manifests-replaced\":\"0\",\"added-data-files\":\"1\",\"added-records\":\"1\",\"added-files-size\":\"893\",\"changed-partition-count\":\"1\",\"total-records\":\"41\",\"total-files-size\":\"16285\",\"total-data-files\":\"17\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"engine-version\":\"4.0.1\",\"app-id\":\"app-20261031154318-0017\",\"engine-name\":\"spark\",\"iceberg-version\":\"Apache Iceberg 1.12.0 (commit 212aa894e919ff9fdf89160da4aadcbe6858ac01)\",\"app-name\":\"capture-commit-fixtures\"},\"manifest-list\":\"s3://warehouse/fx/merge_insert_only_cow_dml/metadata/snap-4275440452787749481-1-3fc7bbf8-b23c-48a7-8794-c73fe6262041.avro\",\"schema-id\":0}},{\"action\":\"set-snapshot-ref\",\"ref-name\":\"main\",\"snapshot-id\":4275440452787749481,\"type\":\"branch\"}]}"
+}

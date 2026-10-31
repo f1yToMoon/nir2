@@ -14,11 +14,13 @@
   "op_class": "metadata",
   "iceberg_op": null,
   "has_deletes": false,
+  "true_class": "metadata",
+  "ambiguity": null,
   "is_flink": false
  },
  "note": "",
- "captured_at": "2026-10-31T14:57:14Z",
- "git_sha": "unknown",
+ "captured_at": "2026-10-31T15:43:47Z",
+ "git_sha": "35538524b074349ed83e940c6d8f0119f9b7bf02",
  "iceberg_client": "1.12.0",
- "body": "{\"requirements\":[{\"type\":\"assert-table-uuid\",\"uuid\":\"4b0fc524-b818-4a67-a595-fbf885954832\"}],\"updates\":[{\"action\":\"set-properties\",\"updates\":{\"capl.fixture\":\"1\"}}]}"
+ "body": "{\"requirements\":[{\"type\":\"assert-table-uuid\",\"uuid\":\"e38a11fc-1b8e-4cde-941a-23b13180dee1\"}],\"updates\":[{\"action\":\"set-properties\",\"updates\":{\"capl.fixture\":\"1\"}}]}"
 }

@@ -14,11 +14,13 @@
   "op_class": "append",
   "iceberg_op": "append",
   "has_deletes": false,
+  "true_class": "append",
+  "ambiguity": null,
   "is_flink": true
  },
  "note": "",
- "captured_at": "2026-10-31T14:57:56Z",
- "git_sha": "unknown",
+ "captured_at": "2026-10-31T15:43:58Z",
+ "git_sha": "35538524b074349ed83e940c6d8f0119f9b7bf02",
  "iceberg_client": "1.12.0",
- "body": "{\"requirements\":[{\"type\":\"assert-table-uuid\",\"uuid\":\"06cd61a7-1214-4ee9-9be2-68274321d7d1\"},{\"type\":\"assert-ref-snapshot-id\",\"ref\":\"main\",\"snapshot-id\":null}],\"updates\":[{\"action\":\"add-snapshot\",\"snapshot\":{\"sequence-number\":1,\"snapshot-id\":5324604770488710017,\"timestamp-ms\":1793458675940,\"summary\":{\"operation\":\"append\",\"flink.operator-id\":\"c27dcf7b54ef6bfd6cff02ca8870b681\",\"flink.job-id\":\"2d4b5b10e374e25407c9b92a4664dae2\",\"manifests-created\":\"1\",\"manifests-kept\":\"0\",\"manifests-replaced\":\"0\",\"flink.max-committed-checkpoint-id\":\"9223372036854775807\",\"added-data-files\":\"2\",\"added-records\":\"2\",\"added-files-size\":\"1758\",\"changed-partition-count\":\"2\",\"total-records\":\"2\",\"total-files-size\":\"1758\",\"total-data-files\":\"2\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"engine-version\":\"1.20.3\",\"engine-name\":\"flink\",\"iceberg-version\":\"Apache Iceberg 1.12.0 (commit 212aa894e919ff9fdf89160da4aadcbe6858ac01)\"},\"manifest-list\":\"s3://warehouse/fx/flink_append/metadata/snap-5324604770488710017-1-91442345-34e5-43cf-ae18-d545eefeba91.avro\",\"schema-id\":0}},{\"action\":\"set-snapshot-ref\",\"ref-name\":\"main\",\"snapshot-id\":5324604770488710017,\"type\":\"branch\"}]}"
+ "body": "{\"requirements\":[{\"type\":\"assert-table-uuid\",\"uuid\":\"6e1ef686-7856-456a-a8c4-353f43e0438a\"},{\"type\":\"assert-ref-snapshot-id\",\"ref\":\"main\",\"snapshot-id\":null}],\"updates\":[{\"action\":\"add-snapshot\",\"snapshot\":{\"sequence-number\":1,\"snapshot-id\":1561234777667935546,\"timestamp-ms\":1793461437308,\"summary\":{\"operation\":\"append\",\"flink.operator-id\":\"c27dcf7b54ef6bfd6cff02ca8870b681\",\"flink.job-id\":\"7757f1da24bbc42267df076350eebf0b\",\"manifests-created\":\"1\",\"manifests-kept\":\"0\",\"manifests-replaced\":\"0\",\"flink.max-committed-checkpoint-id\":\"9223372036854775807\",\"added-data-files\":\"2\",\"added-records\":\"2\",\"added-files-size\":\"1758\",\"changed-partition-count\":\"2\",\"total-records\":\"2\",\"total-files-size\":\"1758\",\"total-data-files\":\"2\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"engine-version\":\"1.20.3\",\"engine-name\":\"flink\",\"iceberg-version\":\"Apache Iceberg 1.12.0 (commit 212aa894e919ff9fdf89160da4aadcbe6858ac01)\"},\"manifest-list\":\"s3://warehouse/fx/flink_append/metadata/snap-1561234777667935546-1-d61d7712-87f2-4160-ac35-d984d1391a94.avro\",\"schema-id\":0}},{\"action\":\"set-snapshot-ref\",\"ref-name\":\"main\",\"snapshot-id\":1561234777667935546,\"type\":\"branch\"}]}"
 }

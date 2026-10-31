@@ -14,11 +14,13 @@
   "op_class": "append",
   "iceberg_op": "append",
   "has_deletes": false,
+  "true_class": "append",
+  "ambiguity": "data_files_added_only",
   "is_flink": false
  },
  "note": "",
- "captured_at": "2026-10-31T14:56:54Z",
- "git_sha": "unknown",
+ "captured_at": "2026-10-31T15:43:26Z",
+ "git_sha": "35538524b074349ed83e940c6d8f0119f9b7bf02",
  "iceberg_client": "1.12.0",
- "body": "{\"requirements\":[{\"type\":\"assert-table-uuid\",\"uuid\":\"18fddb63-5b94-400c-849a-d8b19138f64e\"},{\"type\":\"assert-ref-snapshot-id\",\"ref\":\"main\",\"snapshot-id\":6762465560111891188}],\"updates\":[{\"action\":\"add-snapshot\",\"snapshot\":{\"sequence-number\":5,\"snapshot-id\":5865919886104220797,\"parent-snapshot-id\":6762465560111891188,\"timestamp-ms\":1793458614241,\"summary\":{\"operation\":\"append\",\"spark.app.id\":\"app-20261031145645-0007\",\"manifests-created\":\"1\",\"manifests-kept\":\"4\",\"manifests-replaced\":\"0\",\"added-data-files\":\"1\",\"added-records\":\"1\",\"added-files-size\":\"855\",\"changed-partition-count\":\"1\",\"total-records\":\"41\",\"total-files-size\":\"16247\",\"total-data-files\":\"17\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"engine-version\":\"4.0.1\",\"app-id\":\"app-20261031145645-0007\",\"engine-name\":\"spark\",\"iceberg-version\":\"Apache Iceberg 1.12.0 (commit 212aa894e919ff9fdf89160da4aadcbe6858ac01)\",\"app-name\":\"capture-commit-fixtures\"},\"manifest-list\":\"s3://warehouse/fx/append_v2/metadata/snap-5865919886104220797-1-87cbbdbc-3fd1-480d-923c-f436d0dd45d0.avro\",\"schema-id\":0}},{\"action\":\"set-snapshot-ref\",\"ref-name\":\"main\",\"snapshot-id\":5865919886104220797,\"type\":\"branch\"}]}"
+ "body": "{\"requirements\":[{\"type\":\"assert-table-uuid\",\"uuid\":\"513d4e0e-c987-4874-b149-4b3446d0cd68\"},{\"type\":\"assert-ref-snapshot-id\",\"ref\":\"main\",\"snapshot-id\":6207204972492346008}],\"updates\":[{\"action\":\"add-snapshot\",\"snapshot\":{\"sequence-number\":5,\"snapshot-id\":8838202666900203359,\"parent-snapshot-id\":6207204972492346008,\"timestamp-ms\":1793461406446,\"summary\":{\"operation\":\"append\",\"spark.app.id\":\"app-20261031154318-0017\",\"manifests-created\":\"1\",\"manifests-kept\":\"4\",\"manifests-replaced\":\"0\",\"added-data-files\":\"1\",\"added-records\":\"1\",\"added-files-size\":\"855\",\"changed-partition-count\":\"1\",\"total-records\":\"41\",\"total-files-size\":\"16247\",\"total-data-files\":\"17\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"engine-version\":\"4.0.1\",\"app-id\":\"app-20261031154318-0017\",\"engine-name\":\"spark\",\"iceberg-version\":\"Apache Iceberg 1.12.0 (commit 212aa894e919ff9fdf89160da4aadcbe6858ac01)\",\"app-name\":\"capture-commit-fixtures\"},\"manifest-list\":\"s3://warehouse/fx/append_v2/metadata/snap-8838202666900203359-1-c4e297ab-02a5-44df-ae1b-fac3929d1d6e.avro\",\"schema-id\":0}},{\"action\":\"set-snapshot-ref\",\"ref-name\":\"main\",\"snapshot-id\":8838202666900203359,\"type\":\"branch\"}]}"
 }

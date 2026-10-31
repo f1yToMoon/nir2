@@ -14,11 +14,13 @@
   "op_class": "expire",
   "iceberg_op": null,
   "has_deletes": false,
+  "true_class": "expire",
+  "ambiguity": null,
   "is_flink": false
  },
  "note": "",
- "captured_at": "2026-10-31T14:57:13Z",
- "git_sha": "unknown",
+ "captured_at": "2026-10-31T15:43:46Z",
+ "git_sha": "35538524b074349ed83e940c6d8f0119f9b7bf02",
  "iceberg_client": "1.12.0",
- "body": "{\"requirements\":[{\"type\":\"assert-table-uuid\",\"uuid\":\"3dda9b18-dd13-46f4-8ebb-f93a3ff8d66e\"}],\"updates\":[{\"action\":\"remove-snapshots\",\"snapshot-ids\":[548259899345693345]},{\"action\":\"remove-snapshots\",\"snapshot-ids\":[3503033425324311513]},{\"action\":\"remove-snapshots\",\"snapshot-ids\":[7319736390900202541]}]}"
+ "body": "{\"requirements\":[{\"type\":\"assert-table-uuid\",\"uuid\":\"09ce789f-c80e-4770-93c0-f3b2d3d59604\"}],\"updates\":[{\"action\":\"remove-snapshots\",\"snapshot-ids\":[7590614300268640547]},{\"action\":\"remove-snapshots\",\"snapshot-ids\":[4991229117437494299]},{\"action\":\"remove-snapshots\",\"snapshot-ids\":[6830295684828473606]}]}"
 }

@@ -14,11 +14,13 @@
   "op_class": "metadata",
   "iceberg_op": null,
   "has_deletes": false,
+  "true_class": "metadata",
+  "ambiguity": null,
   "is_flink": false
  },
  "note": "",
- "captured_at": "2026-10-31T14:57:14Z",
- "git_sha": "unknown",
+ "captured_at": "2026-10-31T15:43:47Z",
+ "git_sha": "35538524b074349ed83e940c6d8f0119f9b7bf02",
  "iceberg_client": "1.12.0",
- "body": "{\"requirements\":[{\"type\":\"assert-table-uuid\",\"uuid\":\"4b0fc524-b818-4a67-a595-fbf885954832\"},{\"type\":\"assert-last-assigned-field-id\",\"last-assigned-field-id\":3},{\"type\":\"assert-current-schema-id\",\"current-schema-id\":0}],\"updates\":[{\"action\":\"add-schema\",\"schema\":{\"type\":\"struct\",\"schema-id\":1,\"fields\":[{\"id\":1,\"name\":\"id\",\"required\":false,\"type\":\"long\"},{\"id\":2,\"name\":\"bkt\",\"required\":false,\"type\":\"int\"},{\"id\":3,\"name\":\"val\",\"required\":false,\"type\":\"string\"},{\"id\":4,\"name\":\"extra\",\"required\":false,\"type\":\"int\"}]},\"last-column-id\":4},{\"action\":\"set-current-schema\",\"schema-id\":-1}]}"
+ "body": "{\"requirements\":[{\"type\":\"assert-table-uuid\",\"uuid\":\"e38a11fc-1b8e-4cde-941a-23b13180dee1\"},{\"type\":\"assert-last-assigned-field-id\",\"last-assigned-field-id\":3},{\"type\":\"assert-current-schema-id\",\"current-schema-id\":0}],\"updates\":[{\"action\":\"add-schema\",\"schema\":{\"type\":\"struct\",\"schema-id\":1,\"fields\":[{\"id\":1,\"name\":\"id\",\"required\":false,\"type\":\"long\"},{\"id\":2,\"name\":\"bkt\",\"required\":false,\"type\":\"int\"},{\"id\":3,\"name\":\"val\",\"required\":false,\"type\":\"string\"},{\"id\":4,\"name\":\"extra\",\"required\":false,\"type\":\"int\"}]},\"last-column-id\":4},{\"action\":\"set-current-schema\",\"schema-id\":-1}]}"
 }
