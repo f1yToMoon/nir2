@@ -4,11 +4,13 @@ from __future__ import annotations
 import gzip
 import hashlib
 import json
+from collections.abc import AsyncIterator
 
 import httpx
 import pytest
 
 from capl.config import CaplConfig
+from capl.proxy.app import _streaming_response
 from tests.unit.conftest import Env
 
 COMMIT = "/v1/warehouse/namespaces/bench/tables/events"
@@ -199,3 +201,55 @@ async def test_slot_binding_gives_operation_class(env: Env) -> None:
         ("cow_dml", "append", "op_id", "op-7")
     assert bound["op_class_ambiguity"] == "data_files_added_only"
     assert (unbound["op_class"], unbound["op_class_source"], unbound["op_id"]) == ("append", "body", None)
+
+
+async def test_enrichment_submitted_after_response_sent(env: Env) -> None:
+    """S2-R1-02: the manifest list is read only after the commit response (table metadata, up to
+    MBs) has been passed to the client, not concurrently with it."""
+    state = {"sent": 0, "done": False}
+    submitted: list[tuple[int, bool]] = []
+    chunks = [b'{"metadata":', b"x" * 4096, b"}"]
+
+    class _Stream(httpx.AsyncByteStream):
+        async def __aiter__(self) -> AsyncIterator[bytes]:
+            for c in chunks:
+                assert not submitted, "enrichment submitted before the response was sent"
+                state["sent"] += 1
+                yield c
+            state["done"] = True
+
+    class _Enricher:
+        def submit(self, job: object) -> bool:
+            submitted.append((state["sent"], state["done"]))
+            return True
+
+    async def handle(request: httpx.Request) -> httpx.Response:
+        _ = b"".join([c async for c in request.stream])  # type: ignore[union-attr]
+        return httpx.Response(200, headers=[(b"content-type", b"application/json")],
+                              stream=_Stream(), request=request)
+
+    env.upstream.handle_async_request = handle  # type: ignore[method-assign]
+    env.service.proxy.enricher = _Enricher()  # type: ignore[assignment]
+    r = await env.proxy.post(COMMIT, content=BODY)
+    assert r.status_code == 200 and r.content == b"".join(chunks)
+    assert submitted == [(len(chunks), True)]
+
+
+async def test_stream_done_callback_on_client_disconnect() -> None:
+    """The callback (enrichment submit) also runs when the client drops the stream midway."""
+    calls: list[int] = []
+    resp = httpx.Response(200, stream=_Chunks([b"a", b"b", b"c"]))
+    out = _streaming_response(resp, lambda: calls.append(1))
+    it = out.body_iterator.__aiter__()
+    assert await it.__anext__() == b"a"
+    await it.aclose()       # type: ignore[attr-defined]
+    assert calls == [1]
+
+
+class _Chunks(httpx.AsyncByteStream):
+    def __init__(self, parts: list[bytes]) -> None:
+        self.parts = parts
+
+    async def __aiter__(self) -> AsyncIterator[bytes]:
+        for p in self.parts:
+            yield p

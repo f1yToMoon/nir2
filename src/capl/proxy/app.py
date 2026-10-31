@@ -401,6 +401,9 @@ class ProxyService:
         responded_ms = time.time() * 1000
         status = resp.status_code
         entry.update(status=status, ts_resp=round(responded_ms))
+        # enrichment jobs are submitted after the response is sent to the client: reading the
+        # manifest list must not overlap the transfer of the (metadata-sized) commit response
+        jobs: list[EnrichJob] = []
         if isinstance(resp, Response):
             out: Response = resp
         elif raw_body is not None:
@@ -410,12 +413,15 @@ class ProxyService:
 
             def _done() -> None:
                 metrics.PROXY_PHASE.labels(phase="response_stream").observe(time.perf_counter() - t_stream)
+                self._submit(jobs)
 
             out = _streaming_response(resp, _done)
         try:
-            self._after_commit(commits, slot, writer, run_id, op_id, bound_type, idem, status,
-                               raw_body or b"",
-                               hold, received_ms, forwarded_ms, responded_ms)
+            jobs.extend(self._after_commit(commits, slot, writer, run_id, op_id, bound_type, idem,
+                                           status, raw_body or b"",
+                                           hold, received_ms, forwarded_ms, responded_ms))
+            if raw_body is not None or isinstance(resp, Response):
+                self._submit(jobs)
             metrics.COMMIT_UPSTREAM.labels(op_class=entry["op_class"] or "unknown").observe(t_resp - t_fwd)
             # proxy's own time: from the full body received to forwarding, minus the hold itself
             # (the body upload time is the client's and exists without the proxy as well)
@@ -432,7 +438,9 @@ class ProxyService:
                       op_id: str | None, bound_type: str | None, idem: str | None, status: int,
                       raw_body: bytes,
                       hold: HoldResult, received_ms: float, forwarded_ms: float,
-                      responded_ms: float) -> None:
+                      responded_ms: float) -> list[EnrichJob]:
+        """Journal the attempt, release gates on success; returns enrichment jobs to submit."""
+        jobs: list[EnrichJob] = []
         error_type = response_error_type(raw_body) if status >= 400 else None
         if not commits:
             metrics.COMMIT_ATTEMPTS.labels(status=str(status), op_class="unparsed").inc()
@@ -455,7 +463,7 @@ class ProxyService:
             if 200 <= status < 300 and self.enricher is not None and self.enrich_enabled \
                     and c.new_snapshot_id is not None \
                     and c.manifest_list:
-                self.enricher.submit(EnrichJob(
+                jobs.append(EnrichJob(
                     run_id=run_id or None, table=c.table, snapshot_id=c.new_snapshot_id,
                     parent_snapshot_id=c.parent_snapshot_id, sequence_number=c.sequence_number,
                     manifest_list=c.manifest_list, iceberg_op=c.iceberg_op, op_class=op_class,
@@ -465,6 +473,16 @@ class ProxyService:
                     committed_at_ms=responded_ms))
         if 200 <= status < 300 and slot:
             self.gates.on_commit_succeeded(slot)
+        return jobs
+
+    def _submit(self, jobs: list[EnrichJob]) -> None:
+        if self.enricher is None:
+            return
+        for job in jobs:
+            try:
+                self.enricher.submit(job)
+            except Exception as exc:
+                metrics.FAIL_OPEN.labels(stage="enrich_submit", reason=type(exc).__name__).inc()
 
 
 def _resp_headers(resp: httpx.Response) -> list[tuple[bytes, bytes]]:
@@ -484,10 +502,12 @@ def _buffered_response(resp: httpx.Response, raw_body: bytes) -> Response:
 def _streaming_response(resp: httpx.Response, on_done: Callable[[], None] | None = None
                         ) -> StreamingResponse:
     async def body() -> AsyncIterator[bytes]:
-        async for chunk in resp.aiter_raw():
-            yield chunk
-        if on_done is not None:
-            on_done()
+        try:
+            async for chunk in resp.aiter_raw():
+                yield chunk
+        finally:            # also when the client disconnects: the commit has happened anyway
+            if on_done is not None:
+                on_done()
 
     out = StreamingResponse(body(), status_code=resp.status_code,
                             background=BackgroundTask(resp.aclose))
