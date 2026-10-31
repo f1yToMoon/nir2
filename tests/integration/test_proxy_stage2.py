@@ -362,7 +362,8 @@ def test_successful_commit_responses_identical(spark: Any) -> None:
     """S2-R1-01: responses to successful commits (200 table commit, 204 transaction) through the
     proxy and directly. Two tables prepared identically; the same commit goes to one through the
     proxy and to the other directly. Bodies of 200 differ only by table identity (uuid, location),
-    so for 200 header fields are compared except Content-Length *value* (presence must agree)."""
+    so for 200 header fields are compared except the values of Content-Length and ETag (a hash of
+    the body); their presence must agree."""
     rows = []
     for i in range(3):
         names = {}
@@ -388,12 +389,13 @@ def test_successful_commit_responses_identical(spark: Any) -> None:
                                timeout=30)
             res[via] = (r1, r2)
         (p1, p2), (d1, d2) = res["proxy"], res["direct"]
-        cl = ("date", "content-length")
+        cl = ("date", "content-length", "etag")
         row = {
             "commit_status": [p1.status_code, d1.status_code],
             "commit_headers_proxy": _raw_headers(p1, cl), "commit_headers_direct": _raw_headers(d1, cl),
             "commit_has_content_length": ["content-length" in p1.headers,
                                           "content-length" in d1.headers],
+            "commit_has_etag": ["etag" in p1.headers, "etag" in d1.headers],
             "commit_proxy_length_ok":
                 int(p1.headers.get("content-length", len(p1.content))) == len(p1.content),
             "txn_status": [p2.status_code, d2.status_code],
@@ -407,6 +409,7 @@ def test_successful_commit_responses_identical(spark: Any) -> None:
         assert row["commit_status"] == [200, 200] and row["txn_status"] == [204, 204], row
         assert row["commit_headers_proxy"] == row["commit_headers_direct"], row
         assert row["commit_has_content_length"][0] == row["commit_has_content_length"][1], row
+        assert row["commit_has_etag"][0] == row["commit_has_etag"][1], row
         assert row["commit_proxy_length_ok"], row
         assert row["txn_headers_proxy"] == row["txn_headers_direct"], row
         assert row["txn_body_len"] == [0, 0], row

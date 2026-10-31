@@ -56,7 +56,9 @@
 | нет `add-snapshot`, нет `remove-snapshots` | — | `metadata` (схема, свойства) | `UpdateSchema`, `UpdateProperties` |
 | нет `add-snapshot`, есть `remove-snapshots` | — | `expire` | `ExpireSnapshots` (тело — только `remove-snapshots`, ADR-006) |
 
-Признак `has_deletes` (добавлены delete-файлы) и `is_flink` (`flink.job-id` в summary) сохраняются отдельно. Таблица проверена на 24 фикстурах реальных тел коммитов (Spark 4.0, Flink, Java API; `tests/fixtures/commits`, `scripts/capture_commit_fixtures.py`, `tests/unit/test_commit_parser.py`). Транзакционный коммит каталог подтверждает кодом 204 (не 200).
+Класс по телу не всегда определяет валидацию: четыре неоднозначных случая (`data_files_added_only` — `append` может быть MERGE только со вставками в CoW/MoR; `overwrite_options`; `overwrite_by_filter`; `data_files_removed_only` — metadata delete или CoW) перечислены в ADR-007 п. 5 со ссылками на код. Для них парсер возвращает признак `ambiguity` и множество классов-кандидатов; истинный класс операции даёт привязка слот → (`op_id`, тип), в журнал пишутся оба (`op_class`, `op_class_body`, `op_class_ambiguity`, `op_class_source`).
+
+Признак `has_deletes` (добавлены delete-файлы) и `is_flink` (`flink.job-id` в summary) сохраняются отдельно. Таблица проверена на 26 фикстурах реальных тел коммитов (Spark 4.0, Flink, Java API; `tests/fixtures/commits`, `scripts/capture_commit_fixtures.py`, `tests/unit/test_commit_parser.py`). Транзакционный коммит каталог подтверждает кодом 204 (не 200).
 
 ### 1.3. Заголовки
 

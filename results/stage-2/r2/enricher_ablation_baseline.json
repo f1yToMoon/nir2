@@ -1,0 +1,58 @@
+{
+ "git_sha": "715616cee3ca4e7b5927845ae69c656b32510593-dirty",
+ "commits_per_block_per_path": 150,
+ "blocks": [
+  {
+   "enrich": "on",
+   "snapshots_proxy_table": 2200,
+   "proxy_p50": 79.44158199916274,
+   "bypass_p50": 75.46792599987384,
+   "diff_p50": 3.9736559992888942,
+   "paired_median_diff": 3.629447499406524
+  },
+  {
+   "enrich": "off",
+   "snapshots_proxy_table": 2350,
+   "proxy_p50": 83.09147050022148,
+   "bypass_p50": 79.29251049972663,
+   "diff_p50": 3.7989600004948443,
+   "paired_median_diff": 1.93656849933177
+  },
+  {
+   "enrich": "on",
+   "snapshots_proxy_table": 2500,
+   "proxy_p50": 90.5640900000435,
+   "bypass_p50": 86.7745814994123,
+   "diff_p50": 3.7895085006312,
+   "paired_median_diff": 4.244218001076661
+  },
+  {
+   "enrich": "off",
+   "snapshots_proxy_table": 2650,
+   "proxy_p50": 93.18920250007068,
+   "bypass_p50": 90.1383150003312,
+   "diff_p50": 3.050887499739474,
+   "paired_median_diff": 0.735936499950185
+  },
+  {
+   "enrich": "on",
+   "snapshots_proxy_table": 2800,
+   "proxy_p50": 103.97961000035139,
+   "bypass_p50": 95.75620450050337,
+   "diff_p50": 8.223405499848013,
+   "paired_median_diff": 6.089790500482195
+  },
+  {
+   "enrich": "off",
+   "snapshots_proxy_table": 2950,
+   "proxy_p50": 102.84283300006791,
+   "bypass_p50": 130.38200050050364,
+   "diff_p50": -27.539167500435724,
+   "paired_median_diff": -0.29003649979131296
+  }
+ ],
+ "mean_diff_p50_by_mode": {
+  "on": 5.3288566665893695,
+  "off": -6.896440000067135
+ }
+}

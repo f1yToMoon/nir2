@@ -10,7 +10,9 @@ from __future__ import annotations
 import argparse
 import asyncio
 import logging
+import multiprocessing
 import os
+from concurrent.futures import ProcessPoolExecutor
 from dataclasses import dataclass
 from typing import Any
 
@@ -23,7 +25,7 @@ from starlette.responses import Response
 from capl import metrics
 from capl.advisor.app import DebugHoldAdvisor, build_advisor_app
 from capl.config import CaplConfig, load_config
-from capl.enricher import Enricher, pyiceberg_opener
+from capl.enricher import Enricher, S3FootprintReader
 from capl.proxy.app import ProxyService, build_proxy_app, make_upstream_client
 from capl.proxy.hold import HoldGates
 from capl.state import StateStore
@@ -101,9 +103,16 @@ def build_service(cfg: CaplConfig, env: dict[str, str] | None = None, client: An
     state = StateStore(cfg.state)
     gates = HoldGates(cfg.hold.max_ms)
     advisor = DebugHoldAdvisor(gates)
-    enr = (Enricher(pyiceberg_opener(s3_properties(cfg, env)), telemetry, state,
-                    cfg.enricher.workers, cfg.enricher.queue_max, cfg.enricher.read_deleted_paths_for)
-           if enricher else None)
+    enr = None
+    if enricher:
+        props = s3_properties(cfg, env)
+        executor = None
+        if cfg.enricher.executor == "process":
+            executor = ProcessPoolExecutor(max_workers=cfg.enricher.workers,
+                                           mp_context=multiprocessing.get_context("spawn"))
+        enr = Enricher(S3FootprintReader(tuple(sorted(props.items()))), telemetry, state,
+                       cfg.enricher.workers, cfg.enricher.queue_max,
+                       cfg.enricher.read_deleted_paths_for, executor)
     svc = ProxyService(cfg, client or make_upstream_client(cfg), gates, advisor, telemetry, enr, state)
     flush = getattr(telemetry, "flush", None)
     return Service(cfg, svc, advisor, telemetry, enr, build_proxy_app(svc),

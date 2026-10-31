@@ -11,6 +11,7 @@ import asyncio
 import datetime as dt
 import time
 from collections.abc import Callable, Iterable
+from concurrent.futures import Executor
 from dataclasses import dataclass, field
 from typing import IO, Any, Protocol
 
@@ -87,6 +88,26 @@ def pyiceberg_opener(properties: dict[str, str]) -> Opener:
     return _open
 
 
+_OPENERS: dict[tuple[tuple[str, str], ...], Opener] = {}
+
+
+@dataclass(frozen=True)
+class S3FootprintReader:
+    """Picklable footprint reader for a process pool: Avro decoding (fastavro) is CPU-bound and
+    holds the GIL; in a separate process it does not delay the proxy's event loop (S2-R1-02).
+    The FileIO is created once per worker process."""
+    properties: tuple[tuple[str, str], ...]
+
+    def __call__(self, manifest_list: str, snapshot_id: int, keep_deleted_paths: bool) -> Footprint:
+        opener = _OPENERS.get(self.properties)
+        if opener is None:
+            opener = _OPENERS.setdefault(self.properties, pyiceberg_opener(dict(self.properties)))
+        return read_footprint(opener, manifest_list, snapshot_id, keep_deleted_paths)
+
+
+Reader = Callable[[str, int, bool], Footprint]
+
+
 def _records(opener: Opener, path: str) -> Iterable[dict[str, Any]]:
     with opener(path) as f:
         yield from fastavro.reader(f)  # type: ignore[misc]
@@ -149,10 +170,13 @@ class EventSink(Protocol):
 
 
 class Enricher:
-    def __init__(self, opener: Opener, telemetry: TelemetrySink, state: EventSink | None,
+    def __init__(self, reader: Reader, telemetry: TelemetrySink, state: EventSink | None,
                  workers: int = 4, queue_max: int = 10000,
-                 read_deleted_paths_for: Iterable[str] = ()) -> None:
-        self._opener = opener
+                 read_deleted_paths_for: Iterable[str] = (), executor: Executor | None = None) -> None:
+        """reader(manifest_list, snapshot_id, keep_deleted_paths) runs in `executor`
+        (a process pool in the service; None = default thread pool)."""
+        self._reader = reader
+        self._executor = executor
         self._telemetry = telemetry
         self._state = state
         self._n_workers = workers
@@ -182,6 +206,8 @@ class Enricher:
         for t in self._tasks:
             t.cancel()
         await asyncio.gather(*self._tasks, return_exceptions=True)
+        if self._executor is not None:
+            self._executor.shutdown(wait=False, cancel_futures=True)
 
     async def join(self) -> None:
         await self._queue.join()
@@ -202,8 +228,8 @@ class Enricher:
 
     async def _process(self, job: EnrichJob) -> None:
         keep_paths = job.op_class in self._deleted_paths_for
-        fp = await asyncio.to_thread(read_footprint, self._opener, job.manifest_list,
-                                     job.snapshot_id, keep_paths)
+        fp = await asyncio.get_running_loop().run_in_executor(
+            self._executor, self._reader, job.manifest_list, job.snapshot_id, keep_paths)
         now_ms = time.time() * 1000
         totals = fp.totals()
         event = {

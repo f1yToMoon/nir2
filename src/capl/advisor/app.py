@@ -99,6 +99,12 @@ def build_advisor_app(svc: ProxyService, advisor: DebugHoldAdvisor, flush: Any =
         svc.integrity_sample_rate = rate
         return {"sample_rate": rate}
 
+    @app.put("/_capl/debug/enricher")
+    async def enricher_switch(on: bool) -> dict[str, Any]:
+        """Debug: enqueue enrichment jobs (on) or skip them (off) — overhead experiments."""
+        svc.enrich_enabled = on
+        return {"enrich_enabled": on}
+
     @app.put("/_capl/debug/keep-bodies")
     async def keep_bodies(on: bool) -> dict[str, Any]:
         """Keep a read-only copy of each commit body in last-commits (fixture capture)."""

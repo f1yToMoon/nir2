@@ -74,6 +74,9 @@ class HoldConfig(_Section):
 
 class EnricherConfig(_Section):
     workers: int = 4
+    # process: manifests are decoded in a process pool (no GIL contention with the proxy);
+    # thread: in the event loop's default thread pool (unit tests)
+    executor: Literal["process", "thread"] = "process"
     queue_max: int = 10000
     read_deleted_paths_for: list[str] = Field(
         default_factory=lambda: ["cow_dml", "mor_dml", "rewrite_data", "overwrite"])

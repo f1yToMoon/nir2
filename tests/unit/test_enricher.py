@@ -5,6 +5,7 @@ The comparison with PyIceberg on real snapshots is in tests/integration/test_pro
 from __future__ import annotations
 
 import datetime as dt
+import functools
 from pathlib import Path
 from typing import IO, Any
 
@@ -97,7 +98,8 @@ async def test_enricher_publishes_event(tmp_path: Path) -> None:
     tel = NullTelemetry()
     tel.keep = True
     state = StateStore(StateConfig())
-    enr = Enricher(_open, tel, state, workers=2, read_deleted_paths_for=["cow_dml"])
+    enr = Enricher(functools.partial(read_footprint, _open), tel, state, workers=2,
+                   read_deleted_paths_for=["cow_dml"])
     await enr.start()
     assert enr.submit(EnrichJob(None, "bench.events", SID, OLD, 5, _fixture(tmp_path), "overwrite",
                                 "cow_dml", "op_id", "op-1", "batch_dml", "s1", 1_000_000.0))
@@ -111,3 +113,20 @@ async def test_enricher_publishes_event(tmp_path: Path) -> None:
     parts = {r["partition"]: r for r in tel.rows["commit_partitions"]}
     assert parts["dt=2026-11-01/key_bucket=3"]["deleted_file_paths"] == ["s3://w/old1"]
     assert state.tables["bench.events"].commits[-1].op_class == "cow_dml"
+
+
+def test_process_pool_reader_matches_thread(tmp_path: Path) -> None:
+    """S3FootprintReader is picklable and gives the same footprint in a spawned worker process
+    (PyIceberg FileIO reads local paths as well)."""
+    import multiprocessing
+    import pickle
+    from concurrent.futures import ProcessPoolExecutor
+
+    from capl.enricher import S3FootprintReader
+
+    mlist = _fixture(tmp_path)
+    reader = S3FootprintReader(())
+    assert pickle.loads(pickle.dumps(reader)) == reader
+    with ProcessPoolExecutor(1, mp_context=multiprocessing.get_context("spawn")) as ex:
+        fp = ex.submit(reader, mlist, SID, True).result(timeout=60)
+    assert fp.partitions == read_footprint(_open, mlist, SID, True).partitions

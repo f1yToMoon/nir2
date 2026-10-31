@@ -207,6 +207,7 @@ class ProxyService:
                                  cfg.proxy.metrics_report_path_regex)
         self.last_commits: deque[dict[str, Any]] = deque(maxlen=500)
         self.integrity_failures: deque[dict[str, Any]] = deque(maxlen=100)
+        self.enrich_enabled = True    # debug: switch enrichment off (overhead experiments)
         self.keep_bodies = False      # debug: keep a copy of commit bodies (fixture capture)
         self._rng = rng or random.Random()
         hn = cfg.proxy.headers
@@ -451,7 +452,8 @@ class ProxyService:
                 "op_class_ambiguity": c.ambiguity, "op_class_source": source,
                 "summary": c.summary or None, "error_type": error_type,
             })
-            if 200 <= status < 300 and self.enricher is not None and c.new_snapshot_id is not None \
+            if 200 <= status < 300 and self.enricher is not None and self.enrich_enabled \
+                    and c.new_snapshot_id is not None \
                     and c.manifest_list:
                 self.enricher.submit(EnrichJob(
                     run_id=run_id or None, table=c.table, snapshot_id=c.new_snapshot_id,
