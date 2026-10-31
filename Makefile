@@ -15,7 +15,7 @@ SERIES   ?= E3_main
 RUN      ?=
 
 .PHONY: help venv env build up up-lite up-lakekeeper down clean ps logs versions-check smoke \
-        validate-config seed run batch export gc matrix-verify \
+        validate-config seed run batch export gc matrix-verify proxy-verify fixtures-capture \
         test-unit test-int test-e2e lint typecheck \
         dataset train evaluate sim calibrate acceptance figures tables reproduce-smoke
 
@@ -73,6 +73,12 @@ export: ## Экспорт трасс прогона в Parquet: RUN=<run_id> (п
 
 gc: ## Уборка файлов прошедших прогонов
 	$(RUNNER) python -m runner.gc
+
+proxy-verify: ## Интеграционные проверки прокси (этап 2): NAME=<имя каталога результатов>
+	$(RUNNER) env RESULTS_NAME=$(or $(NAME),run) pytest -q -p no:cacheprovider tests/integration/test_proxy_stage2.py
+
+fixtures-capture: ## Снять реальные тела коммитов в tests/fixtures/commits (этап 2)
+	$(RUNNER) python3 -m scripts.capture_commit_fixtures
 
 matrix-verify: ## Эмпирическая проверка матрицы конфликтов (этап 1)
 	bash scripts/matrix_verify.sh $(or $(NAME),iter3)

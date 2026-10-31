@@ -10,6 +10,8 @@ results/stage-1/*
 # крупные несжатые файлы прогона — в репозитории их .gz-копии
 results/stage-1/iter*/**/*.log
 results/stage-1/iter*/v*/matrix_results.json
+# stage-2: результаты интеграционных проверок прокси
+!results/stage-2/
 __pycache__/
 *.pyc
 .venv/
