@@ -1,0 +1,140 @@
+{
+ "dashboard": "CAPL — конфликты и решения",
+ "panels": [
+  {
+   "title": "Коммиты по статусу (в секунду)",
+   "expr": "sum by (status, op_class) (rate(capl_commit_attempts_total[1m]))",
+   "status": "success",
+   "series": 6,
+   "sample": [
+    {
+     "metric": {
+      "op_class": "append",
+      "status": "200"
+     },
+     "value": [
+      1793460342.689,
+      "1.7818181818181817"
+     ]
+    },
+    {
+     "metric": {
+      "op_class": "cow_dml",
+      "status": "200"
+     },
+     "value": [
+      1793460342.689,
+      "0.09090909090909091"
+     ]
+    }
+   ]
+  },
+  {
+   "title": "Латентность коммита p95 (каталог)",
+   "expr": "histogram_quantile(0.95, sum by (le, op_class) (rate(capl_commit_upstream_seconds_bucket[5m])))",
+   "status": "success",
+   "series": 6,
+   "sample": [
+    {
+     "metric": {
+      "op_class": "mor_dml"
+     },
+     "value": [
+      1793460342.694,
+      "0.0086"
+     ]
+    },
+    {
+     "metric": {
+      "op_class": "rewrite_data"
+     },
+     "value": [
+      1793460342.694,
+      "0.0270833333333333"
+     ]
+    }
+   ]
+  },
+  {
+   "title": "Накладные расходы прокси p50/p95",
+   "expr": "histogram_quantile(0.95, sum by (le) (rate(capl_proxy_overhead_seconds_bucket[5m])))",
+   "status": "success",
+   "series": 1,
+   "sample": [
+    {
+     "metric": {},
+     "value": [
+      1793460342.699,
+      "0.0004830090791180285"
+     ]
+    }
+   ]
+  },
+  {
+   "title": "Удержания коммитов",
+   "expr": "sum by (outcome) (rate(capl_holds_total[5m]))",
+   "status": "success",
+   "series": 2,
+   "sample": [
+    {
+     "metric": {
+      "outcome": "deadline"
+     },
+     "value": [
+      1793460342.704,
+      "0"
+     ]
+    },
+    {
+     "metric": {
+      "outcome": "released"
+     },
+     "value": [
+      1793460342.704,
+      "0.24985024242424245"
+     ]
+    }
+   ]
+  },
+  {
+   "title": "Решения advisor",
+   "expr": "sum by (policy, action) (rate(capl_decisions_total[5m]))",
+   "status": "success",
+   "series": 0,
+   "sample": []
+  },
+  {
+   "title": "Очередь обогащения и активные операции",
+   "expr": "capl_enrich_queue_size or capl_intents_active",
+   "status": "success",
+   "series": 1,
+   "sample": [
+    {
+     "metric": {
+      "__name__": "capl_enrich_queue_size",
+      "instance": "capl:9101",
+      "job": "capl"
+     },
+     "value": [
+      1793460342.713,
+      "0"
+     ]
+    }
+   ]
+  },
+  {
+   "title": "Максимальный прогноз риска К2 по таблице",
+   "expr": "max by (table) (capl_risk_p_k2)",
+   "status": "success",
+   "series": 0,
+   "sample": []
+  },
+  {
+   "title": "Латентность advisor p95",
+   "expr": "histogram_quantile(0.95, sum by (le, endpoint) (rate(capl_advisor_seconds_bucket[5m])))",
+   "status": "success",
+   "series": 0,
+   "sample": []
+  }
+ ]
+}
