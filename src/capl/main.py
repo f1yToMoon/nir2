@@ -1,9 +1,9 @@
-"""CAPL — Stage-0/1 proxy with hold mechanism.
+"""CAPL service: three ASGI apps in one process (tz/02 §4).
 
 Ports:
-  8180  catch-all reverse proxy → CAPL_UPSTREAM_URI (catalog)
-  8190  advisor stub + debug endpoints (hold, last-commits)
-  9101  Prometheus metrics stub
+  8180  catch-all reverse proxy → proxy.upstream_uri (catalog)
+  8190  advisor (stage 2: debug hold registry, state, fault flag)
+  9101  Prometheus metrics
 """
 from __future__ import annotations
 
@@ -11,252 +11,137 @@ import argparse
 import asyncio
 import logging
 import os
-import re
-import time
-from collections import deque
+from dataclasses import dataclass
 from typing import Any
 
-import httpx
 import structlog
 import uvicorn
-from fastapi import FastAPI, HTTPException, Request, Response
-from pydantic import BaseModel
+from fastapi import FastAPI
+from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
+from starlette.responses import Response
 
-from capl.digest import commit_digest as _commit_digest
+from capl import metrics
+from capl.advisor.app import DebugHoldAdvisor, build_advisor_app
+from capl.config import CaplConfig, load_config
+from capl.enricher import Enricher, pyiceberg_opener
+from capl.proxy.app import ProxyService, build_proxy_app, make_upstream_client
+from capl.proxy.hold import HoldGates
+from capl.state import StateStore
+from capl.telemetry import NullTelemetry, PgTelemetry, TelemetrySink
 
-# ---------- env / defaults -----------------------------------------------
-UPSTREAM_URI  = os.environ.get("CAPL_UPSTREAM_URI", "http://catalog:8181")
-PROXY_PORT    = int(os.environ.get("CAPL_PROXY_PORT", "8180"))
-ADV_PORT      = int(os.environ.get("CAPL_ADV_PORT", "8190"))
-METRICS_PORT  = int(os.environ.get("CAPL_METRICS_PORT", "9101"))
-LOG_LEVEL     = os.environ.get("CAPL_LOG_LEVEL", "INFO")
-HOLD_MAX_S    = float(os.environ.get("CAPL_HOLD_MAX_MS", "30000")) / 1000.0
-
-# ---------- logging -------------------------------------------------------
-structlog.configure(
-    processors=[
-        structlog.stdlib.add_log_level,
-        structlog.processors.TimeStamper(fmt="iso"),
-        structlog.processors.JSONRenderer(),
-    ],
-    wrapper_class=structlog.make_filtering_bound_logger(
-        getattr(logging, LOG_LEVEL.upper(), logging.INFO)
-    ),
-    logger_factory=structlog.PrintLoggerFactory(),
-)
-log = structlog.get_logger("capl.proxy")
-
-# ---------- shared state --------------------------------------------------
-_last_commits: deque[dict[str, Any]] = deque(maxlen=500)
-
-# slot → (asyncio.Event, max hold in seconds); when event is set, the held commit is released
-_holds: dict[str, tuple[asyncio.Event, float]] = {}
-
-_client: httpx.AsyncClient | None = None
-
-COMMIT_RE     = re.compile(
-    r"^/v1/(?:[^/]+/)?namespaces/[^/]+/tables/[^/]+$"
-)
-TXN_COMMIT_RE = re.compile(r"^/v1/(?:[^/]+/)?transactions/commit$")
-
-HOP_BY_HOP_REQ = frozenset([
-    "connection", "keep-alive", "proxy-authenticate", "proxy-authorization",
-    "te", "trailers", "transfer-encoding", "upgrade",
-])
-HOP_BY_HOP_RESP = HOP_BY_HOP_REQ | frozenset(["content-encoding"])
-
-def _now_ms() -> int:
-    return round(time.time() * 1000)
+log = structlog.get_logger("capl.main")
 
 
-# ---------- proxy app -----------------------------------------------------
-proxy_app = FastAPI(title="CAPL Proxy", docs_url=None)
-
-
-@proxy_app.api_route(
-    "/{path:path}",
-    methods=["GET", "POST", "PUT", "DELETE", "HEAD", "PATCH", "OPTIONS"],
-)
-async def proxy(request: Request, path: str) -> Response:
-    assert _client is not None, "HTTP client not initialised"
-
-    full_path = "/" + path
-    if request.url.query:
-        full_path = f"{full_path}?{request.url.query}"
-
-    headers = [
-        (k, v)
-        for k, v in request.headers.raw
-        if k.decode().lower() not in HOP_BY_HOP_REQ
-    ]
-
-    body = await request.body()
-
-    is_commit = request.method == "POST" and (
-        COMMIT_RE.match("/" + path) or TXN_COMMIT_RE.match("/" + path)
+def configure_logging(level: str) -> None:
+    structlog.configure(
+        processors=[
+            structlog.stdlib.add_log_level,
+            structlog.processors.TimeStamper(fmt="iso"),
+            structlog.processors.JSONRenderer(),
+        ],
+        wrapper_class=structlog.make_filtering_bound_logger(
+            getattr(logging, level.upper(), logging.INFO)),
+        logger_factory=structlog.PrintLoggerFactory(),
     )
-    entry: dict[str, Any] | None = None
-    if is_commit:
-        slot   = request.headers.get("X-CAPL-Slot", "")
-        writer = request.headers.get("X-CAPL-Writer", "")
-        run    = request.headers.get("X-CAPL-Run", "")
-        log.info("commit_attempt", path="/" + path, slot=slot, writer=writer, run=run)
-        entry = {"path": "/" + path, "slot": slot, "writer": writer, "run": run,
-                 "status": None, "hold_ms": None, "held": False,
-                 "ts": _now_ms(), "ts_fwd": None, "ts_resp": None,
-                 **_commit_digest(body)}
-        _last_commits.append(entry)
-        # Hold: if this slot is registered, wait until released or timeout
-        if slot in _holds:
-            evt, max_s = _holds[slot]
-            entry["held"] = True
-            entry["hold_max_ms"] = round(max_s * 1000)
-            t0 = asyncio.get_event_loop().time()
-            try:
-                await asyncio.wait_for(evt.wait(), timeout=max_s)
-            except TimeoutError:
-                entry["hold_timeout"] = True
-                log.warning("hold_timeout", slot=slot, max_s=max_s)
-            entry["hold_ms"] = round((asyncio.get_event_loop().time() - t0) * 1000)
-        entry["ts_fwd"] = _now_ms()
 
-    upstream_resp = await _client.request(
-        method=request.method,
-        url=httpx.URL(full_path),
-        headers=headers,
-        content=body,
-    )
-    if entry is not None:
-        entry["status"] = upstream_resp.status_code
-        entry["ts_resp"] = _now_ms()
 
-    resp_headers = {
-        k: v
-        for k, v in upstream_resp.headers.items()
-        if k.lower() not in HOP_BY_HOP_RESP
+def build_metrics_app() -> FastAPI:
+    app = FastAPI(title="CAPL metrics", docs_url=None)
+
+    @app.get("/metrics")
+    async def prom() -> Response:
+        return Response(generate_latest(metrics.REGISTRY), media_type=CONTENT_TYPE_LATEST)
+
+    return app
+
+
+def s3_properties(cfg: CaplConfig, env: dict[str, str]) -> dict[str, str]:
+    s3 = cfg.enricher.s3
+    props = {
+        "s3.endpoint": str(s3.get("endpoint") or env.get("CAPL_S3_ENDPOINT", "")),
+        "s3.region": str(s3.get("region") or env.get("AWS_REGION", "us-east-1")),
+        "s3.access-key-id": env.get("AWS_ACCESS_KEY_ID", ""),
+        "s3.secret-access-key": env.get("AWS_SECRET_ACCESS_KEY", ""),
     }
-    return Response(
-        content=upstream_resp.content,
-        status_code=upstream_resp.status_code,
-        headers=resp_headers,
-    )
+    if s3.get("path_style", True):
+        props["s3.force-virtual-addressing"] = "false"
+    return {k: v for k, v in props.items() if v}
 
 
-# ---------- advisor stub + debug ------------------------------------------
-advisor_app = FastAPI(title="CAPL Advisor (stage-0/1 stub)", docs_url=None)
+@dataclass
+class Service:
+    cfg: CaplConfig
+    proxy: ProxyService
+    advisor: DebugHoldAdvisor
+    telemetry: TelemetrySink
+    enricher: Enricher | None
+    proxy_app: Any
+    advisor_app: Any
+    metrics_app: Any
+
+    async def start(self) -> None:
+        await self.telemetry.start()
+        if self.enricher is not None:
+            await self.enricher.start()
+
+    async def stop(self) -> None:
+        if self.enricher is not None:
+            await self.enricher.stop()
+        await self.telemetry.stop()
+        await self.proxy.client.aclose()
 
 
-@advisor_app.get("/healthz")
-async def healthz() -> dict[str, str]:
-    return {"status": "ok", "stage": "1", "upstream": UPSTREAM_URI}
+def build_service(cfg: CaplConfig, env: dict[str, str] | None = None, client: Any = None,
+                  telemetry: TelemetrySink | None = None, enricher: bool = True) -> Service:
+    env = dict(os.environ) if env is None else env
+    if telemetry is None:
+        telemetry = (PgTelemetry(cfg.telemetry.pg_dsn, cfg.telemetry.schema_, cfg.telemetry.batch_size,
+                                 cfg.telemetry.flush_interval_s, cfg.telemetry.queue_max)
+                     if cfg.telemetry.pg_dsn else NullTelemetry())
+    state = StateStore(cfg.state)
+    gates = HoldGates(cfg.hold.max_ms)
+    advisor = DebugHoldAdvisor(gates)
+    enr = (Enricher(pyiceberg_opener(s3_properties(cfg, env)), telemetry, state,
+                    cfg.enricher.workers, cfg.enricher.queue_max, cfg.enricher.read_deleted_paths_for)
+           if enricher else None)
+    svc = ProxyService(cfg, client or make_upstream_client(cfg), gates, advisor, telemetry, enr, state)
+    flush = getattr(telemetry, "flush", None)
+    return Service(cfg, svc, advisor, telemetry, enr, build_proxy_app(svc),
+                   build_advisor_app(svc, advisor, flush), build_metrics_app())
 
 
-@advisor_app.get("/_capl/debug/last-commits")
-async def debug_last_commits() -> list[dict[str, Any]]:
-    return list(_last_commits)
-
-
-@advisor_app.delete("/_capl/debug/last-commits")
-async def debug_clear_commits() -> dict[str, Any]:
-    n = len(_last_commits)
-    _last_commits.clear()
-    return {"cleared": n}
-
-
-class HoldRequest(BaseModel):
-    slot: str
-    max_ms: int = 30000
-
-
-@advisor_app.post("/v1/debug/hold")
-async def hold_start(req: HoldRequest) -> dict[str, Any]:
-    """Register a hold on the named slot.
-    Any commit from that slot will block at the proxy until released
-    or min(max_ms, CAPL_HOLD_MAX_MS) elapses: the service limit is never exceeded.
-    """
-    if req.max_ms <= 0:
-        raise HTTPException(status_code=422, detail="max_ms must be positive")
-    if req.slot in _holds:
-        # Reset: clear old event so a new hold starts fresh
-        _holds[req.slot][0].set()
-    max_s = min(req.max_ms / 1000.0, HOLD_MAX_S)
-    evt = asyncio.Event()
-    _holds[req.slot] = (evt, max_s)
-    log.info("hold_registered", slot=req.slot, max_ms=req.max_ms, effective_ms=round(max_s * 1000))
-    return {"status": "held", "slot": req.slot, "max_ms": round(max_s * 1000)}
-
-
-@advisor_app.delete("/v1/debug/hold/{slot}")
-async def hold_release(slot: str) -> dict[str, Any]:
-    """Release a held slot, allowing its pending commit to proceed."""
-    held = _holds.pop(slot, None)
-    if held is None:
-        raise HTTPException(status_code=404, detail=f"slot '{slot}' not held")
-    held[0].set()
-    log.info("hold_released", slot=slot)
-    return {"status": "released", "slot": slot}
-
-
-@advisor_app.get("/v1/debug/holds")
-async def holds_list() -> dict[str, Any]:
-    return {"holds": list(_holds.keys())}
-
-
-# ---------- metrics stub --------------------------------------------------
-metrics_app = FastAPI(title="CAPL Metrics stub", docs_url=None)
-_METRICS_BODY = (
-    "# HELP capl_up Service up\n"
-    "# TYPE capl_up gauge\n"
-    "capl_up 1\n"
-    "# HELP capl_stage Stage number\n"
-    "# TYPE capl_stage gauge\n"
-    "capl_stage 1\n"
-)
-
-
-@metrics_app.get("/metrics")
-async def metrics() -> Response:
-    return Response(content=_METRICS_BODY, media_type="text/plain; version=0.0.4")
-
-
-# ---------- multi-server runner -------------------------------------------
 async def _serve(app: Any, port: int) -> None:
     config = uvicorn.Config(
-        app,
-        host="0.0.0.0",
-        port=port,
-        log_level="warning",
-        access_log=False,
+        app, host="0.0.0.0", port=port, log_level="warning", access_log=False,
+        # the proxy must not add headers to catalog responses
+        server_header=False, date_header=False,
     )
-    server = uvicorn.Server(config)
-    await server.serve()
+    await uvicorn.Server(config).serve()
 
 
-async def _run() -> None:
-    global _client
-    log.info("capl_start", upstream=UPSTREAM_URI, proxy_port=PROXY_PORT,
-             adv_port=ADV_PORT, metrics_port=METRICS_PORT)
-    _client = httpx.AsyncClient(
-        base_url=UPSTREAM_URI,
-        timeout=httpx.Timeout(connect=5.0, read=180.0, write=30.0, pool=5.0),
-        follow_redirects=False,
-        limits=httpx.Limits(max_connections=200, max_keepalive_connections=50),
-    )
+async def _run(cfg: CaplConfig) -> None:
+    service = build_service(cfg)
+    log.info("capl_start", upstream=cfg.proxy.upstream_uri, mode=cfg.proxy.mode,
+             hold_max_ms=cfg.hold.max_ms, telemetry=bool(cfg.telemetry.pg_dsn),
+             ports=[cfg.service.proxy_port, cfg.service.advisor_port, cfg.service.metrics_port])
+    await service.start()
     try:
         await asyncio.gather(
-            _serve(proxy_app, PROXY_PORT),
-            _serve(advisor_app, ADV_PORT),
-            _serve(metrics_app, METRICS_PORT),
+            _serve(service.proxy_app, cfg.service.proxy_port),
+            _serve(service.advisor_app, cfg.service.advisor_port),
+            _serve(service.metrics_app, cfg.service.metrics_port),
         )
     finally:
-        await _client.aclose()
+        await service.stop()
 
 
 def main() -> None:
     p = argparse.ArgumentParser(description="CAPL service")
-    p.add_argument("--config", default=None, help="path to capl.yaml (unused stage 0-1)")
-    p.parse_args()
-    asyncio.run(_run())
+    p.add_argument("--config", default=os.environ.get("CAPL_CONFIG"), help="path to capl.yaml")
+    args = p.parse_args()
+    cfg = load_config(args.config)
+    configure_logging(cfg.service.log_level)
+    asyncio.run(_run(cfg))
 
 
 if __name__ == "__main__":
