@@ -1,4 +1,4 @@
-# Прогнозирование конфликтов оптимистичного контроля параллелизма и конфликт-осведомлённое планирование операций в Data Lakehouse
+# Прогнозирование конфликтов и планирование операций в Data Lakehouse
 
 *Predicting Optimistic Concurrency Control Conflicts and Conflict-Aware Scheduling of Write and Maintenance Operations in a Data Lakehouse (Apache Iceberg)*
 
