@@ -337,6 +337,7 @@ class ProxyService:
         t_recv = time.perf_counter()
         received_ms = time.time() * 1000
         body = await request.body()
+        t_body = time.perf_counter()
         raw = list(request.headers.raw)
         headers = end_to_end(raw)
         slot = request.headers.get(self._h_slot, "")
@@ -345,6 +346,7 @@ class ProxyService:
         idem = request.headers.get(self._h_idem)
 
         commits = self._parse(body, cpath)
+        t_parse = time.perf_counter()
         main_commit = commits[0] if cpath.kind == "table" and commits else None
         op_id = self.state.op_for_slot(slot) or (main_commit.op_id if main_commit else None)
 
@@ -363,6 +365,7 @@ class ProxyService:
         self.last_commits.append(entry)
 
         hold = NO_HOLD
+        t_dec = time.perf_counter()
         if cpath.kind == "table":     # transactions: journal only, no hold (tz/04 §1.1)
             hold = await self._hold(CommitContext(slot, writer, run_id, op_id, main_commit))
         if hold.held:
@@ -371,6 +374,7 @@ class ProxyService:
             if hold.timed_out:
                 entry["hold_timeout"] = True
         t_fwd = time.perf_counter()
+        hold_decision_s = max(0.0, (t_fwd - t_dec) - hold.hold_ms / 1000.0)
         forwarded_ms = time.time() * 1000
         entry["ts_fwd"] = round(forwarded_ms)
 
@@ -384,7 +388,12 @@ class ProxyService:
             self._after_commit(commits, slot, writer, run_id, op_id, idem, status, raw_body,
                                hold, received_ms, forwarded_ms, responded_ms)
             metrics.COMMIT_UPSTREAM.labels(op_class=entry["op_class"] or "unknown").observe(t_resp - t_fwd)
-            metrics.PROXY_OVERHEAD.observe(max(0.0, (t_fwd - t_recv) - hold.hold_ms / 1000.0))
+            # proxy's own time: from the full body received to forwarding, minus the hold itself
+            # (the body upload time is the client's and exists without the proxy as well)
+            metrics.PROXY_OVERHEAD.observe(max(0.0, (t_fwd - t_body) - hold.hold_ms / 1000.0))
+            metrics.PROXY_PHASE.labels(phase="body_receive").observe(t_body - t_recv)
+            metrics.PROXY_PHASE.labels(phase="parse").observe(t_parse - t_body)
+            metrics.PROXY_PHASE.labels(phase="hold_decision").observe(hold_decision_s)
         except Exception as exc:
             metrics.FAIL_OPEN.labels(stage="after_commit", reason=type(exc).__name__).inc()
             log.warning("after_commit_failed", error=repr(exc))

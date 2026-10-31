@@ -22,6 +22,9 @@ REQUESTS = Counter(
 UPSTREAM_ERRORS = Counter(
     "capl_proxy_upstream_errors_total", "Catalog unavailable (502/504 returned)", ["kind"],
     registry=REGISTRY)
+PROXY_PHASE = Histogram(
+    "capl_proxy_phase_seconds", "Commit handling phases in the proxy (body_receive is client upload)",
+    ["phase"], buckets=_LAT_BUCKETS, registry=REGISTRY)
 HOLDS = Counter(
     "capl_holds_total", "Commit holds by outcome (released | deadline | ...)", ["outcome"],
     registry=REGISTRY)

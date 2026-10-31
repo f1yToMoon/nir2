@@ -1,0 +1,1 @@
+r1-phases: journal test, 300 appends, image with per-phase metrics (uncommitted at run time, committed next)

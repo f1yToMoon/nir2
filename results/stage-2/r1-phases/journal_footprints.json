@@ -1,0 +1,36 @@
+{
+ "table": "stage2.journal_1793460080",
+ "run": "stage2-1793460075",
+ "appends": 300,
+ "other_ops": {
+  "cow_delete": 20,
+  "metadata_delete": 3,
+  "rewrite_data": 5
+ },
+ "append_phase_s": 41.4,
+ "snapshots": 328,
+ "commit_attempts": 328,
+ "attempts_status": {
+  "200": 328
+ },
+ "attempts_ok_with_snapshot": 328,
+ "missing_in_attempts": [],
+ "commit_events": 328,
+ "missing_in_events": [],
+ "op_class_events": {
+  "append": 300,
+  "cow_dml": 23,
+  "rewrite_data": 5
+ },
+ "footprint_sample_snapshots": 128,
+ "footprint_sample_non_append": 28,
+ "footprint_partitions_compared": 352,
+ "footprint_mismatches": [],
+ "n_footprint_mismatches": 0,
+ "flush": {
+  "enriched": 328,
+  "enrich_failed": 0
+ },
+ "integrity_ok": 1676.0,
+ "integrity_mismatch": 0.0
+}
