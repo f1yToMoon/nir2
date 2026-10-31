@@ -69,6 +69,7 @@ controlled_ops: []                 # переопределяется в сце�
 #    max_concurrent: 2
 #    sla_s: 1800                   # крайний срок запуска от момента intent
 #    narrowable: true
+#    format_versions: [2, 3]       # необязательно: форматы таблицы, в которых операция планируется (по умолчанию все)
 #    footprint:                    # генератор следа
 #      selector: small_files_topn | recency_zipf | keys_all_days | single_day
 #      ...

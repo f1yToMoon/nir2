@@ -750,7 +750,10 @@ def _run_case(spark: Any, case: Case, setup: Any, trial: Any) -> dict[str, Any]:
         "overlap_counts": overlap_counts,
         "overlap_counts_all": dict(Counter(t["outcome"] for t in ov)),
         "invalid_reasons": dict(Counter(r for t in ov for r in t["invalid_reasons"])),
-        "control_counts": dict(Counter(t["outcome"] for t in ctl)),
+        # outcome counters that feed YAML `verified` and asserts use valid trials only;
+        # all control trials (including invalid ones) are kept separately (S1-R4-01)
+        "control_counts": dict(Counter(t["outcome"] for t in ctl if t["valid"])),
+        "control_counts_all": dict(Counter(t["outcome"] for t in ctl)),
         "control_valid": sum(t["valid"] for t in ctl),
         "trials_overlap": TRIALS_OVERLAP, "trials_control": TRIALS_CONTROL,
         "valid_trials": valid_n, "match_rate": round(match_rate, 3),
@@ -769,13 +772,16 @@ def _assert_case(case: Case, e: dict[str, Any]) -> None:
     assert e["match_rate"] >= 0.95, (
         f"{case.case_id}: expected {case.expected} in ≥95% of valid overlap trials, "
         f"got {e['overlap_counts']} (valid={e['valid_trials']})")
+    assert e["control_valid"] == TRIALS_CONTROL, (
+        f"{case.case_id}: control valid {e['control_valid']}/{TRIALS_CONTROL}; "
+        f"all control outcomes {e['control_counts_all']}")
     k2_ctl = e["control_counts"].get("K2", 0)
     if case.control_expected_k2:
         assert k2_ctl == TRIALS_CONTROL, f"{case.case_id}: control {e['control_counts']}"
     else:
-        assert k2_ctl == 0, f"{case.case_id}: K2 in control without overlap: {e['control_counts']}"
-    assert e["control_valid"] >= max(TRIALS_CONTROL - 1, 1), (
-        f"{case.case_id}: control valid {e['control_valid']}/{TRIALS_CONTROL}")
+        # stricter: no K2 even among invalid control trials
+        k2_all = e["control_counts_all"].get("K2", 0)
+        assert k2_all == 0, f"{case.case_id}: K2 in control without overlap: {e['control_counts_all']}"
 
 
 @pytest.mark.parametrize("case", CASES, ids=lambda c: c.case_id)
@@ -823,7 +829,7 @@ def test_overwrite_iso_only(spark: Any, fv: int) -> None:
         "overlap_counts": dict(Counter(t["outcome"] for t in trials)),
         "proxy_commits": sum(t["proxy_commits"] for t in trials),
         "trials_overlap": 0, "trials_control": ISO_ONLY_TRIALS, "valid_trials": 0,
-        "control_counts": dict(Counter(t["outcome"] for t in trials)), "control_valid": 0,
+        "control_valid": 0,   # standalone: no control trials, so no control_counts (S1-R4-03)
         "match_rate": 0.0, "matches": True, "standalone": True,
         "client": "1.12.0", "catalog_server": "b0df3ca", "trials": [],
         "standalone_trials": trials,
@@ -964,8 +970,10 @@ def _sc_trial(spark: Any, jv: Jv, case: ScenarioCase, seq: int, with_overlap: bo
                   f"{_sc_rows(k0 + i * (SC_ROWS // 4), SC_ROWS // 4, SC_DAY, f'seed-{seq}')}")
     c_k0, c_day = (k0, SC_DAY) if with_overlap else (k0 + 500_000, SC_OTHER_DAY)
     if not with_overlap:
-        # two files per partition of the other day: binpack skips single-file groups
-        # (SizeBasedFileRewritePlanner.java:189-191), compaction there must commit
+        # two inserts into the other day, so that at least one (dt, bucket) partition there
+        # has ≥ 2 files: binpack skips single-file groups (SizeBasedFileRewritePlanner.java:189-191)
+        # and compaction in the control must commit. Keys go to bucket(8, key), so not every
+        # bucket is guaranteed two files (iter5 seq 1000: 7 of 8 partitions rewritten).
         for i in range(2):
             half = SC_KEYS // 2
             spark.sql(f"INSERT INTO {full_p} "

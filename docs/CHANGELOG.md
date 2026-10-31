@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 2026-10-31 — решение G1 (CORRECT): правки ТЗ и конфигураций
+
+- Решение автора на G1 — CORRECT (`a2167ec`); ADR-006 принят.
+- `AGENTS.md`: overwrite проверяет конфликты только с опцией `isolation-level`, вместе с `validate-from-snapshot-id` (иначе ложный К2); `expire` не конфликтует на уровне каталога; `rewrite_deletes` только v2; метка исхода `base_expired` (ограничение 6).
+- S4 `reprocess_day`: `validate_from_snapshot_id: planning_snapshot`; S3 `delete_rewrite`: `format_versions: [2]` (новое необязательное поле операции, `_base.yaml`).
+- `tz/03` §2 — итоговая матрица (ADR-006), метка `base_expired` в §4.2; `tz/04` §1.2 — таблица классификации `op_class` по классам коммитов Iceberg 1.12.0; `tz/01` FR-RUN-4, `tz/05` (S3, S4, SQL overwrite, `wasted_cpu_base_expired_s`), `schemas/op_event.schema.json`, `api/advisor.openapi.yaml`, DDL `ops.outcome` — исход `base_expired`.
+- Замечания S1-R4-01..03: `control_counts` — по валидным повторам (+ `control_counts_all`), допуск `control_valid == TRIALS_CONTROL`, K2 в контроле проверяется по всем повторам; комментарий засева контроля; у одиночных кейсов нет `control_counts`; дата ADR-006.
+
 ## 2026-10-24 — этап 1, итерация 5 (ответ на ревью stage-1-r3)
 
 - SQL `INSERT OVERWRITE … WITH ('isolation-level', 'validate-from-snapshot-id')` (`insert_overwrite_opts`): K2 20/20, контроль K1; утверждение «SQL не передаёт опции записи» снято (ADR-006, отчёт G1).

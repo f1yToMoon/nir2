@@ -61,7 +61,7 @@ BEGIN
         started_at          timestamptz,
         commit_requested_at timestamptz,
         finished_at         timestamptz,
-        outcome             text,       -- committed|data_conflict|retry_exhausted|commit_unknown|error|skipped
+        outcome             text,       -- committed|data_conflict|retry_exhausted|base_expired|commit_unknown|error|skipped
         attempts            integer,
         held_ms             bigint,
         cpu_ms              bigint,

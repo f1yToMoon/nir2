@@ -27,7 +27,13 @@ controlled_ops:
     sla_s: 900
     narrowable: false
     footprint: {selector: single_day, min_age_days: 1, max_age_days: 4}
-    params: {isolation_level_option: serializable}
+    # Опции записи overwrite (ADR-006, решение G1 — CORRECT): isolation-level включает проверку
+    # конфликтов (SparkWrite.java:353-356), validate-from-snapshot-id задаёт начало истории валидации
+    # (SparkWrite.java:349-351). Без него история — от начала таблицы (MergingSnapshotProducer.java:967-994)
+    # → ValidationException на каждом запуске без параллельных операций (test_overwrite_iso_only) — ложный К2.
+    # planning_snapshot — id текущего снапшота main, прочитанный runner при планировании операции
+    # (до чтения данных). SQL: INSERT OVERWRITE t WITH ('isolation-level'=..., 'validate-from-snapshot-id'=...).
+    params: {isolation_level_option: serializable, validate_from_snapshot_id: planning_snapshot}
 variants:
   snapshot_isolation:
     table: {properties: {write.merge.isolation-level: snapshot, write.update.isolation-level: snapshot, write.delete.isolation-level: snapshot}}

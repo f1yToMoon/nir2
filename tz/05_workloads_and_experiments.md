@@ -29,8 +29,8 @@
 | S0 | `S0_baseline.yaml` | Flink append, 1000 соб/с, период 10 с | компакция старых партиций, редкий MERGE по старым дням | почти нет (контроль накладных расходов) |
 | S1 | `S1_compaction_vs_stream_append.yaml` | Flink append (5 с) + 6 «агентов»-аппендеров (3 с) | компакция горячих партиций | К1, исчерпание повторов |
 | S2 | `S2_compaction_vs_cdc_merge.yaml` | Flink append | компакция + CDC MERGE (CoW), Zipf по свежести | К2 симметричный |
-| S3 | `S3_compaction_vs_mor_dml.yaml` | Flink append | компакция + MoR UPDATE + rewrite delete files | К2 симметричный; вариант v3 |
-| S4 | `S4_merge_vs_stream_serializable.yaml` | Flink append, 15% поздних событий | пакетный MERGE, overwrite дня | К2, проигрывает MERGE; вариант snapshot |
+| S3 | `S3_compaction_vs_mor_dml.yaml` | Flink append | компакция + MoR UPDATE + rewrite delete files (только v2) | К2 симметричный; вариант v3 (без rewrite delete files: в v3 операция ничего не коммитит, ADR-006) |
+| S4 | `S4_merge_vs_stream_serializable.yaml` | Flink append, 15% поздних событий | пакетный MERGE, overwrite дня (опции `isolation-level` + `validate-from-snapshot-id`) | К2, проигрывает MERGE/overwrite; вариант snapshot |
 | S5 | `S5_compliance_delete.yaml` | Flink append | DELETE по ключам во всех днях, компакция, CDC MERGE | К2, длинные операции с широким следом |
 | S6 | `S6_mixed_drift.yaml` | Flink append, Zipf ключей, дрейф | все типы, синусоидальная интенсивность | смешанный; отложен для обобщения |
 
@@ -54,7 +54,7 @@
 | `merge_upsert` | `MERGE INTO s{k}.bench.events t USING batch s ON t.event_id = s.event_id AND t.dt = s.dt AND t.key = s.key WHEN MATCHED THEN UPDATE SET amount = s.amount, status = s.status, version = t.version + 1 WHEN NOT MATCHED THEN INSERT *` — пакет строится из существующих `event_id` следа (доля `update_fraction`) и новых строк |
 | `update_status` | `UPDATE s{k}.bench.events SET status = 'X', version = version + 1 WHERE dt IN (...) AND key % 97 = r` |
 | `delete_by_keys` | `DELETE FROM s{k}.bench.events WHERE key IN (...)` |
-| overwrite | `INSERT OVERWRITE s{k}.bench.events SELECT ... WHERE dt = d` (dynamic), опция `isolation-level` |
+| overwrite | `INSERT OVERWRITE s{k}.bench.events WITH ('isolation-level'='serializable', 'validate-from-snapshot-id'='<снапшот планирования>') SELECT ... WHERE dt = d` (dynamic). Без `isolation-level` конфликты не проверяются (K1); `isolation-level` без `validate-from-snapshot-id` даёт ложный К2 на каждом запуске (ADR-006). Проверено на этапе 1: SQL `WITH (…)` в статическом режиме `PARTITION (…)` (`insert_overwrite_opts`), dynamic — DataFrame `overwritePartitions()` с теми же опциями (`overwrite_opts`); SQL `WITH` в dynamic-режиме проверить на этапе 3 одним кейсом |
 | rewrite_data | `CALL s{k}.system.rewrite_data_files(table => 'bench.events', where => '<предикат следа>', options => map('min-input-files','5','partial-progress.enabled','false', ...))` |
 | rewrite_deletes | `CALL s{k}.system.rewrite_position_delete_files(table => 'bench.events', where => '...')` |
 | expire | `CALL s{k}.system.expire_snapshots(table => 'bench.events', older_than => TIMESTAMP '...', retain_last => 20)` |
@@ -68,6 +68,7 @@
 | `k2_rate` | доля управляемых операций с исходом `data_conflict` | `ops` |
 | `k1_fail_rate` | доля с `retry_exhausted` | `ops` |
 | `wasted_cpu_s` | Σ `cpu_ms/1000` по операциям с К2/отказом К1 (основная метрика H2) | `ops` |
+| `wasted_cpu_base_expired_s` | Σ `cpu_ms/1000` по операциям с исходом `base_expired` (отказ MoR-операции после удаления её базового снапшота `expire`, ADR-006); приводится отдельно, в `wasted_cpu_s` не входит | `ops` |
 | `wasted_share` | wasted_cpu_s / Σ cpu всех операций | `ops` |
 | `wasted_bytes` | байты, записанные проигравшими операциями | `ops` |
 | `goodput` | успешные управляемые коммиты в минуту | `ops` |

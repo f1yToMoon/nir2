@@ -26,6 +26,10 @@ controlled_ops:
     params: {statement: update_status}
   - id: delete_rewrite
     type: rewrite_deletes
+    # Только format v2: в v3 (deletion vectors) rewrite_position_delete_files ничего не коммитит
+    # (RewritePositionDeleteFilesSparkAction.java:121-124; этап 1, ADR-006). В варианте
+    # v3_deletion_vectors операция не планируется.
+    format_versions: [2]
     arrival: {process: fixed, interval_s: 600}
     max_concurrent: 1
     sla_s: 1800

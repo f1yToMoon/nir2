@@ -156,13 +156,16 @@ def build_verified(results: dict[str, Any]) -> list[dict[str, Any]]:
     out = []
     for _cid, r in sorted(results.items()):
         vt = valid_overlap(r)
+        # standalone cases have no overlap/control split: their outcomes go to `observed`
+        observed = (Counter(t["outcome"] for t in r["standalone_trials"]) if r.get("standalone")
+                    else Counter(t["outcome"] for t in vt))
         e: dict[str, Any] = {
             "pending": r["pending"], "committed": r["committed"], "isolation": r["isolation"],
             "format_version": r["format_version"], "client": r.get("client", "1.12.0"),
             "catalog_server": r.get("catalog_server", "b0df3ca"),
             "valid_trials": len(vt), "trials": r["trials_overlap"],
-            "observed": dict(Counter(t["outcome"] for t in vt)),
-            "control": r["control_counts"], "expected": r["expected"],
+            "observed": dict(observed),
+            "control": r.get("control_counts", {}), "expected": r["expected"],
             "matches": r["matches"], "date": today,
         }
         if r.get("variant"):
@@ -232,7 +235,7 @@ def main(argv: list[str] | None = None) -> int:
     for cid in bad:
         r = results[cid]
         print(f"  {cid}: expected={r['expected']} observed={r['overlap_counts']} "
-              f"valid={r['valid_trials']} control={r['control_counts']}")
+              f"valid={r['valid_trials']} control={r.get('control_counts', {})}")
 
     if not args.no_write:
         write_verified(args.matrix, build_verified(results))

@@ -49,7 +49,7 @@
 3. **Никаких изменений в коде Iceberg, Spark, Flink, каталогов.**
 4. **Point-in-time корректность признаков:** при обучении — только события до момента решения. Один модуль `capl.features` для online, offline и симулятора.
 5. **Один код политик** (`capl.policies`) для advisor и симулятора.
-6. **Метки исходов** берутся только из runner (`ValidationException` → `data_conflict`, `CommitFailedException` → `retry_exhausted`), не выводятся из ответов каталога.
+6. **Метки исходов** берутся только из runner (`ValidationException` → `data_conflict`, `CommitFailedException` → `retry_exhausted`, `IllegalArgumentException` об отсутствии базового снапшота среди предков текущего → `base_expired`), не выводятся из ответов каталога. `base_expired` — отказ MoR-операции (`RowDelta`) без повтора после того, как `expire` удалил её базовый снапшот (`BaseRowDelta.java:134-139`; классификатор `src/runner/ops/errors.py`, ADR-006): работа теряется, как при К2, но это не К1 и не К2.
 7. **Воспроизводимость:** каждый прогон определяется `(scenario, variant, policy, concurrency, seed, versions, git_sha)`; всё случайное — от зерна.
 8. **Честность результатов:** не подбирать параметры сценариев под успех P6 после просмотра результатов E3. Параметры сценариев фиксируются до серии E3 (тег `exp-v1`). Отрицательный результат — допустимый результат.
 
@@ -66,7 +66,10 @@
 
 - Iceberg 1.12.0 (октябрь 2026): Spark 3.5/4.0/4.1, Flink 1.20/2.1–2.3, Java 17+.
 - Конфликт данных проверяется **на клиенте** Iceberg при повторе коммита после 409; каталог видит только 409 и повторы.
-- `AppendFiles` не валидирует данные → append никогда не получает конфликт данных; компакция (`RewriteFiles`) не конфликтует с append и (при `use-starting-sequence-number=true`) с equality deletes. Конфликты данных: компакция × DML (симметрично), DML/overwrite × append при `serializable`, DML × DML.
+- `AppendFiles` не валидирует данные → append никогда не получает конфликт данных; компакция (`RewriteFiles`) не конфликтует с append и (при `use-starting-sequence-number=true`) с equality deletes. Конфликты данных: компакция × DML (симметрично), DML × append при `serializable`, DML × DML (кроме MoR DELETE × MoR DELETE в формате v2 — K1). Фактическая матрица — `config/conflict_matrix.yaml`, ADR-006.
+- `INSERT OVERWRITE`/`overwritePartitions()` (`ReplacePartitions`, `OverwriteByFilter`) проверяет конфликты **только при опции записи** `isolation-level` (свойство таблицы `write.*.isolation-level` не читается, `SparkWriteConf.java:484-488`, `SparkWrite.java:353-356`); без неё overwrite × любая операция — K1. Опцию `isolation-level` задавать **только вместе** с `validate-from-snapshot-id` = снапшот, от которого планировалась операция: без него история валидации берётся от начала таблицы (`MergingSnapshotProducer.java:967-994`) и коммит отказывает с `ValidationException` без параллельных операций — ложный К2 (опыт `test_overwrite_iso_only`, 10/10). В SQL: `INSERT OVERWRITE t WITH ('isolation-level'='serializable', 'validate-from-snapshot-id'='<id>') …`.
+- `expire_snapshots` не конфликтует на уровне каталога (тело коммита — только `remove-snapshots`, требование одно — `assert-table-uuid`, `UpdateRequirements.java:50-58, 93-115`), но может вызвать `base_expired` у параллельной MoR-операции.
+- `rewrite_position_delete_files` в формате v3 (deletion vectors) ничего не коммитит (`RewritePositionDeleteFilesSparkAction.java:121-124`) — операция `rewrite_deletes` применяется только к v2.
 - Уровни изоляции DML: `write.{delete,update,merge}.isolation-level` (по умолчанию `serializable`).
 - Повторы: `commit.retry.num-retries` (4), `min-wait-ms` (100), `max-wait-ms` (60000), `total-timeout-ms` (1800000).
 - REST-клиент Iceberg добавляет к запросам заголовки из свойств каталога с префиксом `header.` — используется для тегирования слотов (проверить на этапе 0).

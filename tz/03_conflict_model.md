@@ -6,11 +6,11 @@
 | --- | --- | --- | --- |
 | `append` | INSERT INTO, потоковый append | `AppendFiles` (fast append) | Flink SQL sink; Spark `INSERT INTO`; Spark Structured Streaming |
 | `stream_upsert` | Потоковый upsert с equality deletes | `RowDelta` (equality deletes) | Flink SQL sink `'write.upsert.enabled'='true'` |
-| `overwrite` | INSERT OVERWRITE (dynamic) | `ReplacePartitions` | Spark SQL |
+| `overwrite` | INSERT OVERWRITE (dynamic) / `overwritePartitions()` с опциями записи `isolation-level` и `validate-from-snapshot-id` | `ReplacePartitions` | Spark SQL `INSERT OVERWRITE t WITH (…)` / DataFrame |
 | `cow_dml` | DELETE/UPDATE/MERGE copy-on-write | `OverwriteFiles` | Spark SQL, `write.{delete,update,merge}.mode=copy-on-write` |
 | `mor_dml` | DELETE/UPDATE/MERGE merge-on-read | `RowDelta` (position deletes / DV в v3) | Spark SQL, `...mode=merge-on-read` |
 | `rewrite_data` | Компакция | `RewriteFiles` | `CALL system.rewrite_data_files(...)` |
-| `rewrite_deletes` | Переписывание delete-файлов | `RewriteFiles` (delete files) | `CALL system.rewrite_position_delete_files(...)` |
+| `rewrite_deletes` | Переписывание delete-файлов (только format v2) | `RewriteFiles` (delete files) | `CALL system.rewrite_position_delete_files(...)` |
 | `expire` | Удаление старых снапшотов | `ExpireSnapshots` | `CALL system.expire_snapshots(...)` |
 | `orphan_cleanup` | Удаление orphan-файлов | — (без коммита) | `CALL system.remove_orphan_files(...)` |
 
@@ -18,23 +18,37 @@
 
 ## 2. Матрица конфликтов
 
-Машиночитаемая версия — [../config/conflict_matrix.yaml](../config/conflict_matrix.yaml). Ниже — смысловая таблица для уровня изоляции `serializable` (по умолчанию в Spark). Строка — операция, которая коммитит позже (ожидающая); столбец — операция, закоммиченная после базового снапшота ожидающей. Ячейка применима, только если следы пересекаются (условие пересечения указано в YAML: по партициям или по файлам).
+Машиночитаемая версия — [../config/conflict_matrix.yaml](../config/conflict_matrix.yaml) (правила и поле `verified` с числами повторов). Ниже — смысловая таблица **итоговой матрицы**, подтверждённой на этапе 1 (Iceberg 1.12.0, Spark 4.0, форматы v2 и v3, 20 повторов с пересечением и 5 контрольных на кейс; исправления исходной гипотезы — ADR-006, решение автора на G1 — CORRECT). Уровень изоляции `serializable`, если не указано иное. Строка — операция, которая коммитит позже (ожидающая); столбец — операция, закоммиченная после базового снапшота ожидающей. Ячейка применима, только если следы пересекаются (условие пересечения указано в YAML: по партициям, по предикату или по файлам). «—» — пара не проверялась.
 
 | ожидающая ↓ / закоммиченная → | append | stream_upsert | overwrite | cow_dml | mor_dml | rewrite_data |
 | --- | --- | --- | --- | --- | --- | --- |
 | append | K1 | K1 | K1 | K1 | K1 | K1 |
 | stream_upsert | K1 | K1 | K1 | K1 | K1 | K1 |
-| overwrite | K2 (partition) | K2 (partition) | K2 (partition) | K2 (partition) | K2 (partition) | K2 (partition) |
-| cow_dml | K2 (partition, serializable) / K1 (snapshot) | K2 (partition, serializable) | K2 (partition) | K2 (file) | K2 (file: new deletes for read files) | K2 (file: read files removed) |
-| mor_dml | K2 (partition, serializable) / K1 (snapshot) | K2 (partition, serializable) | K2 (partition) | K2 (file) | K2 (file) | K2 (file: referenced files removed) |
+| overwrite без опции `isolation-level` | K1 | K1 | K1 | K1 | K1 | K1 |
+| overwrite с `isolation-level` + `validate-from-snapshot-id` | K2 (partition) | K2 (partition) | K2 (partition) | K2 (partition) | K2 (partition) | K2 (partition) |
+| cow_dml | K2 (partition, serializable) / K1 (snapshot) | K2 (partition; serializable **и** snapshot) | K2 (partition) | K2 (file) | K2 (file: new deletes for read files) | K2 (file: read files removed) |
+| mor_dml | K2 (predicate, serializable) / K1 (snapshot) | K2 (predicate, serializable) | K2 (predicate) | K2 (file) | v2: DELETE × DELETE — K1, UPDATE/MERGE — K2 (file); v3: K2 (file) | K2 (file: referenced files removed) |
 | rewrite_data | K1 | K1 (при `use-starting-sequence-number=true`) | K2 (file) | K2 (file) | K2 (file: new pos deletes / DV) | K2 (file) |
+| rewrite_deletes (только v2) | K1 | K1 | — | K1 | K2 (file) | K1 |
+
+Операция `expire` (`expire_snapshots`):
+
+| Пара | Исход |
+| --- | --- |
+| `expire` × любая операция | success: 409 не возникает (тело коммита — только `remove-snapshots`, требование — только `assert-table-uuid`) |
+| {rewrite_data, cow_dml, mor_dml} × `expire` (базовый снапшот ожидающей не удалён) | success |
+| {rewrite_data, cow_dml} × append + `expire`, удаливший базовый снапшот ожидающей | K1 |
+| MoR UPDATE × append + `expire`, удаливший базовый снапшот ожидающей | `base_expired`: `IllegalArgumentException` без повтора (`BaseRowDelta.java:134-139`) |
 
 Пояснения:
 
-1. «partition» — достаточно пересечения партиций с фильтром детекции конфликтов операции; «file» — требуется пересечение множеств файлов (для DML — файлов, содержащих затрагиваемые строки).
+1. «partition» — достаточно пересечения партиций с фильтром детекции конфликтов операции; «predicate» — новые файлы закоммиченной операции попадают под фильтр детекции конфликтов MoR-операции (MERGE без целевого предиката имеет фильтр `true` и конфликтует с любым append); «file» — требуется пересечение множеств файлов (для DML — файлов, содержащих затрагиваемые строки).
 2. Для пар `cow_dml/mor_dml × rewrite_data` исход симметричен: проигрывает та операция, которая коммитит второй. Это основа правила удержания (§6).
-3. Строка `overwrite`: для `INSERT OVERWRITE` в Spark проверки конфликтов включаются опцией записи `isolation-level` (отдельного табличного свойства, как для DML, нет); поведение по умолчанию фиксируется на этапе 1, а в сценариях опция задаётся явно.
-4. Все значения матрицы являются гипотезами, проверяемыми на этапе 1 микро-экспериментами (08_validation_and_testing.md §3). Фактическая версия матрицы фиксируется в YAML вместе с версией Iceberg.
+3. Строка `overwrite`: в Spark проверки конфликтов `ReplacePartitions`/`OverwriteByFilter` включает **только опция записи** `isolation-level` (`SparkWrite.java:353-356, 393-402`; свойство таблицы `write.*.isolation-level` не читается, `SparkWriteConf.java:484-488`). Опция `isolation-level` без `validate-from-snapshot-id` берёт историю валидации от начала таблицы (`MergingSnapshotProducer.java:967-994`) и отказывает с `ValidationException` на каждом запуске без параллельных операций (ложный К2), поэтому в сценариях обе опции задаются вместе; `validate-from-snapshot-id` — снапшот, от которого планировалась операция.
+4. `cow_dml × stream_upsert` даёт К2 и при `snapshot`: CoW вызывает `validateNoConflictingDeletes` при любом уровне изоляции (`SparkWrite.java:527`).
+5. `rewrite_deletes` × {cow_dml, rewrite_data} — K1: `BaseRewriteFiles` проверяет только заменённые data-файлы (`BaseRewriteFiles.java:135-142`). В формате v3 `rewrite_position_delete_files` ничего не коммитит (`RewritePositionDeleteFilesSparkAction.java:121-124`), поэтому операция применяется только к v2.
+6. `base_expired` — отдельный исход (не К1 и не К2): работа операции теряется, но причина — удаление её базового снапшота, а не конфликт данных (§4.2).
+7. Метрика совпадения с **исходной** гипотезой (до опытов, коммит `c6e9a4e`) — 72,9 % повторов (`docs/gate-G1-report.md`); все расхождения детерминированы и объяснены кодом (ADR-006). Таблица выше — исправленная матрица; при смене версии Iceberg матрица перепроверяется тестом `tests/integration/test_conflict_matrix.py`.
 
 ## 3. Аналитическая модель
 
@@ -106,6 +120,7 @@ $$P_{K1}(o) \approx \bigl(1 - e^{-\Lambda \hat D}\bigr)\prod_{i=1}^{r}\bigl(1 - 
 | `y_k2` | `ops.outcome = 'data_conflict'` |
 | `y_k1` | `ops.outcome = 'retry_exhausted'` |
 | `y_any` | `y_k2 OR y_k1` |
+| — | `ops.outcome = 'base_expired'` не входит ни в `y_k2`, ни в `y_k1` (отказ из-за удаления базового снапшота, §2); такие операции остаются в выборке как отрицательные примеры обеих моделей, их доля и потерянные CPU-секунды приводятся отдельно |
 | `y_dur` | `commit_requested_at - started_at` (с) |
 
 Наблюдения: одна строка на выполненную управляемую операцию; признаки — на фактический момент запуска. Операции с исходом `error` исключаются.

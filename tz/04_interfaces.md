@@ -38,7 +38,22 @@
 }
 ```
 
-Извлекаемые поля: `table` = `{ns}.{name}`, `base_snapshot_id` (из `assert-ref-snapshot-id` для `main`), `new_snapshot_id`, `sequence_number`, `operation` (`append`/`overwrite`/`replace`/`delete`), `manifest_list`, `summary` (целиком, JSONB), `op_id` (из заголовка/слота или `summary["capl.op-id"]`). Операция Iceberg `replace` соответствует компакции, `overwrite` — CoW DML/overwrite, `delete` — удалениям, `append` — добавлению; MoR DML даёт `overwrite` с добавленными delete-файлами (`added-delete-files > 0`) — классификация в `capl.proxy.commit_parser.classify()`.
+Извлекаемые поля: `table` = `{ns}.{name}`, `base_snapshot_id` (из `assert-ref-snapshot-id` для `main`), `new_snapshot_id`, `sequence_number`, `operation` (`append`/`overwrite`/`replace`/`delete`), `manifest_list`, `summary` (целиком, JSONB), `op_id` (из заголовка/слота или `summary["capl.op-id"]`). Классификация `op_class` — `capl.proxy.commit_parser.classify()` по `summary.operation`, счётчикам summary и `flink.job-id`; операция Iceberg определяется классом коммита (Iceberg 1.12.0):
+
+| `summary.operation` | Признаки summary | `op_class` | Источник операции |
+| --- | --- | --- | --- |
+| `append` | — | `append` (с `flink.job-id` — потоковый) | `FastAppend`/`MergeAppend` (`FastAppend.java:62`), `RowDelta` только с data-файлами (`BaseRowDelta.java:51-53`) |
+| `replace` | `added-delete-files`/`removed-delete-files` > 0 и data-файлы не менялись | `rewrite_deletes` | `RewriteFiles` (`BaseRewriteFiles.java:43`) |
+| `replace` | иначе | `rewrite_data` | то же |
+| `overwrite` | `added-equality-deletes` > 0 | `stream_upsert` | `RowDelta` с equality deletes (Flink upsert) |
+| `overwrite` | `added-position-deletes`/`added-dvs` > 0 | `mor_dml` (UPDATE/MERGE) | `RowDelta` с data- и delete-файлами (`BaseRowDelta.java:59`) |
+| `overwrite` | `replace-partitions = true` | `overwrite` | `ReplacePartitions` (`BaseReplacePartitions.java:46`) |
+| `overwrite` | иначе | `cow_dml` (или `overwrite` по фильтру) | `OverwriteFiles` (`BaseOverwriteFiles.java:50-55`) |
+| `delete` | `added-position-deletes`/`added-dvs` > 0 | `mor_dml` (DELETE) | `RowDelta` только с delete-файлами (`BaseRowDelta.java:55-57`) |
+| `delete` | иначе | `delete` (metadata delete / CoW, удаляющий файлы целиком) | `StreamingDelete`, `OverwriteFiles` без добавленных файлов |
+| нет `add-snapshot`, есть `remove-snapshots` | — | `expire` | `ExpireSnapshots` (тело — только `remove-snapshots`, ADR-006) |
+
+Признак `has_deletes` (добавлены delete-файлы) и `is_flink` (`flink.job-id` в summary) сохраняются отдельно. Окончательная проверка таблицы — на фикстурах реальных тел коммитов этапов 0–2 (`tests/unit/test_commit_parser.py`).
 
 ### 1.3. Заголовки
 
