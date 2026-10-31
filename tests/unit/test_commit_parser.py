@@ -10,9 +10,11 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+import yaml
 
 from capl.config import ProxyConfig
 from capl.proxy.commit_parser import (
+    AMBIGUOUS,
     CommitParseError,
     CommitPath,
     PathMatcher,
@@ -23,6 +25,8 @@ from capl.proxy.commit_parser import (
     response_error_type,
 )
 
+MATRIX = yaml.safe_load((Path(__file__).parents[2] / "config" / "conflict_matrix.yaml").read_text())
+OP_CLASSES: dict[str, Any] = MATRIX["op_classes"]
 FIXTURES = sorted((Path(__file__).parent.parent / "fixtures" / "commits").glob("*.json"))
 _P = ProxyConfig()
 MATCHER = PathMatcher(_P.commit_path_regex, _P.txn_commit_path_regex, _P.metrics_report_path_regex)
@@ -44,6 +48,18 @@ def test_fixture_set_is_complete() -> None:
     assert any(d["kind"] == "transaction" for d in docs)
     assert any("metadata delete" in d["operation"] for d in docs)
     assert {d["format_version"] for d in docs} >= {2, 3}
+    # every ambiguity case has at least one real body, incl. MERGE with inserts only (S2-R1-03)
+    assert {d["expected"]["ambiguity"] for d in docs} >= set(AMBIGUOUS)
+    assert {"cow_dml", "mor_dml"} <= {d["expected"]["true_class"] for d in docs
+                                       if d["expected"]["iceberg_op"] == "append"}
+    assert all(d["git_sha"] not in ("unknown", "") for d in docs)
+
+
+def test_ambiguity_candidates_are_matrix_classes() -> None:
+    for amb, cands in AMBIGUOUS.items():
+        assert set(cands) <= set(OP_CLASSES), (amb, set(cands) - set(OP_CLASSES))
+        # an ambiguity is only declared where validation really differs between candidates
+        assert len({str(OP_CLASSES[c]["validates"]) for c in cands}) > 1, amb
 
 
 @pytest.mark.parametrize("path", FIXTURES, ids=lambda p: p.stem)
@@ -63,6 +79,12 @@ def test_real_commit_body(path: Path) -> None:
     changes = raw["table-changes"] if cpath.kind == "transaction" else [raw]
     for c, ch in zip(commits, changes, strict=True):
         assert c.op_class == exp["op_class"], (c.op_class, c.summary)
+        assert c.ambiguity == exp["ambiguity"]
+        # the class of the executed operation must be reachable from the body: either exact, or
+        # one of the declared candidates (then only the slot → op binding decides)
+        assert exp["true_class"] in c.candidates, (exp["true_class"], c.candidates)
+        if exp["true_class"] != c.op_class:
+            assert c.ambiguity is not None
         assert c.iceberg_op == exp["iceberg_op"]
         assert c.has_deletes == exp["has_deletes"]
         assert c.is_flink == exp["is_flink"]

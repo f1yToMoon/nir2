@@ -114,7 +114,10 @@ BEGIN
         new_snapshot_id  bigint,
         sequence_number  bigint,
         iceberg_op       text,          -- append|overwrite|replace|delete
-        op_class         text,          -- класс по conflict_matrix
+        op_class         text,          -- класс операции: по привязке слот → op_id, иначе по телу
+        op_class_body    text,          -- класс по телу коммита (commit_parser.classify)
+        op_class_ambiguity text,        -- почему класс по телу может не совпадать (ADR-007)
+        op_class_source  text,          -- op_id | body
         summary          jsonb,
         error_type       text           -- из тела ответа (CommitFailedException и т. п.)
       );
@@ -129,6 +132,7 @@ BEGIN
         committed_at        timestamptz NOT NULL,
         iceberg_op          text,
         op_class            text,
+        op_class_source     text,       -- op_id | body
         op_id               text,
         writer_class        text,
         writer_id           text,       -- flink.job-id или slot

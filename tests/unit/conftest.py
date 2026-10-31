@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from collections.abc import AsyncIterator, Callable
 from dataclasses import dataclass, field
+from typing import Any
 
 import httpx
 import pytest
@@ -12,7 +13,7 @@ from capl.main import Service, build_service
 from capl.proxy.app import make_upstream_client
 from capl.telemetry import NullTelemetry
 
-Handler = Callable[[httpx.Request], httpx.Response]
+Handler = Callable[[httpx.Request], Any]
 
 
 class _Body(httpx.AsyncByteStream):
@@ -40,6 +41,10 @@ class Upstream(httpx.AsyncBaseTransport):
         self.requests.append(request)
         self.bodies.append(body)
         r = self.handler(request) if self.handler else httpx.Response(200, json={"ok": True})
+        if isinstance(r, tuple):
+            # (status, exact header list, body): no header is added by httpx
+            status, hdrs, raw = r
+            return httpx.Response(status, headers=hdrs, stream=_Body(raw), request=request)
         raw = b"".join(r.stream)  # type: ignore[arg-type]  # undecoded bytes as given to the mock
         return httpx.Response(r.status_code, headers=r.headers.raw, stream=_Body(raw),
                               request=request)

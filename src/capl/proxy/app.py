@@ -16,7 +16,7 @@ import json
 import random
 import time
 from collections import deque
-from collections.abc import AsyncIterator
+from collections.abc import AsyncIterator, Callable
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -79,9 +79,14 @@ def end_to_end(headers: list[tuple[bytes, bytes]]) -> list[tuple[bytes, bytes]]:
 
 @dataclass
 class IntegrityProbe:
-    """Incoming request as received vs. request as handed to the HTTP transport."""
+    """Incoming request as received by the proxy (ASGI) vs. request as handed to the HTTP
+    transport: target (path + query), headers (minus hop-by-hop), body SHA-256. It detects
+    changes made inside the proxy and httpx; the client→proxy and transport→catalog legs are
+    covered by tests on a recording mock catalog (tests/unit/test_proxy_transparency.py)."""
     in_headers: list[tuple[bytes, bytes]]
     in_chunked: bool
+    in_target: str = ""
+    out_target: str | None = None
     in_hash: Any = field(default_factory=hashlib.sha256)
     out_hash: Any = field(default_factory=hashlib.sha256)
     out_headers: list[tuple[bytes, bytes]] | None = None
@@ -89,6 +94,8 @@ class IntegrityProbe:
     def verdict(self) -> tuple[bool, str]:
         if self.out_headers is None:
             return False, "not sent"
+        if self.in_target and self.out_target != self.in_target:
+            return False, "target differs"
         if self.in_hash.digest() != self.out_hash.digest():
             return False, "body sha256 differs"
 
@@ -116,6 +123,7 @@ class IntegrityTransport(httpx.AsyncBaseTransport):
         if found is not None:
             probe = found
             probe.out_headers = list(request.headers.raw)
+            probe.out_target = request.url.raw_path.decode("latin-1")
             original = request.stream
 
             class _Hashing(httpx.AsyncByteStream):
@@ -249,7 +257,7 @@ class ProxyService:
         headers = end_to_end(raw)
         chunked = any(k.lower() == b"transfer-encoding" for k, _ in raw)
         has_body = chunked or any(k.lower() == b"content-length" for k, _ in raw)
-        probe = IntegrityProbe(headers, chunked) if self._sampled() else None
+        probe = IntegrityProbe(headers, chunked, raw_target(request)) if self._sampled() else None
 
         async def body() -> AsyncIterator[bytes]:
             async for chunk in request.stream():
@@ -264,29 +272,33 @@ class ProxyService:
         metrics.REQUESTS.labels(method=request.method, status=str(resp.status_code)).inc()
         return _streaming_response(resp)
 
-    async def _forward_buffered(self, request: Request, body: bytes,
-                                headers: list[tuple[bytes, bytes]]
-                                ) -> tuple[httpx.Response | Response, bytes]:
+    async def _forward_body(self, request: Request, body: bytes, headers: list[tuple[bytes, bytes]],
+                            buffer_status_from: int | None = None
+                            ) -> tuple[httpx.Response | Response, bytes | None]:
+        """Forward a request whose body is already read. The response stays a stream, unless its
+        status is ≥ buffer_status_from (then the raw body is read: error type of a failed commit)."""
         probe = None
         if self._sampled():
             probe = IntegrityProbe(headers, any(k.lower() == b"transfer-encoding"
-                                                for k, _ in request.headers.raw))
+                                                for k, _ in request.headers.raw), raw_target(request))
             probe.in_hash.update(body)
         has_body = bool(body) or any(k.lower() in (b"content-length", b"transfer-encoding")
                                      for k, _ in request.headers.raw)
         resp = await self._send(request, headers, body if has_body else None, True, probe)
         if isinstance(resp, Response):
-            return resp, b""
+            return resp, None
+        metrics.REQUESTS.labels(method=request.method, status=str(resp.status_code)).inc()
+        if buffer_status_from is None or resp.status_code < buffer_status_from:
+            return resp, None
         try:
             raw_body = b"".join([c async for c in resp.aiter_raw()])
         finally:
             await resp.aclose()
-        metrics.REQUESTS.labels(method=request.method, status=str(resp.status_code)).inc()
         return resp, raw_body
 
     async def _forward_metrics_report(self, request: Request, cpath: CommitPath) -> Response:
         body = await request.body()
-        resp, raw_body = await self._forward_buffered(request, body, end_to_end(list(request.headers.raw)))
+        resp, _ = await self._forward_body(request, body, end_to_end(list(request.headers.raw)))
         if isinstance(resp, Response):
             return resp
         try:
@@ -298,7 +310,7 @@ class ProxyService:
             metrics.CLIENT_REPORTS.labels(report_type=rtype).inc()
         except Exception as exc:            # fail-open: bookkeeping never affects the response
             metrics.FAIL_OPEN.labels(stage="client_report", reason=type(exc).__name__).inc()
-        return _buffered_response(resp, raw_body)
+        return _streaming_response(resp)
 
     # ---- commits ----------------------------------------------------------
     def _parse(self, body: bytes, cpath: CommitPath) -> list[ParsedCommit]:
@@ -349,12 +361,17 @@ class ProxyService:
         t_parse = time.perf_counter()
         main_commit = commits[0] if cpath.kind == "table" and commits else None
         op_id = self.state.op_for_slot(slot) or (main_commit.op_id if main_commit else None)
+        # true class of the operation comes from the slot binding; the body class is a fallback
+        # (it does not always determine validation, commit_parser.AMBIGUOUS)
+        bound_type = self.state.op_type_for_slot(slot) if cpath.kind == "table" else None
 
         entry: dict[str, Any] = {
             "path": request.url.path, "kind": cpath.kind, "slot": slot, "writer": writer,
             "run": run_id, "status": None, "hold_ms": None, "held": False, "ts": round(received_ms),
             "ts_fwd": None, "ts_resp": None, "op_id": op_id,
-            "op_class": main_commit.op_class if main_commit else None,
+            "op_class": bound_type or (main_commit.op_class if main_commit else None),
+            "op_class_body": main_commit.op_class if main_commit else None,
+            "op_class_ambiguity": main_commit.ambiguity if main_commit else None,
         }
         try:
             entry.update(commit_digest(body))
@@ -378,14 +395,25 @@ class ProxyService:
         forwarded_ms = time.time() * 1000
         entry["ts_fwd"] = round(forwarded_ms)
 
-        resp, raw_body = await self._forward_buffered(request, body, headers)
+        resp, raw_body = await self._forward_body(request, body, headers, buffer_status_from=400)
         t_resp = time.perf_counter()
         responded_ms = time.time() * 1000
         status = resp.status_code
         entry.update(status=status, ts_resp=round(responded_ms))
-        out = resp if isinstance(resp, Response) else _buffered_response(resp, raw_body)
+        if isinstance(resp, Response):
+            out: Response = resp
+        elif raw_body is not None:
+            out = _buffered_response(resp, raw_body)
+        else:
+            t_stream = time.perf_counter()
+
+            def _done() -> None:
+                metrics.PROXY_PHASE.labels(phase="response_stream").observe(time.perf_counter() - t_stream)
+
+            out = _streaming_response(resp, _done)
         try:
-            self._after_commit(commits, slot, writer, run_id, op_id, idem, status, raw_body,
+            self._after_commit(commits, slot, writer, run_id, op_id, bound_type, idem, status,
+                               raw_body or b"",
                                hold, received_ms, forwarded_ms, responded_ms)
             metrics.COMMIT_UPSTREAM.labels(op_class=entry["op_class"] or "unknown").observe(t_resp - t_fwd)
             # proxy's own time: from the full body received to forwarding, minus the hold itself
@@ -400,14 +428,17 @@ class ProxyService:
         return out
 
     def _after_commit(self, commits: list[ParsedCommit], slot: str, writer: str, run_id: str,
-                      op_id: str | None, idem: str | None, status: int, raw_body: bytes,
+                      op_id: str | None, bound_type: str | None, idem: str | None, status: int,
+                      raw_body: bytes,
                       hold: HoldResult, received_ms: float, forwarded_ms: float,
                       responded_ms: float) -> None:
         error_type = response_error_type(raw_body) if status >= 400 else None
         if not commits:
             metrics.COMMIT_ATTEMPTS.labels(status=str(status), op_class="unparsed").inc()
         for c in commits:
-            metrics.COMMIT_ATTEMPTS.labels(status=str(status), op_class=c.op_class).inc()
+            op_class = bound_type or c.op_class
+            source = "op_id" if bound_type else "body"
+            metrics.COMMIT_ATTEMPTS.labels(status=str(status), op_class=op_class).inc()
             self.telemetry.write("commit_attempts", {
                 "run_id": run_id or None, "op_id": op_id or c.op_id, "slot": slot or None,
                 "writer_class": writer or None, "table_name": c.table, "idempotency_key": idem,
@@ -416,14 +447,17 @@ class ProxyService:
                 "hold_reason": hold.reason if hold.held else None, "http_status": status,
                 "base_snapshot_id": c.base_snapshot_id, "new_snapshot_id": c.new_snapshot_id,
                 "sequence_number": c.sequence_number, "iceberg_op": c.iceberg_op,
-                "op_class": c.op_class, "summary": c.summary or None, "error_type": error_type,
+                "op_class": op_class, "op_class_body": c.op_class,
+                "op_class_ambiguity": c.ambiguity, "op_class_source": source,
+                "summary": c.summary or None, "error_type": error_type,
             })
             if 200 <= status < 300 and self.enricher is not None and c.new_snapshot_id is not None \
                     and c.manifest_list:
                 self.enricher.submit(EnrichJob(
                     run_id=run_id or None, table=c.table, snapshot_id=c.new_snapshot_id,
                     parent_snapshot_id=c.parent_snapshot_id, sequence_number=c.sequence_number,
-                    manifest_list=c.manifest_list, iceberg_op=c.iceberg_op, op_class=c.op_class,
+                    manifest_list=c.manifest_list, iceberg_op=c.iceberg_op, op_class=op_class,
+                    op_class_source=source,
                     op_id=op_id or c.op_id, writer_class=writer or ("stream" if c.is_flink else None),
                     writer_id=c.flink_job_id or slot or c.summary.get("spark.app.id"),
                     committed_at_ms=responded_ms))
@@ -438,17 +472,22 @@ def _resp_headers(resp: httpx.Response) -> list[tuple[bytes, bytes]]:
 
 
 def _buffered_response(resp: httpx.Response, raw_body: bytes) -> Response:
+    """Already read error response. Headers exactly as received (minus hop-by-hop): nothing is
+    added, so a chunked upstream response stays chunked (framing is chosen by the server)."""
     out = Response(raw_body, status_code=resp.status_code)
-    headers = _resp_headers(resp)
-    if not any(k.lower() == b"content-length" for k, _ in headers) and resp.request.method != "HEAD":
-        # upstream used chunked framing (hop-by-hop): the whole body is known, frame it by length
-        headers.append((b"content-length", str(len(raw_body)).encode()))
-    out.raw_headers = headers
+    out.raw_headers = _resp_headers(resp)
     return out
 
 
-def _streaming_response(resp: httpx.Response) -> StreamingResponse:
-    out = StreamingResponse(resp.aiter_raw(), status_code=resp.status_code,
+def _streaming_response(resp: httpx.Response, on_done: Callable[[], None] | None = None
+                        ) -> StreamingResponse:
+    async def body() -> AsyncIterator[bytes]:
+        async for chunk in resp.aiter_raw():
+            yield chunk
+        if on_done is not None:
+            on_done()
+
+    out = StreamingResponse(body(), status_code=resp.status_code,
                             background=BackgroundTask(resp.aclose))
     out.raw_headers = _resp_headers(resp)
     return out

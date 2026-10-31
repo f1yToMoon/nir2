@@ -74,11 +74,15 @@ export: ## Экспорт трасс прогона в Parquet: RUN=<run_id> (п
 gc: ## Уборка файлов прошедших прогонов
 	$(RUNNER) python -m runner.gc
 
+# коммит, на котором выполняется прогон; -dirty — есть незакоммиченные изменения
+GIT_SHA = $(shell git rev-parse HEAD)$(shell test -z "$$(git status --porcelain)" || echo -dirty)
+
 proxy-verify: ## Интеграционные проверки прокси (этап 2): NAME=<имя каталога результатов>
-	$(RUNNER) env RESULTS_NAME=$(or $(NAME),run) pytest -q -p no:cacheprovider tests/integration/test_proxy_stage2.py
+	$(COMPOSE) exec -T -e GIT_SHA=$(GIT_SHA) -e RESULTS_NAME=$(or $(NAME),run) runner \
+	  pytest -q -p no:cacheprovider tests/integration/test_proxy_stage2.py
 
 fixtures-capture: ## Снять реальные тела коммитов в tests/fixtures/commits (этап 2)
-	$(RUNNER) python3 -m scripts.capture_commit_fixtures
+	$(COMPOSE) exec -T -e GIT_SHA=$(GIT_SHA) runner python3 -m scripts.capture_commit_fixtures
 
 matrix-verify: ## Эмпирическая проверка матрицы конфликтов (этап 1)
 	bash scripts/matrix_verify.sh $(or $(NAME),iter3)

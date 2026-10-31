@@ -34,6 +34,8 @@ RUN = f"fx-{int(time.time())}"
 
 
 def git_sha() -> str:
+    if os.environ.get("GIT_SHA"):
+        return os.environ["GIT_SHA"]
     try:
         return subprocess.run(["git", "-C", "/workspace", "rev-parse", "HEAD"], capture_output=True,
                               text=True, check=True).stdout.strip()
@@ -122,15 +124,19 @@ def capture_spark() -> None:
     spark.sql(f"CREATE NAMESPACE IF NOT EXISTS {CAT}.{NS}")
     sql = spark.sql
 
-    def exp(op_class: str, iceberg_op: str | None, has_deletes: bool = False) -> dict[str, Any]:
+    def exp(op_class: str, iceberg_op: str | None, has_deletes: bool = False, true: str | None = None,
+            amb: str | None = None) -> dict[str, Any]:
+        # op_class/ambiguity: what the body shows; true_class: class of the executed operation
+        # (conflict_matrix.yaml op_classes), independent of the parser
         return {"op_class": op_class, "iceberg_op": iceberg_op, "has_deletes": has_deletes,
+                "true_class": true or op_class, "ambiguity": amb,
                 "is_flink": False}
 
     for fmt in (2, 3):
         t = f"append_v{fmt}"
         full = make_table(spark, t, fmt)
         run_op(f"spark_append_v{fmt}", t, lambda f=full: sql(f"INSERT INTO {f} VALUES (1000, 0, 'a')"),
-               exp("append", "append"), "spark", "INSERT INTO", fmt)
+               exp("append", "append", amb="data_files_added_only"), "spark", "INSERT INTO", fmt)
 
     t = "overwrite_dyn"
     full = make_table(spark, t, 2)
@@ -141,14 +147,16 @@ def capture_spark() -> None:
         (spark.range(0, 5).selectExpr("id", "0 AS bkt", "'ow' AS val").writeTo(f)
          .option("isolation-level", "serializable").option("validate-from-snapshot-id", str(base))
          .overwritePartitions())
-    run_op("spark_overwrite_partitions_opts", t, _overwrite, exp("overwrite", "overwrite"), "spark",
+    run_op("spark_overwrite_partitions_opts", t, _overwrite,
+           exp("overwrite", "overwrite", true="overwrite_opts", amb="overwrite_options"), "spark",
            "DataFrame overwritePartitions() with isolation-level + validate-from-snapshot-id", 2)
 
     t = "insert_overwrite_static"
     full = make_table(spark, t, 2)
     run_op("spark_insert_overwrite_static", t,
            lambda f=full: sql(f"INSERT OVERWRITE {f} PARTITION (bkt = 0) SELECT 7, 'io'"),
-           exp("cow_dml", "overwrite"), "spark", "INSERT OVERWRITE ... PARTITION (static)", 2,
+           exp("cow_dml", "overwrite", true="insert_overwrite", amb="overwrite_by_filter"), "spark",
+           "INSERT OVERWRITE ... PARTITION (static)", 2,
            note="OverwriteFiles by filter: same commit class and summary keys as CoW DML "
                 "(SparkWrite.java:374-404); not distinguishable from the body, the slot→op binding "
                 "gives the real type")
@@ -160,12 +168,26 @@ def capture_spark() -> None:
         t = f"cow_{label}"
         full = make_table(spark, t, 2)
         run_op(f"spark_cow_{label}", t, lambda f=full, st=stmt: sql(st.format(f=f)),
-               exp("cow_dml", "overwrite"), "spark", f"CoW {label.upper()} (rows of a file)", 2)
+               exp("cow_dml", "overwrite", amb="overwrite_by_filter"), "spark",
+               f"CoW {label.upper()} (rows of a file)", 2)
 
     t = "metadata_delete"
     full = make_table(spark, t, 2)
     run_op("spark_metadata_delete", t, lambda f=full: sql(f"DELETE FROM {f} WHERE bkt = 1"),
-           exp("cow_dml", "delete"), "spark", "DELETE of whole partition (metadata delete)", 2)
+           exp("cow_dml", "delete", true="metadata_delete", amb="data_files_removed_only"), "spark",
+           "DELETE of whole partition (metadata delete)", 2)
+
+    # MERGE that only inserts (no target row matched): the commit class reports "append"
+    # (BaseOverwriteFiles.java:54-56, BaseRowDelta.java:51-53) although the operation validates
+    for mode, true in (("copy-on-write", "cow_dml"), ("merge-on-read", "mor_dml")):
+        t = f"merge_insert_only_{true}"
+        full = make_table(spark, t, 2, mode=mode)
+        run_op(f"spark_{true}_merge_insert_only", t,
+               lambda f=full: sql(f"MERGE INTO {f} t USING (SELECT 999999L AS id, 0 AS bkt) s "
+                                  "ON t.id = s.id AND t.bkt = s.bkt WHEN MATCHED THEN UPDATE SET val = 'm' "
+                                  "WHEN NOT MATCHED THEN INSERT (id, bkt, val) VALUES (s.id, s.bkt, 'new')"),
+               exp("append", "append", true=true, amb="data_files_added_only"), "spark",
+               f"MERGE with inserts only ({mode})", 2)
 
     for fmt in (2, 3):
         for stmt, label, op in (("DELETE FROM {f} WHERE id = 3", "delete", "delete"),
@@ -206,7 +228,8 @@ def capture_spark() -> None:
     sql(f"DROP TABLE IF EXISTS {CAT}.{NS}.{t} PURGE")
     run_op("spark_ctas", t,
            lambda: sql(f"CREATE TABLE {CAT}.{NS}.{t} USING iceberg AS SELECT 1L AS id, 'x' AS val"),
-           exp("append", "append"), "spark", "CREATE TABLE AS SELECT (create transaction)", 2)
+           exp("append", "append", amb="data_files_added_only"), "spark",
+           "CREATE TABLE AS SELECT (create transaction)", 2)
 
     t = "alter"
     full = make_table(spark, t, 2)
@@ -233,8 +256,9 @@ def capture_spark() -> None:
     assert txn, "no transaction commit seen"
     save("java_multi_table_transaction", txn[-1],
          {"kind": "transaction", "tables": [f"{NS}.{ta}", f"{NS}.{tb}"], "op_class": "append",
+          "true_class": "append", "ambiguity": "data_files_added_only",
           "iceberg_op": "append", "has_deletes": False, "is_flink": False},
-         "java", "RESTCatalog.commitTransaction(TableCommit×2), FastAppend in each", 2)
+         "java", "RESTCatalog.commitTransaction(TableCommit x2), FastAppend in each", 2)
     spark.stop()
 
 
@@ -345,12 +369,14 @@ def capture_flink() -> None:
         q(f"INSERT INTO fxf.{NS}.flink_append VALUES (1, 0, 'a'), (2, 1, 'b')")
         e = wait_job_commit("flink_append", t0)
         save("flink_append", e, {"op_class": "append", "iceberg_op": "append", "has_deletes": False,
+                                 "true_class": "append", "ambiguity": None,
                                  "is_flink": True},
              "flink", "Flink SQL INSERT INTO (IcebergFilesCommitter)", 2)
         t0 = int(time.time() * 1000)
         q(f"INSERT INTO fxf.{NS}.flink_upsert VALUES (1, 0, 'a'), (1, 0, 'b'), (2, 1, 'c')")
         e = wait_job_commit("flink_upsert", t0)
         save("flink_upsert_v2", e, {"op_class": "stream_upsert", "iceberg_op": "overwrite",
+                                    "true_class": "stream_upsert", "ambiguity": None,
                                     "has_deletes": True, "is_flink": True},
              "flink", "Flink SQL INSERT INTO with write.upsert.enabled (equality deletes)", 2)
     finally:

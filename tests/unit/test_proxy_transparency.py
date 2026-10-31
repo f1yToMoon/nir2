@@ -145,3 +145,57 @@ async def test_integrity_probe_detects_change(env: Env) -> None:
     probe.out_hash = probe.in_hash
     probe.out_headers = [(b"a", b"2")]
     assert probe.verdict() == (False, "headers differ")
+    probe.out_headers = [(b"a", b"1")]
+    probe.in_target, probe.out_target = "/v1/a%1Fb?x=1", "/v1/a%1fb?x=1"
+    assert probe.verdict() == (False, "target differs")
+    probe.out_target = probe.in_target
+    assert probe.verdict() == (True, "")
+
+
+TXN = "/v1/transactions/commit"
+TXN_BODY = json.dumps({"table-changes": [{"identifier": {"namespace": ["ns"], "name": "t"},
+                                          "requirements": [], "updates": []}]}).encode()
+JETTY = [(b"Server", b"Jetty(12.1.8)"), (b"Date", b"Sat, 31 Oct 2026 15:03:51 GMT"),
+         (b"Vary", b"Accept-Encoding")]
+
+
+@pytest.mark.parametrize("status,headers,body", [
+    (204, [*JETTY, (b"Content-Type", b"application/json")], b""),          # transaction commit
+    (200, [*JETTY, (b"Content-Type", b"application/json"), (b"Content-Length", b"14")],
+     b'{"metadata":1}'),
+    (200, [*JETTY, (b"Content-Type", b"application/json"), (b"Transfer-Encoding", b"chunked")],
+     b'{"metadata": "chunked"}'),                                           # chunked upstream
+    (409, [*JETTY, (b"Content-Type", b"application/json"), (b"Transfer-Encoding", b"chunked")],
+     b'{"error": {"type": "CommitFailedException", "code": 409}}'),
+    (304, [*JETTY, (b"ETag", b'"x"')], b""),
+])
+@pytest.mark.parametrize("path,body_in", [(COMMIT, BODY), (TXN, TXN_BODY),
+                                          ("/v1/namespaces/bench/tables/events", None)])
+async def test_full_response_header_set(env: Env, status: int, headers: list[tuple[bytes, bytes]],
+                                        body: bytes, path: str, body_in: bytes | None) -> None:
+    """Full multiset of response headers equals the catalog's minus hop-by-hop (S2-R1-01):
+    the proxy adds nothing (no content-length on 204/304, no re-framing of chunked bodies)."""
+    env.upstream.handler = lambda req: (status, headers, body)
+    method = "POST" if body_in is not None else "GET"
+    async with env.proxy.stream(method, path, content=body_in) as r:
+        got_body = b"".join([c async for c in r.aiter_raw()])
+        got = sorted((k.decode().lower(), v) for k, v in r.headers.raw)
+    want = sorted((k.decode().lower(), v) for k, v in headers if k.lower() != b"transfer-encoding")
+    assert r.status_code == status
+    assert got == want, (got, want)
+    assert got_body == body
+    if status >= 400 and path != TXN and method == "POST":
+        assert env.telemetry.rows["commit_attempts"][-1]["error_type"] == "CommitFailedException"
+
+
+async def test_slot_binding_gives_operation_class(env: Env) -> None:
+    """FR-PROXY-4: the class of a commit comes from slot → (op_id, op_type); the body class and
+    its ambiguity are kept (S2-R1-03)."""
+    await env.adv.put("/v1/debug/slots/s9", json={"op_id": "op-7", "op_type": "cow_dml"})
+    await env.proxy.post(COMMIT, content=BODY, headers={"X-CAPL-Slot": "s9"})
+    await env.proxy.post(COMMIT, content=BODY, headers={"X-CAPL-Slot": "s8"})
+    bound, unbound = env.telemetry.rows["commit_attempts"]
+    assert (bound["op_class"], bound["op_class_body"], bound["op_class_source"], bound["op_id"]) == \
+        ("cow_dml", "append", "op_id", "op-7")
+    assert bound["op_class_ambiguity"] == "data_files_added_only"
+    assert (unbound["op_class"], unbound["op_class_source"], unbound["op_id"]) == ("append", "body", None)

@@ -57,6 +57,7 @@ class ModeRequest(BaseModel):
 
 class SlotRequest(BaseModel):
     op_id: str
+    op_type: str | None = None      # class of the operation (conflict_matrix op_classes)
 
 
 def build_advisor_app(svc: ProxyService, advisor: DebugHoldAdvisor, flush: Any = None) -> FastAPI:
@@ -139,8 +140,8 @@ def build_advisor_app(svc: ProxyService, advisor: DebugHoldAdvisor, flush: Any =
 
     @app.put("/v1/debug/slots/{slot}")
     async def assign_slot(slot: str, req: SlotRequest) -> dict[str, Any]:
-        svc.state.assign_slot(slot, req.op_id)
-        return {"slot": slot, "op_id": req.op_id}
+        svc.state.assign_slot(slot, req.op_id, req.op_type)
+        return {"slot": slot, "op_id": req.op_id, "op_type": req.op_type}
 
     @app.delete("/v1/debug/slots/{slot}")
     async def release_slot(slot: str) -> dict[str, Any]:

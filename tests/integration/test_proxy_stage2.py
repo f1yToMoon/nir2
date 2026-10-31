@@ -117,6 +117,14 @@ def spark() -> Any:
     session.stop()
 
 
+@pytest.fixture(scope="module", autouse=True)
+def _provenance() -> Any:
+    """Commit the run was made on (make proxy-verify passes GIT_SHA; '-dirty' = uncommitted)."""
+    _save("git_sha.json", {"git_sha": os.environ.get("GIT_SHA", "unknown"), "run": RUN,
+                           "started_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())})
+    yield
+
+
 @pytest.fixture(autouse=True)
 def _reset_proxy() -> Any:
     requests.put(f"{ADV_URL}/v1/debug/advisor", json={"fault": "none"}, timeout=10)
@@ -189,6 +197,7 @@ def test_journal_and_footprints(spark: Any) -> None:
         spark.sql(f"CALL s2.system.rewrite_data_files(table => '{NS}.{table}', "
                   f"where => \"dt = '{d}'\", options => map('min-input-files', '2'))")
         other["rewrite_data"] += 1
+    mor = {fv: _mor_table(spark, fv, rng) for fv in (2, 3)}
     flushed = _flush()
 
     direct = _pyiceberg(DIRECT_URL)
@@ -219,9 +228,42 @@ def test_journal_and_footprints(spark: Any) -> None:
         n_parts += len(exp)
         if exp != got:
             mismatches.append({"snapshot_id": sid, "pyiceberg": exp, "capl": got})
+    compared = Counter()
+    for sid in sample:
+        for a, d, df in _pyiceberg_footprint(tbl, sid).values():
+            compared.update(added_data=a, deleted_data=d, added_delete=df)
+
+    # MoR v2: per partition against PyIceberg; v3 (DV): PyIceberg 0.12.0 inspect.entries fails on
+    # DV tables (pyiceberg/table/inspect.py:271), so totals are compared with the snapshot summary
+    mor_v2 = direct.load_table(mor[2])
+    for snap in mor_v2.snapshots():
+        sid = snap.snapshot_id
+        exp = _pyiceberg_footprint(mor_v2, sid)
+        got = {r[0]: (r[1], r[2], r[3]) for r in _pq(
+            "SELECT partition, added_data_files, deleted_data_files, added_delete_files "
+            "FROM stand.commit_partitions WHERE table_name = %s AND snapshot_id = %s", mor[2], sid)}
+        n_parts += len(exp)
+        for a, d, df in exp.values():
+            compared.update(mor_v2_added_data=a, mor_v2_deleted_data=d, mor_v2_added_delete=df)
+        if exp != got:
+            mismatches.append({"table": mor[2], "snapshot_id": sid, "pyiceberg": exp, "capl": got})
+    mor_v3 = direct.load_table(mor[3])
+    v3_mismatches = []
+    for snap in mor_v3.snapshots():
+        summ = snap.summary.additional_properties if snap.summary else {}
+        want = (int(summ.get("added-data-files", 0)), int(summ.get("deleted-data-files", 0)),
+                int(summ.get("added-delete-files", 0)))
+        row = _pq("SELECT added_data_files, deleted_data_files, added_delete_files "
+                  "FROM stand.commit_events WHERE table_name = %s AND snapshot_id = %s",
+                  mor[3], snap.snapshot_id)
+        got3 = tuple(row[0]) if row else None
+        compared.update(mor_v3_added_delete=want[2], mor_v3_snapshots=1)
+        if got3 != want:
+            v3_mismatches.append({"snapshot_id": snap.snapshot_id, "summary": want, "capl": got3})
     ok_after = _metric("capl_body_integrity_total", {"result": "ok"})
     bad_after = _metric("capl_body_integrity_total", {"result": "mismatch"})
     report = {
+        "mor_tables": mor, "compared_nonzero": compared, "mor_v3_total_mismatches": v3_mismatches,
         "table": f"{NS}.{table}", "run": RUN, "appends": N_APPENDS, "other_ops": other,
         "append_phase_s": round(t_appends, 1), "snapshots": len(snaps),
         "commit_attempts": len(attempts), "attempts_status": Counter(a[1] for a in attempts),
@@ -239,7 +281,37 @@ def test_journal_and_footprints(spark: Any) -> None:
     assert not missing_events, f"{len(missing_events)} snapshots not in commit_events"
     assert len(sample) >= 100
     assert not mismatches, f"{len(mismatches)} footprint mismatches, e.g. {mismatches[:2]}"
+    assert not v3_mismatches, v3_mismatches[:3]
+    # each compared quantity is non-zero somewhere (a 0 = 0 comparison proves nothing, S2-R1-04)
+    for k in ("added_data", "deleted_data", "mor_v2_added_delete", "mor_v2_deleted_data",
+              "mor_v3_added_delete"):
+        assert compared[k] > 0, (k, compared)
     assert report["integrity_ok"] >= len(attempts) and report["integrity_mismatch"] == 0
+
+
+def _mor_table(spark: Any, fv: int, rng: random.Random) -> str:
+    """MoR table with DELETE / UPDATE / MERGE and (v2) rewrite_position_delete_files."""
+    table = f"mor_v{fv}_{int(time.time())}"
+    full = f"s2.{NS}.{table}"
+    spark.sql(f"""CREATE TABLE {full} (event_id BIGINT, key BIGINT, dt DATE, val STRING)
+                  USING iceberg PARTITIONED BY (dt, bucket(4, key))
+                  TBLPROPERTIES ('format-version'='{fv}', 'write.delete.mode'='merge-on-read',
+                                 'write.update.mode'='merge-on-read', 'write.merge.mode'='merge-on-read',
+                                 'write.distribution-mode'='none')""")
+    for i in range(6):
+        spark.sql(f"INSERT INTO {full} SELECT id, id % 97, DATE '2026-11-01' + CAST(id % 3 AS INT), 'v' "
+                  f"FROM range({i * 200}, {(i + 1) * 200})")
+    for _ in range(4):
+        spark.sql(f"DELETE FROM {full} WHERE event_id = {rng.randint(0, 1199)}")
+        spark.sql(f"UPDATE {full} SET val = 'u' WHERE event_id = {rng.randint(0, 1199)}")
+    spark.sql(f"MERGE INTO {full} t USING (SELECT {rng.randint(0, 1199)}L AS event_id) s "
+              "ON t.event_id = s.event_id WHEN MATCHED THEN UPDATE SET val = 'm'")
+    if fv == 2:
+        spark.sql(f"CALL s2.system.rewrite_position_delete_files(table => '{NS}.{table}', "
+                  "options => map('rewrite-all', 'true'))")
+    spark.sql(f"CALL s2.system.rewrite_data_files(table => '{NS}.{table}', "
+              "options => map('min-input-files', '2', 'delete-file-threshold', '1'))")
+    return f"{NS}.{table}"
 
 
 # ---------------------------------------------------------------- responses unchanged
@@ -269,7 +341,7 @@ def test_responses_identical_to_catalog(spark: Any) -> None:
             # proxy forwards Host unchanged
             hdrs_in = {"Host": "capl:8180", **({"Content-Type": "application/json"} if body else {})}
             r = requests.request(method, base + path, data=body, timeout=30, headers=hdrs_in)
-            hdrs = sorted((k.lower(), v) for k, v in r.headers.items() if k.lower() != "date")
+            hdrs = _raw_headers(r, drop=("date",))
             out.append((r.status_code, hdrs, hashlib.sha256(r.content).hexdigest(), len(r.content)))
         rows.append({"method": method, "path": path, "proxy": out[0][::2], "direct": out[1][::2],
                      "same_status": out[0][0] == out[1][0], "same_headers": out[0][1] == out[1][1],
@@ -279,6 +351,65 @@ def test_responses_identical_to_catalog(spark: Any) -> None:
     assert {200, 404, 409} <= statuses, statuses           # errors are passed through as well
     bad = [r for r in rows if not (r["same_status"] and r["same_headers"] and r["same_body"])]
     assert not bad, bad
+
+
+def _raw_headers(r: Any, drop: tuple[str, ...] = ()) -> list[tuple[str, str]]:
+    """All response header fields as received (repeated fields kept), names lower-cased."""
+    return sorted((k.lower(), v) for k, v in r.raw.headers.items() if k.lower() not in drop)
+
+
+def test_successful_commit_responses_identical(spark: Any) -> None:
+    """S2-R1-01: responses to successful commits (200 table commit, 204 transaction) through the
+    proxy and directly. Two tables prepared identically; the same commit goes to one through the
+    proxy and to the other directly. Bodies of 200 differ only by table identity (uuid, location),
+    so for 200 header fields are compared except Content-Length *value* (presence must agree)."""
+    rows = []
+    for i in range(3):
+        names = {}
+        for via in ("proxy", "direct"):
+            t = f"okc_{via}_{i}_{int(time.time())}"
+            spark.sql(f"CREATE TABLE s2.{NS}.{t} (id BIGINT) USING iceberg")
+            spark.sql(f"INSERT INTO s2.{NS}.{t} VALUES (1)")
+            names[via] = t
+        res = {}
+        for via, base in (("proxy", PROXY_URL), ("direct", DIRECT_URL)):
+            t = names[via]
+            meta = requests.get(f"{DIRECT_URL}/v1/namespaces/{NS}/tables/{t}", timeout=10).json()
+            cur = meta["metadata"]["current-snapshot-id"]
+            change = {"requirements": [{"type": "assert-ref-snapshot-id", "ref": "main", "snapshot-id": cur}],
+                      "updates": [{"action": "set-properties", "updates": {"k": str(i)}}]}
+            hdr = {"Host": "capl:8180", "Content-Type": "application/json"}
+            r1 = requests.post(f"{base}/v1/namespaces/{NS}/tables/{t}", data=json.dumps(change),
+                               headers=hdr, timeout=30)
+            txn = {"table-changes": [{"identifier": {"namespace": [NS], "name": t},
+                                      "requirements": [], "updates": [
+                                          {"action": "set-properties", "updates": {"t": str(i)}}]}]}
+            r2 = requests.post(f"{base}/v1/transactions/commit", data=json.dumps(txn), headers=hdr,
+                               timeout=30)
+            res[via] = (r1, r2)
+        (p1, p2), (d1, d2) = res["proxy"], res["direct"]
+        cl = ("date", "content-length")
+        row = {
+            "commit_status": [p1.status_code, d1.status_code],
+            "commit_headers_proxy": _raw_headers(p1, cl), "commit_headers_direct": _raw_headers(d1, cl),
+            "commit_has_content_length": ["content-length" in p1.headers,
+                                          "content-length" in d1.headers],
+            "commit_proxy_length_ok":
+                int(p1.headers.get("content-length", len(p1.content))) == len(p1.content),
+            "txn_status": [p2.status_code, d2.status_code],
+            "txn_headers_proxy": _raw_headers(p2, ("date",)),
+            "txn_headers_direct": _raw_headers(d2, ("date",)),
+            "txn_body_len": [len(p2.content), len(d2.content)],
+        }
+        rows.append(row)
+    _save("responses_successful_commits.json", rows)
+    for row in rows:
+        assert row["commit_status"] == [200, 200] and row["txn_status"] == [204, 204], row
+        assert row["commit_headers_proxy"] == row["commit_headers_direct"], row
+        assert row["commit_has_content_length"][0] == row["commit_has_content_length"][1], row
+        assert row["commit_proxy_length_ok"], row
+        assert row["txn_headers_proxy"] == row["txn_headers_direct"], row
+        assert row["txn_body_len"] == [0, 0], row
 
 
 # ---------------------------------------------------------------- NFR-1 overhead
@@ -345,11 +476,34 @@ def test_overhead_bypass_vs_proxy() -> None:
     rep["overhead_p50_ci95"] = [_q(d50, .025), _q(d50, .975)]
     rep["overhead_p95_ci95"] = [_q(d95, .025), _q(d95, .975)]
     rep["nfr1"] = {"p50_le_5ms": rep["overhead_p50"] <= 5, "p95_le_15ms": rep["overhead_p95"] <= 15}
+    # trend with table state (S2-R1-02): the k-th measured commit is made on a table with
+    # k + 50 + 1 snapshots; windows of 100 commits, difference of medians, least-squares slope
+    win = 100
+    windows = []
+    for w0 in range(0, len(p) - win + 1, win):
+        pw, bw = p[w0:w0 + win], b[w0:w0 + win]
+        windows.append({"snapshots_mid": w0 + win // 2 + 51, "proxy_p50": _q(pw, .5),
+                        "bypass_p50": _q(bw, .5), "diff_p50": _q(pw, .5) - _q(bw, .5),
+                        "paired_median_diff": statistics.median(x - y for x, y in zip(pw, bw, strict=True))})
+    xs = [w["snapshots_mid"] for w in windows]
+    ys = [w["diff_p50"] for w in windows]
+    mx, my = statistics.fmean(xs), statistics.fmean(ys)
+    sxx = sum((x - mx) ** 2 for x in xs)
+    slope = sum((x - mx) * (y - my) for x, y in zip(xs, ys, strict=True)) / sxx
+    rep["trend"] = {"windows": windows, "slope_ms_per_1000_snapshots": 1000 * slope,
+                    "intercept_ms": my - slope * mx,
+                    "r": slope * (sxx ** 0.5) / (sum((y - my) ** 2 for y in ys) ** 0.5 or 1.0)}
+    meta = requests.get(f"{DIRECT_URL}/v1/namespaces/{NS}/tables/{tables['proxy'].name()[-1]}",
+                        timeout=30)
+    rep["commit_response_bytes_at_end"] = len(meta.content)
+    rep["last_window_diff_p50"] = windows[-1]["diff_p50"]
     _save("overhead.json", rep)
     _save("overhead_raw.json", lat)
     assert len(p) == len(b) == N_BENCH
     assert rep["overhead_p50"] <= 5.0, rep
     assert rep["overhead_p95"] <= 15.0, rep
+    # NFR-1 also holds at the end of the series (largest metadata), not only on average
+    assert rep["last_window_diff_p50"] <= 5.0, rep["trend"]
 
 
 # ---------------------------------------------------------------- fail-open

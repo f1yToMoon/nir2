@@ -100,9 +100,9 @@ async def test_enricher_publishes_event(tmp_path: Path) -> None:
     enr = Enricher(_open, tel, state, workers=2, read_deleted_paths_for=["cow_dml"])
     await enr.start()
     assert enr.submit(EnrichJob(None, "bench.events", SID, OLD, 5, _fixture(tmp_path), "overwrite",
-                                "cow_dml", "op-1", "batch_dml", "s1", 1_000_000.0))
+                                "cow_dml", "op_id", "op-1", "batch_dml", "s1", 1_000_000.0))
     assert enr.submit(EnrichJob(None, "bench.events", 999, SID, 6, str(tmp_path / "missing.avro"),
-                                "append", "append", None, None, None, 1_000_001.0))
+                                "append", "append", "body", None, None, None, 1_000_001.0))
     await enr.join()
     await enr.stop()
     assert (enr.published, enr.failed) == (1, 1)        # a broken snapshot does not stop workers

@@ -38,6 +38,13 @@ op_classes:
   rewrite_data:    {iceberg_api: RewriteFiles,      validates: true, controlled: true, narrowable: true}
   rewrite_deletes: {iceberg_api: RewriteFiles,      validates: true, controlled: true, narrowable: true}
   expire:          {iceberg_api: ExpireSnapshots,   validates: false, controlled: true}
+  # Этап 2 (ADR-007, ревью S2-R1-03): классы, которые по телу коммита не отличимы от других
+  # (capl.proxy.commit_parser.AMBIGUOUS). Пары с ними на этапе 1 не проверялись, кроме insert_overwrite*.
+  metadata_delete: {iceberg_api: DeleteFiles-StreamingDelete, validates: false, controlled: true,
+                    note: "DELETE по границам партиций (SparkTable.java:458-462); без валидации (StreamingDelete.java:73-78); тело — operation=delete без добавленных файлов, как у CoW DELETE целых файлов"}
+  insert_overwrite: {iceberg_api: OverwriteFiles-by-filter, validates: by_write_option_isolation_level, controlled: true,
+                     note: "SQL INSERT OVERWRITE ... PARTITION (static), SparkWrite.java:374-404"}
+  insert_overwrite_opts: {iceberg_api: OverwriteFiles-by-filter-with-options, validates: true, controlled: true}
 
 rules:
   # Итерация 3 (ревью stage-1-r1). Исходная гипотеза — версии на коммитах c6e9a4e (до опытов)

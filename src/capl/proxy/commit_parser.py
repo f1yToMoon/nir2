@@ -21,6 +21,24 @@ NAMESPACE_SEP = "\x1f"   # REST spec: multi-level namespace parts joined by %1F
 OpClass = Literal["append", "stream_upsert", "overwrite", "cow_dml", "mor_dml", "rewrite_data",
                   "rewrite_deletes", "expire", "metadata", "unknown"]
 
+# Body classes that do not determine whether (and how) the commit validates data: the operation
+# of the commit class depends only on what files were added/removed (tz/04 §1.2, ADR-007 п. 5).
+# ambiguity → classes of conflict_matrix.yaml op_classes the commit may belong to.
+AMBIGUOUS: dict[str, tuple[str, ...]] = {
+    # OverwriteFiles / RowDelta that only add data files report "append"
+    # (BaseOverwriteFiles.java:54-56, BaseRowDelta.java:51-53): CoW/MoR MERGE with inserts only,
+    # which validates at serializable (SparkWrite.java:460-476, SparkPositionDeltaWrite.java:282-284)
+    "data_files_added_only": ("append", "cow_dml", "mor_dml"),
+    # ReplacePartitions validates only with the write option isolation-level (SparkWrite.java:353-356);
+    # options are not in the body → K1 (overwrite) or K2 (overwrite_opts)
+    "overwrite_options": ("overwrite", "overwrite_opts"),
+    # OverwriteFiles: CoW DML and static INSERT OVERWRITE (OverwriteByFilter, SparkWrite.java:374-404)
+    "overwrite_by_filter": ("cow_dml", "insert_overwrite", "insert_overwrite_opts"),
+    # data files removed, nothing added: StreamingDelete (metadata delete, no validation,
+    # StreamingDelete.java:73-78, SparkTable.java:458-462) or CoW OverwriteFiles (validates)
+    "data_files_removed_only": ("cow_dml", "metadata_delete"),
+}
+
 
 # ---------- pydantic models (only the fields CAPL reads; everything else is allowed) ----------
 
@@ -86,6 +104,8 @@ class ParsedCommit:
     is_flink: bool                          # flink.job-id in summary
     flink_job_id: str | None
     op_id: str | None                       # summary[capl.op-id]
+    ambiguity: str | None                   # key of AMBIGUOUS, None if the body class is exact
+    candidates: tuple[str, ...]             # classes the commit may belong to
     requirements: tuple[dict[str, Any], ...] = field(default=())
 
 
@@ -177,6 +197,18 @@ def classify(iceberg_op: str | None, summary: dict[str, str], actions: tuple[str
     return "unknown"
 
 
+def ambiguity(op_class: str, iceberg_op: str | None, summary: dict[str, str]) -> str | None:
+    """Why the body class may not be the operation's class (None: exact)."""
+    if op_class == "append":
+        # Flink appends come from AppendFiles/RowDelta of a stream without validation
+        return None if "flink.job-id" in summary else "data_files_added_only"
+    if op_class == "overwrite":
+        return "overwrite_options"
+    if op_class == "cow_dml":
+        return "data_files_removed_only" if iceberg_op == "delete" else "overwrite_by_filter"
+    return None
+
+
 def _parse_table_change(req: CommitTableRequest, table: str) -> ParsedCommit:
     base = next((r.snapshot_id for r in req.requirements
                  if r.type == "assert-ref-snapshot-id" and (r.ref or "main") == "main"), None)
@@ -187,6 +219,8 @@ def _parse_table_change(req: CommitTableRequest, table: str) -> ParsedCommit:
     iceberg_op = summary.get("operation") if snap else None
     flink_job = summary.get("flink.job-id")
     added_deletes = _int(summary, "added-delete-files") > 0   # includes DVs (SnapshotSummary.java:298-311)
+    op_class = classify(iceberg_op, summary, actions)
+    amb = ambiguity(op_class, iceberg_op, summary)
     return ParsedCommit(
         table=table,
         base_snapshot_id=base,
@@ -199,11 +233,13 @@ def _parse_table_change(req: CommitTableRequest, table: str) -> ParsedCommit:
         summary=summary,
         removed_snapshot_ids=removed,
         actions=actions,
-        op_class=classify(iceberg_op, summary, actions),
+        op_class=op_class,
         has_deletes=added_deletes,
         is_flink=flink_job is not None,
         flink_job_id=flink_job,
         op_id=summary.get("capl.op-id"),
+        ambiguity=amb,
+        candidates=AMBIGUOUS[amb] if amb else (op_class,),
         requirements=tuple(r.model_dump(by_alias=True, exclude_none=True) for r in req.requirements),
     )
 

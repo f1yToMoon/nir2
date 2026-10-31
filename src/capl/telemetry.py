@@ -25,11 +25,12 @@ COLUMNS: dict[str, tuple[str, ...]] = {
         "run_id", "op_id", "slot", "writer_class", "table_name", "idempotency_key",
         "received_at", "forwarded_at", "responded_at", "hold_ms", "hold_reason", "http_status",
         "base_snapshot_id", "new_snapshot_id", "sequence_number", "iceberg_op", "op_class",
-        "summary", "error_type",
+        "op_class_body", "op_class_ambiguity", "op_class_source", "summary", "error_type",
     ),
     "commit_events": (
         "run_id", "table_name", "snapshot_id", "parent_snapshot_id", "sequence_number",
-        "committed_at", "iceberg_op", "op_class", "op_id", "writer_class", "writer_id",
+        "committed_at", "iceberg_op", "op_class", "op_class_source", "op_id", "writer_class",
+        "writer_id",
         "added_data_files", "deleted_data_files", "added_delete_files", "added_bytes",
         "n_partitions", "enriched_at",
     ),
@@ -40,6 +41,13 @@ COLUMNS: dict[str, tuple[str, ...]] = {
     "client_reports": ("run_id", "table_name", "received_at", "report_type", "report"),
 }
 JSONB = {"summary", "report"}
+# columns added after the first deployment of the DDL (stage 2, ADR-007); idempotent
+MIGRATIONS = (
+    "ALTER TABLE {s}.commit_attempts ADD COLUMN IF NOT EXISTS op_class_body text",
+    "ALTER TABLE {s}.commit_attempts ADD COLUMN IF NOT EXISTS op_class_ambiguity text",
+    "ALTER TABLE {s}.commit_attempts ADD COLUMN IF NOT EXISTS op_class_source text",
+    "ALTER TABLE {s}.commit_events ADD COLUMN IF NOT EXISTS op_class_source text",
+)
 # idempotent re-insert of an enriched snapshot
 ON_CONFLICT = {
     "commit_events": "ON CONFLICT (table_name, snapshot_id) DO NOTHING",
@@ -111,6 +119,9 @@ class PgTelemetry:
         import asyncpg
 
         self._pool = await asyncpg.create_pool(self.dsn, min_size=1, max_size=4)
+        async with self._pool.acquire() as conn:
+            for stmt in MIGRATIONS:
+                await conn.execute(stmt.format(s=f'"{self.schema}"'))
         self._task = asyncio.create_task(self._loop(), name="telemetry-writer")
 
     async def stop(self) -> None:

@@ -137,6 +137,7 @@ class EnrichJob:
     manifest_list: str
     iceberg_op: str | None
     op_class: str
+    op_class_source: str             # op_id (slot binding) | body (commit_parser.classify)
     op_id: str | None
     writer_class: str | None
     writer_id: str | None
@@ -209,7 +210,7 @@ class Enricher:
             "run_id": job.run_id, "table": job.table, "snapshot_id": job.snapshot_id,
             "parent_snapshot_id": job.parent_snapshot_id, "sequence_number": job.sequence_number,
             "committed_at": job.committed_at_ms / 1000.0, "iceberg_op": job.iceberg_op,
-            "op_class": job.op_class, "op_id": job.op_id,
+            "op_class": job.op_class, "op_class_source": job.op_class_source, "op_id": job.op_id,
             "writer_class": job.writer_class or "unknown", "writer_id": job.writer_id,
             "totals": totals,
             "partitions": [
@@ -224,7 +225,8 @@ class Enricher:
             "run_id": job.run_id, "table_name": job.table, "snapshot_id": job.snapshot_id,
             "parent_snapshot_id": job.parent_snapshot_id, "sequence_number": job.sequence_number,
             "committed_at": ts(job.committed_at_ms), "iceberg_op": job.iceberg_op,
-            "op_class": job.op_class, "op_id": job.op_id, "writer_class": job.writer_class,
+            "op_class": job.op_class, "op_class_source": job.op_class_source, "op_id": job.op_id,
+            "writer_class": job.writer_class,
             "writer_id": job.writer_id, **totals, "n_partitions": len(fp.partitions),
             "enriched_at": ts(now_ms),
         })

@@ -57,13 +57,22 @@ class StateStore:
         self.cfg = cfg
         self.tables: dict[str, TableState] = {}
         self.slot_ops: dict[str, str] = {}      # slot → op_id (FR-PROXY-4)
+        self.slot_types: dict[str, str] = {}    # slot → op class of the assigned operation
 
     # ---- slots ----
-    def assign_slot(self, slot: str, op_id: str) -> None:
+    def assign_slot(self, slot: str, op_id: str, op_type: str | None = None) -> None:
         self.slot_ops[slot] = op_id
+        if op_type:
+            self.slot_types[slot] = op_type
+        else:
+            self.slot_types.pop(slot, None)
 
     def release_slot(self, slot: str) -> None:
         self.slot_ops.pop(slot, None)
+        self.slot_types.pop(slot, None)
+
+    def op_type_for_slot(self, slot: str | None) -> str | None:
+        return self.slot_types.get(slot) if slot else None
 
     def op_for_slot(self, slot: str | None) -> str | None:
         return self.slot_ops.get(slot) if slot else None
@@ -71,6 +80,7 @@ class StateStore:
     def reset(self) -> None:
         self.tables.clear()
         self.slot_ops.clear()
+        self.slot_types.clear()
 
     # ---- events ----
     def add_commit_event(self, event: dict[str, Any]) -> None:
