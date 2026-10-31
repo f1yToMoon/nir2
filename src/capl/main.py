@@ -49,8 +49,8 @@ log = structlog.get_logger("capl.proxy")
 # ---------- shared state --------------------------------------------------
 _last_commits: deque[dict[str, Any]] = deque(maxlen=500)
 
-# slot → asyncio.Event; when event is set, the held commit is released
-_holds: dict[str, asyncio.Event] = {}
+# slot → (asyncio.Event, max hold in seconds); when event is set, the held commit is released
+_holds: dict[str, tuple[asyncio.Event, float]] = {}
 
 _client: httpx.AsyncClient | None = None
 
@@ -108,14 +108,15 @@ async def proxy(request: Request, path: str) -> Response:
         _last_commits.append(entry)
         # Hold: if this slot is registered, wait until released or timeout
         if slot in _holds:
-            evt = _holds[slot]
+            evt, max_s = _holds[slot]
             entry["held"] = True
+            entry["hold_max_ms"] = round(max_s * 1000)
             t0 = asyncio.get_event_loop().time()
             try:
-                await asyncio.wait_for(evt.wait(), timeout=HOLD_MAX_S)
+                await asyncio.wait_for(evt.wait(), timeout=max_s)
             except TimeoutError:
                 entry["hold_timeout"] = True
-                log.warning("hold_timeout", slot=slot, max_s=HOLD_MAX_S)
+                log.warning("hold_timeout", slot=slot, max_s=max_s)
             entry["hold_ms"] = round((asyncio.get_event_loop().time() - t0) * 1000)
         entry["ts_fwd"] = _now_ms()
 
@@ -171,24 +172,27 @@ class HoldRequest(BaseModel):
 async def hold_start(req: HoldRequest) -> dict[str, Any]:
     """Register a hold on the named slot.
     Any commit from that slot will block at the proxy until released
-    or HOLD_MAX_S seconds elapse.
+    or min(max_ms, CAPL_HOLD_MAX_MS) elapses: the service limit is never exceeded.
     """
+    if req.max_ms <= 0:
+        raise HTTPException(status_code=422, detail="max_ms must be positive")
     if req.slot in _holds:
         # Reset: clear old event so a new hold starts fresh
-        _holds[req.slot].set()
+        _holds[req.slot][0].set()
+    max_s = min(req.max_ms / 1000.0, HOLD_MAX_S)
     evt = asyncio.Event()
-    _holds[req.slot] = evt
-    log.info("hold_registered", slot=req.slot, max_ms=req.max_ms)
-    return {"status": "held", "slot": req.slot}
+    _holds[req.slot] = (evt, max_s)
+    log.info("hold_registered", slot=req.slot, max_ms=req.max_ms, effective_ms=round(max_s * 1000))
+    return {"status": "held", "slot": req.slot, "max_ms": round(max_s * 1000)}
 
 
 @advisor_app.delete("/v1/debug/hold/{slot}")
 async def hold_release(slot: str) -> dict[str, Any]:
     """Release a held slot, allowing its pending commit to proceed."""
-    evt = _holds.pop(slot, None)
-    if evt is None:
+    held = _holds.pop(slot, None)
+    if held is None:
         raise HTTPException(status_code=404, detail=f"slot '{slot}' not held")
-    evt.set()
+    held[0].set()
     log.info("hold_released", slot=slot)
     return {"status": "released", "slot": slot}
 

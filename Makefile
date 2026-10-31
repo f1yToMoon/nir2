@@ -4,6 +4,8 @@ COMPOSE := docker compose --env-file infra/.env -f infra/docker-compose.yml
 RUNNER  := $(COMPOSE) exec -T runner
 PY      := python3
 RUNNER_PY := python3
+# Инструменты разработки: из .venv (make venv, Python 3.11 + extras service,dev), иначе из PATH
+VENV_BIN := $(if $(wildcard .venv/bin/python),.venv/bin/,)
 
 SCENARIO ?= S2_compaction_vs_cdc_merge
 POLICY   ?= P0
@@ -12,7 +14,7 @@ SEED     ?= 11
 SERIES   ?= E3_main
 RUN      ?=
 
-.PHONY: help env build up up-lite up-lakekeeper down clean ps logs versions-check smoke \
+.PHONY: help venv env build up up-lite up-lakekeeper down clean ps logs versions-check smoke \
         validate-config seed run batch export gc matrix-verify \
         test-unit test-int test-e2e lint typecheck \
         dataset train evaluate sim calibrate acceptance figures tables reproduce-smoke
@@ -75,8 +77,11 @@ gc: ## Уборка файлов прошедших прогонов
 matrix-verify: ## Эмпирическая проверка матрицы конфликтов (этап 1)
 	bash scripts/matrix_verify.sh $(or $(NAME),iter3)
 
+venv: ## Локальное окружение .venv (Python 3.11, extras service + dev) через uv
+	uv venv --python 3.11 .venv && uv pip install --python .venv/bin/python -e ".[service,dev]"
+
 test-unit: ## Unit-тесты (без Docker)
-	PYTHONPATH=src pytest -q tests/unit
+	PYTHONPATH=src $(VENV_BIN)pytest -q tests/unit
 
 test-int: ## Integration-тесты (стенд должен быть поднят)
 	$(RUNNER) pytest -q tests/integration
@@ -85,10 +90,10 @@ test-e2e: ## E2E: короткие прогоны всех сценариев
 	$(RUNNER) pytest -q tests/e2e
 
 lint: ## ruff
-	ruff check src tests
+	$(VENV_BIN)ruff check src tests
 
 typecheck: ## mypy
-	mypy --strict src/capl
+	$(VENV_BIN)mypy --strict src/capl
 
 dataset: ## Сборка обучающей выборки (point-in-time)
 	PYTHONPATH=src $(PY) -m ml.dataset --pg "$${TELEMETRY_PG_DSN:-postgresql://capl:capl@localhost:5432/telemetry}" --out data/datasets
