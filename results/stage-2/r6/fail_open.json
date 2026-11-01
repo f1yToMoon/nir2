@@ -1,0 +1,24 @@
+{
+ "writers": 4,
+ "errors": [],
+ "commits_by_phase": {
+  "none": 143,
+  "down": 192,
+  "error": 129,
+  "slow": 106,
+  "recovered": 34
+ },
+ "max_append_ms_by_phase": {
+  "none": 153.6,
+  "down": 262.7,
+  "error": 342.2,
+  "slow": 674.4,
+  "recovered": 529.1
+ },
+ "fail_open_increments": {
+  "AdvisorUnavailable": 195.0,
+  "RuntimeError": 126.0,
+  "TimeoutError": 106.0
+ },
+ "held_commits_total_in_debug_log": 4
+}

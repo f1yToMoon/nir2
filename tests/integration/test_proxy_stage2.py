@@ -463,6 +463,8 @@ def test_overhead_bypass_vs_proxy() -> None:
     schema = Schema(NestedField(1, "id", LongType(), required=False))
     cats = {"proxy": _pyiceberg(PROXY_URL, "bench"), "bypass": _pyiceberg(DIRECT_URL)}
     tables, lat = {}, {"proxy": [], "bypass": []}
+    timing_on = {"proxy": False, "bypass": False}   # per path; a function attribute on `timed`
+    # would be looked up through the loop variable and read the last path's flag
     for name, cat in cats.items():
         cat.create_namespace_if_not_exists(NS)
         tname = f"{NS}.bench_{name}_{int(time.time())}"
@@ -474,10 +476,9 @@ def test_overhead_bypass_vs_proxy() -> None:
             try:
                 return _orig(*a, **k)
             finally:
-                if timed.on:  # type: ignore[attr-defined]
+                if timing_on[_name]:
                     lat[_name].append((time.perf_counter() - t0) * 1000)
 
-        timed.on = False  # type: ignore[attr-defined]
         cat.commit_table = timed
     data = pa.table({"id": pa.array([1, 2, 3], pa.int64())})
     rng = random.Random(SEED)
@@ -490,14 +491,14 @@ def test_overhead_bypass_vs_proxy() -> None:
         order = ["proxy", "bypass"]
         rng.shuffle(order)
         for name in order:
-            cats[name].commit_table.on = i >= 50          # 50 warm-up commits per path
+            timing_on[name] = i >= 50                     # 50 warm-up commits per path
             tables[name].append(data)
             n_snaps[name] += 1
             if i >= 50:
                 snaps_at[name].append(n_snaps[name])
             if plan and n_snaps[name] >= plan["expire_at"]:
                 # scheduled expire of the scenarios (ADR-008); its commit is not measured
-                cats[name].commit_table.on = False
+                timing_on[name] = False
                 ids = sorted((s.timestamp_ms, s.snapshot_id) for s in tables[name].snapshots())
                 drop = [sid for _, sid in ids[:len(ids) - plan["retain"]]]
                 tables[name].maintenance.expire_snapshots().by_ids(drop).commit()
