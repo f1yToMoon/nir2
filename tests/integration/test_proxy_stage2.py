@@ -497,17 +497,21 @@ def test_overhead_bypass_vs_proxy() -> None:
                         "bypass_p50": _q(bw, .5), "diff_p50": _q(pw, .5) - _q(bw, .5),
                         "paired_median_diff": statistics.median(x - y for x, y in zip(pw, bw, strict=True))})
     xs = [w["snapshots_mid"] for w in windows]
-    ys = [w["diff_p50"] for w in windows]
+    # paired medians (proxy_i - bypass_i of interleaved commits): robust to window-level drift
+    # of the catalog; a difference of window medians can swing by tens of ms (r4: -32.4 ms)
+    ys = [w["paired_median_diff"] for w in windows]
     mx, my = statistics.fmean(xs), statistics.fmean(ys)
     sxx = sum((x - mx) ** 2 for x in xs)
     slope = sum((x - mx) * (y - my) for x, y in zip(xs, ys, strict=True)) / sxx
-    rep["trend"] = {"windows": windows, "slope_ms_per_1000_snapshots": 1000 * slope,
-                    "intercept_ms": my - slope * mx,
+    rep["trend"] = {"statistic": "paired_median_diff", "windows": windows,
+                    "slope_ms_per_1000_snapshots": 1000 * slope,
+                    "intercept_ms": my - slope * mx, "fitted_at_end_ms": my + slope * (xs[-1] - mx),
                     "r": slope * (sxx ** 0.5) / (sum((y - my) ** 2 for y in ys) ** 0.5 or 1.0)}
     meta = requests.get(f"{DIRECT_URL}/v1/namespaces/{NS}/tables/{tables['proxy'].name()[-1]}",
                         timeout=30)
     rep["commit_response_bytes_at_end"] = len(meta.content)
     rep["last_window_diff_p50"] = windows[-1]["diff_p50"]
+    rep["last_window_paired_median_diff"] = windows[-1]["paired_median_diff"]
     rep["bench_table_properties"] = BENCH_TABLE_PROPS
     tp = tables["proxy"].refresh()
     rep["manifest_list_entries_at_end"] = len(tp.current_snapshot().manifests(tp.io))
@@ -516,8 +520,10 @@ def test_overhead_bypass_vs_proxy() -> None:
     assert len(p) == len(b) == N_BENCH
     assert rep["overhead_p50"] <= 5.0, rep
     assert rep["overhead_p95"] <= 15.0, rep
-    # NFR-1 also holds at the end of the series (largest metadata), not only on average
-    assert rep["last_window_diff_p50"] <= 5.0, rep["trend"]
+    # NFR-1 also holds at the end of the series (largest metadata), not only on average:
+    # both the last window and the linear trend at the end
+    assert rep["last_window_paired_median_diff"] <= 5.0, rep["trend"]
+    assert rep["trend"]["fitted_at_end_ms"] <= 5.0, rep["trend"]
 
 
 # ---------------------------------------------------------------- fail-open

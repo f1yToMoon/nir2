@@ -23,7 +23,7 @@ Run:
   make matrix-verify
 Env: MATRIX_TRIALS_OVERLAP (20), MATRIX_TRIALS_CONTROL (5), MATRIX_FORMAT_VERSIONS (yaml),
      MATRIX_OUT (results/stage-1/iter3), MATRIX_SPARK_MASTER (spark://spark-master:7077),
-     MATRIX_ONLY (substring filter on case id)
+     MATRIX_ONLY (substring filter on case id), GIT_SHA (recorded in each case entry)
 """
 from __future__ import annotations
 
@@ -722,6 +722,7 @@ def _load_results() -> None:
 
 def _save(case_id: str, entry: dict[str, Any]) -> None:
     _load_results()
+    entry["git_sha"] = os.environ.get("GIT_SHA", "unknown")     # provenance of each case (S2-R1-05)
     _all_results[case_id] = entry
     os.makedirs(OUT_DIR, exist_ok=True)
     with open(RESULTS_FILE, "w") as fh:
