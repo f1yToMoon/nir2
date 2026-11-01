@@ -46,19 +46,27 @@
 | --- | --- | --- | --- |
 | `append` | — | `append` (с `flink.job-id` — потоковый) | `FastAppend`/`MergeAppend` (`FastAppend.java:62`), `RowDelta` только с data-файлами (`BaseRowDelta.java:51-53`) |
 | `replace` | `added-delete-files`/`removed-delete-files` > 0 и data-файлы не менялись | `rewrite_deletes` | `RewriteFiles` (`BaseRewriteFiles.java:43`) |
-| `replace` | иначе | `rewrite_data` | то же |
+| `replace` | data-файлы менялись | `rewrite_data` | то же |
+| `replace` | файлы не менялись | `rewrite_manifests` | `RewriteManifests` (`BaseRewriteManifests.java:87-89`; проверяет только манифесты, `:174, 286-298`) |
 | `overwrite` | `added-equality-deletes` > 0 | `stream_upsert` | `RowDelta` с equality deletes (Flink upsert) |
-| `overwrite` | `added-position-deletes`/`added-dvs` > 0 | `mor_dml` (UPDATE/MERGE) | `RowDelta` с data- и delete-файлами (`BaseRowDelta.java:59`) |
+| `overwrite` | `added-position-deletes`/`added-dvs` > 0 | `mor_update` (UPDATE или MERGE; у `mor_update` и `mor_merge` одинаковые исходы во всех правилах матрицы — `EQUIVALENT`) | `RowDelta` с data- и delete-файлами (`BaseRowDelta.java:59`) |
 | `overwrite` | `replace-partitions = true` | `overwrite` | `ReplacePartitions` (`BaseReplacePartitions.java:46`) |
 | `overwrite` | иначе | `cow_dml` (в том числе статический `INSERT OVERWRITE … PARTITION`: тот же класс коммита `OverwriteFiles`, по телу не отличим; истинный тип даёт привязка слот → op_id) | `OverwriteFiles` (`BaseOverwriteFiles.java:50-55`) |
-| `delete` | `added-position-deletes`/`added-dvs` > 0 | `mor_dml` (DELETE) | `RowDelta` только с delete-файлами (`BaseRowDelta.java:55-57`) |
+| `delete` | `added-position-deletes`/`added-dvs` > 0 | `mor_delete` (или MERGE только с удалениями — неоднозначность `delete_files_added_only`) | `RowDelta` только с delete-файлами (`BaseRowDelta.java:55-57`) |
 | `delete` | иначе | `cow_dml` (metadata delete / CoW, удаляющий файлы целиком) | `StreamingDelete`, `OverwriteFiles` без добавленных файлов |
 | нет `add-snapshot`, нет `remove-snapshots` | — | `metadata` (схема, свойства) | `UpdateSchema`, `UpdateProperties` |
 | нет `add-snapshot`, есть `remove-snapshots` | — | `expire` | `ExpireSnapshots` (тело — только `remove-snapshots`, ADR-006) |
 
-Класс по телу не всегда определяет валидацию: четыре неоднозначных случая (`data_files_added_only` — `append` может быть MERGE только со вставками в CoW/MoR; `overwrite_options`; `overwrite_by_filter`; `data_files_removed_only` — metadata delete или CoW) перечислены в ADR-007 п. 5 со ссылками на код. Для них парсер возвращает признак `ambiguity` и множество классов-кандидатов; истинный класс операции даёт привязка слот → (`op_id`, тип), в журнал пишутся оба (`op_class`, `op_class_body`, `op_class_ambiguity`, `op_class_source`).
+Класс по телу не всегда определяет исход конфликта. Пять неоднозначных случаев перечислены в ADR-007 п. 5 со ссылками на код:
+- `data_files_added_only` — `append` может быть MERGE только со вставками в CoW/MoR;
+- `delete_files_added_only` — MoR DELETE или MERGE только с удалениями;
+- `overwrite_options`;
+- `overwrite_by_filter`;
+- `data_files_removed_only` — metadata delete или CoW.
 
-Признак `has_deletes` (добавлены delete-файлы) и `is_flink` (`flink.job-id` в summary) сохраняются отдельно. Таблица проверена на 26 фикстурах реальных тел коммитов (Spark 4.0, Flink, Java API; `tests/fixtures/commits`, `scripts/capture_commit_fixtures.py`, `tests/unit/test_commit_parser.py`). Транзакционный коммит каталог подтверждает кодом 204 (не 200).
+Критерий неоднозначности: кандидаты дают разный исход хотя бы в одной паре правил матрицы (`tests/unit/test_commit_parser.py`). Для них парсер возвращает признак `ambiguity` и множество классов-кандидатов; истинный класс операции даёт привязка слот → (`op_id`, тип), в журнал пишутся оба (`op_class`, `op_class_body`, `op_class_ambiguity`, `op_class_source`).
+
+Признак `has_deletes` (добавлены delete-файлы) и `is_flink` (`flink.job-id` в summary) сохраняются отдельно. Таблица проверена на 29 фикстурах реальных тел коммитов (Spark 4.0, Flink, Java API; `tests/fixtures/commits`, `scripts/capture_commit_fixtures.py`, `tests/unit/test_commit_parser.py`). Транзакционный коммит каталог подтверждает кодом 204 (не 200).
 
 ### 1.3. Заголовки
 

@@ -1,0 +1,26 @@
+{
+ "name": "spark_mor_merge_delete_only_v3",
+ "source": "spark",
+ "operation": "MoR MERGE DELETE ONLY (DV)",
+ "format_version": 3,
+ "path": "/v1/namespaces/fx/tables/mor_merge_delete_only_v3",
+ "kind": "table",
+ "headers": {
+  "X-CAPL-Slot": "fixtures",
+  "X-CAPL-Writer": "test"
+ },
+ "status": 200,
+ "expected": {
+  "op_class": "mor_delete",
+  "iceberg_op": "delete",
+  "has_deletes": true,
+  "true_class": "mor_merge",
+  "ambiguity": "delete_files_added_only",
+  "is_flink": false
+ },
+ "note": "",
+ "captured_at": "2026-11-01T15:50:13Z",
+ "git_sha": "ad281f91134a6c06ab22e0c9a93c6e00f3fda44d",
+ "iceberg_client": "1.12.0",
+ "body": "{\"requirements\":[{\"type\":\"assert-table-uuid\",\"uuid\":\"3ef3a371-e6ac-4123-b3c0-78f5bef9a613\"},{\"type\":\"assert-ref-snapshot-id\",\"ref\":\"main\",\"snapshot-id\":778580857741411584}],\"updates\":[{\"action\":\"add-snapshot\",\"snapshot\":{\"sequence-number\":5,\"snapshot-id\":7181689147084889439,\"parent-snapshot-id\":778580857741411584,\"timestamp-ms\":1793548213418,\"summary\":{\"operation\":\"delete\",\"spark.app.id\":\"app-20261101154946-0005\",\"manifests-created\":\"1\",\"manifests-kept\":\"4\",\"manifests-replaced\":\"0\",\"added-delete-files\":\"1\",\"added-dvs\":\"1\",\"added-files-size\":\"42\",\"added-position-deletes\":\"1\",\"changed-partition-count\":\"1\",\"total-records\":\"40\",\"total-files-size\":\"15434\",\"total-data-files\":\"16\",\"total-delete-files\":\"1\",\"total-position-deletes\":\"1\",\"total-equality-deletes\":\"0\",\"engine-version\":\"4.0.1\",\"app-id\":\"app-20261101154946-0005\",\"engine-name\":\"spark\",\"iceberg-version\":\"Apache Iceberg 1.12.0 (commit 212aa894e919ff9fdf89160da4aadcbe6858ac01)\",\"app-name\":\"capture-commit-fixtures\"},\"manifest-list\":\"s3://warehouse/fx/mor_merge_delete_only_v3/metadata/snap-7181689147084889439-1-b77ddfb8-fe92-4aba-a65e-c4a0aea33ce2.avro\",\"schema-id\":0,\"first-row-id\":40,\"added-rows\":0}},{\"action\":\"set-snapshot-ref\",\"ref-name\":\"main\",\"snapshot-id\":7181689147084889439,\"type\":\"branch\"}]}"
+}

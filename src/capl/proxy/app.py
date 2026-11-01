@@ -401,8 +401,9 @@ class ProxyService:
         responded_ms = time.time() * 1000
         status = resp.status_code
         entry.update(status=status, ts_resp=round(responded_ms))
-        # enrichment jobs are submitted after the response is sent to the client: reading the
-        # manifest list must not overlap the transfer of the (metadata-sized) commit response
+        # enrichment jobs are submitted once the last chunk of the response has been handed to the
+        # ASGI server (its tail may still be in uvicorn's transport buffer): reading the manifest
+        # list should not overlap the transfer of the (metadata-sized) commit response
         jobs: list[EnrichJob] = []
         if isinstance(resp, Response):
             out: Response = resp

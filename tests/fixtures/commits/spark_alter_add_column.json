@@ -19,8 +19,8 @@
   "is_flink": false
  },
  "note": "",
- "captured_at": "2026-10-31T15:43:47Z",
- "git_sha": "35538524b074349ed83e940c6d8f0119f9b7bf02",
+ "captured_at": "2026-11-01T15:50:19Z",
+ "git_sha": "ad281f91134a6c06ab22e0c9a93c6e00f3fda44d",
  "iceberg_client": "1.12.0",
- "body": "{\"requirements\":[{\"type\":\"assert-table-uuid\",\"uuid\":\"e38a11fc-1b8e-4cde-941a-23b13180dee1\"},{\"type\":\"assert-last-assigned-field-id\",\"last-assigned-field-id\":3},{\"type\":\"assert-current-schema-id\",\"current-schema-id\":0}],\"updates\":[{\"action\":\"add-schema\",\"schema\":{\"type\":\"struct\",\"schema-id\":1,\"fields\":[{\"id\":1,\"name\":\"id\",\"required\":false,\"type\":\"long\"},{\"id\":2,\"name\":\"bkt\",\"required\":false,\"type\":\"int\"},{\"id\":3,\"name\":\"val\",\"required\":false,\"type\":\"string\"},{\"id\":4,\"name\":\"extra\",\"required\":false,\"type\":\"int\"}]},\"last-column-id\":4},{\"action\":\"set-current-schema\",\"schema-id\":-1}]}"
+ "body": "{\"requirements\":[{\"type\":\"assert-table-uuid\",\"uuid\":\"ba92d9dd-c267-445e-838a-9628a7bcad25\"},{\"type\":\"assert-last-assigned-field-id\",\"last-assigned-field-id\":3},{\"type\":\"assert-current-schema-id\",\"current-schema-id\":0}],\"updates\":[{\"action\":\"add-schema\",\"schema\":{\"type\":\"struct\",\"schema-id\":1,\"fields\":[{\"id\":1,\"name\":\"id\",\"required\":false,\"type\":\"long\"},{\"id\":2,\"name\":\"bkt\",\"required\":false,\"type\":\"int\"},{\"id\":3,\"name\":\"val\",\"required\":false,\"type\":\"string\"},{\"id\":4,\"name\":\"extra\",\"required\":false,\"type\":\"int\"}]},\"last-column-id\":4},{\"action\":\"set-current-schema\",\"schema-id\":-1}]}"
 }
