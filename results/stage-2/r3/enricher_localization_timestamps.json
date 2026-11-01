@@ -1,0 +1,73 @@
+{
+ "git_sha": "45bb0a5972e95689cf50f0b1430e9c74d641ef06",
+ "blocks": [
+  {
+   "mode": "on",
+   "n": 100,
+   "snapshots": 6227,
+   "pre_p50": 1.44,
+   "proxy_in_p50": 0.19,
+   "catalog_p50": 113.05,
+   "post_p50": 153.57,
+   "total_p50": 269.04,
+   "bypass_p50": 255.1,
+   "pre_mean": 1.33,
+   "proxy_in_mean": 0.2,
+   "catalog_mean": 122.44,
+   "post_mean": 146.72,
+   "total_mean": 270.69,
+   "bypass_mean": 256.06
+  },
+  {
+   "mode": "off",
+   "n": 100,
+   "snapshots": 6327,
+   "pre_p50": 1.44,
+   "proxy_in_p50": 0.19,
+   "catalog_p50": 114.09,
+   "post_p50": 163.23,
+   "total_p50": 277.53,
+   "bypass_p50": 277.5,
+   "pre_mean": 1.33,
+   "proxy_in_mean": 0.2,
+   "catalog_mean": 121.15,
+   "post_mean": 155.8,
+   "total_mean": 278.48,
+   "bypass_mean": 280.54
+  },
+  {
+   "mode": "on",
+   "n": 100,
+   "snapshots": 6427,
+   "pre_p50": 1.44,
+   "proxy_in_p50": 0.19,
+   "catalog_p50": 113.3,
+   "post_p50": 172.43,
+   "total_p50": 289.38,
+   "bypass_p50": 281.86,
+   "pre_mean": 1.36,
+   "proxy_in_mean": 0.2,
+   "catalog_mean": 123.33,
+   "post_mean": 168.93,
+   "total_mean": 293.82,
+   "bypass_mean": 286.3
+  },
+  {
+   "mode": "off",
+   "n": 100,
+   "snapshots": 6527,
+   "pre_p50": 1.44,
+   "proxy_in_p50": 0.19,
+   "catalog_p50": 117.83,
+   "post_p50": 167.35,
+   "total_p50": 284.79,
+   "bypass_p50": 280.92,
+   "pre_mean": 1.36,
+   "proxy_in_mean": 0.19,
+   "catalog_mean": 127.36,
+   "post_mean": 166.05,
+   "total_mean": 294.96,
+   "bypass_mean": 286.67
+  }
+ ]
+}

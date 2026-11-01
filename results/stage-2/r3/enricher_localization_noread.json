@@ -1,0 +1,84 @@
+{
+ "git_sha": "45bb0a5972e95689cf50f0b1430e9c74d641ef06",
+ "n_per_block_per_path": 120,
+ "blocks": [
+  {
+   "enrich": "noread",
+   "snapshots": 5047,
+   "proxy_mean": 204.06,
+   "bypass_mean": 202.61,
+   "upstream_mean": 95.21,
+   "response_stream_mean": 36.13,
+   "proxy_own_mean": 0.18,
+   "paired_median_diff": 4.97,
+   "proxy_minus_bypass_mean": 1.45,
+   "upstream_minus_bypass_mean": -107.39,
+   "proxy_minus_upstream_mean": 108.85
+  },
+  {
+   "enrich": "off",
+   "snapshots": 5167,
+   "proxy_mean": 227.0,
+   "bypass_mean": 223.4,
+   "upstream_mean": 101.97,
+   "response_stream_mean": 36.68,
+   "proxy_own_mean": 0.17,
+   "paired_median_diff": -2.26,
+   "proxy_minus_bypass_mean": 3.6,
+   "upstream_minus_bypass_mean": -121.43,
+   "proxy_minus_upstream_mean": 125.03
+  },
+  {
+   "enrich": "on",
+   "snapshots": 5287,
+   "proxy_mean": 244.21,
+   "bypass_mean": 230.4,
+   "upstream_mean": 104.19,
+   "response_stream_mean": 38.59,
+   "proxy_own_mean": 0.18,
+   "paired_median_diff": 12.3,
+   "proxy_minus_bypass_mean": 13.81,
+   "upstream_minus_bypass_mean": -126.2,
+   "proxy_minus_upstream_mean": 140.01
+  },
+  {
+   "enrich": "noread",
+   "snapshots": 5407,
+   "proxy_mean": 244.98,
+   "bypass_mean": 243.86,
+   "upstream_mean": 103.65,
+   "response_stream_mean": 38.98,
+   "proxy_own_mean": 0.17,
+   "paired_median_diff": 1.94,
+   "proxy_minus_bypass_mean": 1.12,
+   "upstream_minus_bypass_mean": -140.21,
+   "proxy_minus_upstream_mean": 141.33
+  },
+  {
+   "enrich": "off",
+   "snapshots": 5527,
+   "proxy_mean": 239.47,
+   "bypass_mean": 234.31,
+   "upstream_mean": 106.52,
+   "response_stream_mean": 39.64,
+   "proxy_own_mean": 0.17,
+   "paired_median_diff": 5.3,
+   "proxy_minus_bypass_mean": 5.16,
+   "upstream_minus_bypass_mean": -127.79,
+   "proxy_minus_upstream_mean": 132.95
+  },
+  {
+   "enrich": "on",
+   "snapshots": 5647,
+   "proxy_mean": 256.46,
+   "bypass_mean": 238.79,
+   "upstream_mean": 110.84,
+   "response_stream_mean": 40.01,
+   "proxy_own_mean": 0.18,
+   "paired_median_diff": 18.7,
+   "proxy_minus_bypass_mean": 17.68,
+   "upstream_minus_bypass_mean": -127.95,
+   "proxy_minus_upstream_mean": 145.63
+  }
+ ]
+}

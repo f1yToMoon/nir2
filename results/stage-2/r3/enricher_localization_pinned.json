@@ -1,0 +1,58 @@
+{
+ "git_sha": "45bb0a5972e95689cf50f0b1430e9c74d641ef06",
+ "n_per_block_per_path": 120,
+ "blocks": [
+  {
+   "enrich": "on",
+   "snapshots": 5767,
+   "proxy_mean": 235.16,
+   "bypass_mean": 226.3,
+   "upstream_mean": 110.06,
+   "response_stream_mean": 40.53,
+   "proxy_own_mean": 0.18,
+   "paired_median_diff": 11.32,
+   "proxy_minus_bypass_mean": 8.86,
+   "upstream_minus_bypass_mean": -116.25,
+   "proxy_minus_upstream_mean": 125.11
+  },
+  {
+   "enrich": "off",
+   "snapshots": 5887,
+   "proxy_mean": 230.41,
+   "bypass_mean": 234.84,
+   "upstream_mean": 108.28,
+   "response_stream_mean": 41.75,
+   "proxy_own_mean": 0.18,
+   "paired_median_diff": -4.06,
+   "proxy_minus_bypass_mean": -4.42,
+   "upstream_minus_bypass_mean": -126.56,
+   "proxy_minus_upstream_mean": 122.14
+  },
+  {
+   "enrich": "on",
+   "snapshots": 6007,
+   "proxy_mean": 269.51,
+   "bypass_mean": 251.0,
+   "upstream_mean": 117.09,
+   "response_stream_mean": 42.75,
+   "proxy_own_mean": 0.18,
+   "paired_median_diff": 13.34,
+   "proxy_minus_bypass_mean": 18.51,
+   "upstream_minus_bypass_mean": -133.91,
+   "proxy_minus_upstream_mean": 152.42
+  },
+  {
+   "enrich": "off",
+   "snapshots": 6127,
+   "proxy_mean": 264.18,
+   "bypass_mean": 261.56,
+   "upstream_mean": 116.5,
+   "response_stream_mean": 43.44,
+   "proxy_own_mean": 0.18,
+   "paired_median_diff": -0.46,
+   "proxy_minus_bypass_mean": 2.63,
+   "upstream_minus_bypass_mean": -145.06,
+   "proxy_minus_upstream_mean": 147.68
+  }
+ ]
+}

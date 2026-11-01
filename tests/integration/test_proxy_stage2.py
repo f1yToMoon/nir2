@@ -40,6 +40,8 @@ SPARK_MASTER = os.environ.get("SPARK_MASTER", "spark://spark-master:7077")
 PG_DSN = os.environ.get("TELEMETRY_PG_DSN", "postgresql://capl:capl@postgres:5432/telemetry")
 N_APPENDS = int(os.environ.get("STAGE2_APPENDS", "1000"))
 N_BENCH = int(os.environ.get("STAGE2_BENCH_COMMITS", "1000"))
+BENCH_TABLE_PROPS = {"commit.manifest-merge.enabled":
+                     os.environ.get("STAGE2_BENCH_MANIFEST_MERGE", "true")}
 N_FOOTPRINT_SAMPLE = int(os.environ.get("STAGE2_FOOTPRINT_SAMPLE", "150"))
 OUT = Path(os.environ.get("STAGE2_OUT",
                           f"/workspace/results/stage-2/{os.environ.get('RESULTS_NAME', 'run')}"))
@@ -423,8 +425,14 @@ def _q(xs: list[float], q: float) -> float:
 
 
 def test_overhead_bypass_vs_proxy() -> None:
-    """Latency of the commit request (RestCatalog.commit_table: one POST) for fast appends of the
-    same data, alternating proxy/bypass, N_BENCH commits each; overhead = proxy - bypass."""
+    """Latency of the commit request (RestCatalog.commit_table: one POST) for appends of the
+    same data, alternating proxy/bypass, N_BENCH commits each; overhead = proxy - bypass.
+
+    Bench tables merge manifests (`commit.manifest-merge.enabled=true`, min count 100), as the
+    stand's writers do: Iceberg Java default, TableProperties.java:119,122 (Spark, Flink); PyIceberg
+    0.12.0 defaults to false (pyiceberg/table/__init__.py:208). Without merging the manifest list
+    grows with every snapshot, and so does the cost of enriching each commit (stage-2 r3:
+    results/stage-2/r3/enricher_*). STAGE2_BENCH_MANIFEST_MERGE=false reproduces that case."""
     import pyarrow as pa
     from pyiceberg.schema import Schema
     from pyiceberg.types import LongType, NestedField
@@ -435,7 +443,7 @@ def test_overhead_bypass_vs_proxy() -> None:
     for name, cat in cats.items():
         cat.create_namespace_if_not_exists(NS)
         tname = f"{NS}.bench_{name}_{int(time.time())}"
-        tables[name] = cat.create_table(tname, schema)
+        tables[name] = cat.create_table(tname, schema, properties=BENCH_TABLE_PROPS)
         orig = cat.commit_table
 
         def timed(*a: Any, _orig: Any = orig, _name: str = name, **k: Any) -> Any:
@@ -500,6 +508,9 @@ def test_overhead_bypass_vs_proxy() -> None:
                         timeout=30)
     rep["commit_response_bytes_at_end"] = len(meta.content)
     rep["last_window_diff_p50"] = windows[-1]["diff_p50"]
+    rep["bench_table_properties"] = BENCH_TABLE_PROPS
+    tp = tables["proxy"].refresh()
+    rep["manifest_list_entries_at_end"] = len(tp.current_snapshot().manifests(tp.io))
     _save("overhead.json", rep)
     _save("overhead_raw.json", lat)
     assert len(p) == len(b) == N_BENCH
