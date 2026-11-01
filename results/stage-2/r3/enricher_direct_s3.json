@@ -1,0 +1,32 @@
+{
+ "git_sha": "cf8b1a06c2c91bead6d25ebb36bf3e047ce0c059-dirty",
+ "n_per_block_per_path": 100,
+ "blocks": [
+  {
+   "enrich": "on",
+   "snapshots": 3150,
+   "proxy_mean": 128.23,
+   "bypass_mean": 122.86,
+   "upstream_mean": 57.34,
+   "response_stream_mean": 22.96,
+   "proxy_own_mean": 0.17,
+   "paired_median_diff": 4.8,
+   "proxy_minus_bypass_mean": 5.38,
+   "upstream_minus_bypass_mean": -65.52,
+   "proxy_minus_upstream_mean": 70.9
+  },
+  {
+   "enrich": "off",
+   "snapshots": 3250,
+   "proxy_mean": 120.76,
+   "bypass_mean": 121.81,
+   "upstream_mean": 55.73,
+   "response_stream_mean": 23.37,
+   "proxy_own_mean": 0.17,
+   "paired_median_diff": 0.37,
+   "proxy_minus_bypass_mean": -1.05,
+   "upstream_minus_bypass_mean": -66.08,
+   "proxy_minus_upstream_mean": 65.03
+  }
+ ]
+}

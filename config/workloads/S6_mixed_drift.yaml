@@ -14,6 +14,9 @@ table:
     write.delete.mode: merge-on-read
     write.update.mode: merge-on-read
     write.merge.mode: copy-on-write
+maintenance:
+  expire_snapshots:
+    enabled: false        # в S6 expire — управляемая операция (id: expire ниже), часть изучаемых явлений (ADR-008)
 streams:
   - id: ingest
     engine: flink

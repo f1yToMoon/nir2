@@ -61,6 +61,14 @@ streams:                           # неуправляемые писатели
       late_max_days: 2
     keys: {dist: uniform}
 
+maintenance:                       # фоновое обслуживание по расписанию, без advisor (ADR-008)
+  expire_snapshots:
+    enabled: true
+    interval_s: 300                # R/2: запуск не реже двух раз за срок хранения
+    older_than_s: 600              # R ≥ 2 × макс. длительность операции (S5, ~243 с) + hold.max_ms (60 с)
+    retain_last: 20                # как у управляемого expire в S6
+    writer_class: maintenance
+
 controlled_ops: []                 # переопределяется в сценариях; формат см. ниже
 # Формат элемента controlled_ops:
 #  - id: compaction

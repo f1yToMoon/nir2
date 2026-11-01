@@ -43,11 +43,28 @@ N_BENCH = int(os.environ.get("STAGE2_BENCH_COMMITS", "1000"))
 BENCH_TABLE_PROPS = {"commit.manifest-merge.enabled":
                      os.environ.get("STAGE2_BENCH_MANIFEST_MERGE", "true")}
 N_FOOTPRINT_SAMPLE = int(os.environ.get("STAGE2_FOOTPRINT_SAMPLE", "150"))
+BENCH_EXPIRE = os.environ.get("STAGE2_BENCH_EXPIRE", "true") == "true"
+WORKLOADS = Path(__file__).parents[2] / "config" / "workloads"
 OUT = Path(os.environ.get("STAGE2_OUT",
                           f"/workspace/results/stage-2/{os.environ.get('RESULTS_NAME', 'run')}"))
 NS = "stage2"
 RUN = f"stage2-{int(time.time())}"
 SEED = 2026
+
+
+def _bench_expire_plan() -> dict[str, Any]:
+    """Table history the scenarios run with (ADR-008), in commit counts: S1 has the highest commit
+    rate (sum of writers / commit_period_s of its streams); scheduled expire every interval_s keeps
+    the snapshots of the last older_than_s, so the table oscillates between rate * older_than_s
+    and rate * (older_than_s + interval_s) snapshots."""
+    import yaml
+
+    exp = yaml.safe_load((WORKLOADS / "_base.yaml").read_text())["maintenance"]["expire_snapshots"]
+    s1 = yaml.safe_load(next(WORKLOADS.glob("S1_*.yaml")).read_text())
+    rate = sum(st.get("writers", 1) / st["commit_period_s"] for st in s1["streams"])
+    return {"s1_commits_per_s": rate, "interval_s": exp["interval_s"], "older_than_s": exp["older_than_s"],
+            "retain": round(rate * exp["older_than_s"]),
+            "expire_at": round(rate * (exp["older_than_s"] + exp["interval_s"]))}
 
 
 def _save(name: str, doc: Any) -> None:
@@ -434,7 +451,11 @@ def test_overhead_bypass_vs_proxy() -> None:
     stand's writers do: Iceberg Java default, TableProperties.java:119,122 (Spark, Flink); PyIceberg
     0.12.0 defaults to false (pyiceberg/table/__init__.py:208). Without merging the manifest list
     grows with every snapshot, and so does the cost of enriching each commit (stage-2 r3:
-    results/stage-2/r3/enricher_*). STAGE2_BENCH_MANIFEST_MERGE=false reproduces that case."""
+    results/stage-2/r3/enricher_*). STAGE2_BENCH_MANIFEST_MERGE=false reproduces that case.
+
+    The table history follows the scheduled expire of the scenarios (ADR-008, `_bench_expire_plan`):
+    NFR-1 is confirmed only up to ~2200 snapshots (stage-2 r4), and the scenarios keep their table
+    below that. STAGE2_BENCH_EXPIRE=false lets the history grow without bound (r3, r4)."""
     import pyarrow as pa
     from pyiceberg.schema import Schema
     from pyiceberg.types import LongType, NestedField
@@ -460,6 +481,10 @@ def test_overhead_bypass_vs_proxy() -> None:
         cat.commit_table = timed
     data = pa.table({"id": pa.array([1, 2, 3], pa.int64())})
     rng = random.Random(SEED)
+    plan = _bench_expire_plan() if BENCH_EXPIRE else None
+    n_snaps = {"proxy": 0, "bypass": 0}
+    snaps_at: dict[str, list[int]] = {"proxy": [], "bypass": []}
+    n_expires = 0
     over_before = (_metric("capl_proxy_overhead_seconds_sum"), _metric("capl_proxy_overhead_seconds_count"))
     for i in range(N_BENCH + 50):
         order = ["proxy", "bypass"]
@@ -467,6 +492,17 @@ def test_overhead_bypass_vs_proxy() -> None:
         for name in order:
             cats[name].commit_table.on = i >= 50          # 50 warm-up commits per path
             tables[name].append(data)
+            n_snaps[name] += 1
+            if i >= 50:
+                snaps_at[name].append(n_snaps[name])
+            if plan and n_snaps[name] >= plan["expire_at"]:
+                # scheduled expire of the scenarios (ADR-008); its commit is not measured
+                cats[name].commit_table.on = False
+                ids = sorted((s.timestamp_ms, s.snapshot_id) for s in tables[name].snapshots())
+                drop = [sid for _, sid in ids[:len(ids) - plan["retain"]]]
+                tables[name].maintenance.expire_snapshots().by_ids(drop).commit()
+                n_snaps[name] = len(tables[name].snapshots())
+                n_expires += 1
     over_after = (_metric("capl_proxy_overhead_seconds_sum"), _metric("capl_proxy_overhead_seconds_count"))
     p, b = lat["proxy"], lat["bypass"]
     rep = {
@@ -489,13 +525,14 @@ def test_overhead_bypass_vs_proxy() -> None:
     rep["overhead_p50_ci95"] = [_q(d50, .025), _q(d50, .975)]
     rep["overhead_p95_ci95"] = [_q(d95, .025), _q(d95, .975)]
     rep["nfr1"] = {"p50_le_5ms": rep["overhead_p50"] <= 5, "p95_le_15ms": rep["overhead_p95"] <= 15}
-    # trend with table state (S2-R1-02): the k-th measured commit is made on a table with
-    # k + 50 + 1 snapshots; windows of 100 commits, difference of medians, least-squares slope
+    # trend with table state (S2-R1-02): windows of 100 commits, the table size of a window is the
+    # median snapshot count of its commits (sawtooth with the scheduled expire), least squares
     win = 100
     windows = []
     for w0 in range(0, len(p) - win + 1, win):
         pw, bw = p[w0:w0 + win], b[w0:w0 + win]
-        windows.append({"snapshots_mid": w0 + win // 2 + 51, "proxy_p50": _q(pw, .5),
+        windows.append({"snapshots_mid": int(statistics.median(snaps_at["proxy"][w0:w0 + win])),
+                        "snapshots_max": max(snaps_at["proxy"][w0:w0 + win]), "proxy_p50": _q(pw, .5),
                         "bypass_p50": _q(bw, .5), "diff_p50": _q(pw, .5) - _q(bw, .5),
                         "paired_median_diff": statistics.median(x - y for x, y in zip(pw, bw, strict=True))})
     xs = [w["snapshots_mid"] for w in windows]
@@ -515,6 +552,8 @@ def test_overhead_bypass_vs_proxy() -> None:
     rep["last_window_diff_p50"] = windows[-1]["diff_p50"]
     rep["last_window_paired_median_diff"] = windows[-1]["paired_median_diff"]
     rep["bench_table_properties"] = BENCH_TABLE_PROPS
+    rep["bench_expire"] = {**(plan or {"enabled": False}), "n_expires": n_expires,
+                           "max_snapshots": max(snaps_at["proxy"] + snaps_at["bypass"])}
     tp = tables["proxy"].refresh()
     rep["manifest_list_entries_at_end"] = len(tp.current_snapshot().manifests(tp.io))
     _save("overhead.json", rep)
