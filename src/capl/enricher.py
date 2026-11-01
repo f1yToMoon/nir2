@@ -108,6 +108,12 @@ class S3FootprintReader:
 Reader = Callable[[str, int, bool], Footprint]
 
 
+def empty_footprint(manifest_list: str, snapshot_id: int, keep_deleted_paths: bool) -> Footprint:
+    """Reader that reads nothing (debug: separates the cost of reading manifests from the
+    cost of the executor round trip and bookkeeping in overhead experiments)."""
+    return Footprint(snapshot_id, {}, 0)
+
+
 def _records(opener: Opener, path: str) -> Iterable[dict[str, Any]]:
     with opener(path) as f:
         yield from fastavro.reader(f)  # type: ignore[misc]
@@ -185,6 +191,7 @@ class Enricher:
         self._deleted_paths_for = set(read_deleted_paths_for)
         self.published = 0
         self.failed = 0
+        self.read_manifests = True    # debug: False = empty_footprint in the same executor
 
     def submit(self, job: EnrichJob) -> bool:
         try:
@@ -228,8 +235,9 @@ class Enricher:
 
     async def _process(self, job: EnrichJob) -> None:
         keep_paths = job.op_class in self._deleted_paths_for
+        reader = self._reader if self.read_manifests else empty_footprint
         fp = await asyncio.get_running_loop().run_in_executor(
-            self._executor, self._reader, job.manifest_list, job.snapshot_id, keep_paths)
+            self._executor, reader, job.manifest_list, job.snapshot_id, keep_paths)
         now_ms = time.time() * 1000
         totals = fp.totals()
         event = {

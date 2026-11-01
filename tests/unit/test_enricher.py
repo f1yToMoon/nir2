@@ -12,7 +12,7 @@ from typing import IO, Any
 import fastavro
 
 from capl.config import StateConfig
-from capl.enricher import Enricher, EnrichJob, partition_to_str, read_footprint
+from capl.enricher import Enricher, EnrichJob, Footprint, partition_to_str, read_footprint
 from capl.state import StateStore
 from capl.telemetry import NullTelemetry
 
@@ -114,6 +114,29 @@ async def test_enricher_publishes_event(tmp_path: Path) -> None:
     assert parts["dt=2026-11-01/key_bucket=3"]["deleted_file_paths"] == ["s3://w/old1"]
     assert state.tables["bench.events"].commits[-1].op_class == "cow_dml"
 
+
+
+async def test_debug_no_read_skips_manifests(tmp_path: Path) -> None:
+    """read_manifests=False (overhead experiments): the job goes through the executor, but no
+    manifest is opened; an empty event is published."""
+    calls: list[str] = []
+    tel = NullTelemetry()
+    tel.keep = True
+
+    def reader(ml: str, sid: int, keep: bool) -> Footprint:
+        calls.append(ml)
+        return read_footprint(_open, ml, sid, keep)
+
+    enr = Enricher(reader, tel, None, workers=1)
+    enr.read_manifests = False
+    await enr.start()
+    enr.submit(EnrichJob(None, "bench.events", SID, OLD, 5, _fixture(tmp_path), "append",
+                         "append", "body", None, None, None, 1_000_000.0))
+    await enr.join()
+    await enr.stop()
+    assert calls == [] and enr.published == 1
+    [ev] = tel.rows["commit_events"]
+    assert ev["snapshot_id"] == SID and ev["n_partitions"] == 0
 
 def test_process_pool_reader_matches_thread(tmp_path: Path) -> None:
     """S3FootprintReader is picklable and gives the same footprint in a spawned worker process

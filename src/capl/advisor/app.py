@@ -100,10 +100,13 @@ def build_advisor_app(svc: ProxyService, advisor: DebugHoldAdvisor, flush: Any =
         return {"sample_rate": rate}
 
     @app.put("/_capl/debug/enricher")
-    async def enricher_switch(on: bool) -> dict[str, Any]:
-        """Debug: enqueue enrichment jobs (on) or skip them (off) — overhead experiments."""
+    async def enricher_switch(on: bool, read: bool = True) -> dict[str, Any]:
+        """Debug: enqueue enrichment jobs (on) or skip them (off); read=false keeps the jobs
+        and the executor round trip but reads no manifests — overhead experiments."""
         svc.enrich_enabled = on
-        return {"enrich_enabled": on}
+        if svc.enricher is not None:
+            svc.enricher.read_manifests = read
+        return {"enrich_enabled": on, "read_manifests": read}
 
     @app.put("/_capl/debug/keep-bodies")
     async def keep_bodies(on: bool) -> dict[str, Any]:
