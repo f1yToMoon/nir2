@@ -149,8 +149,8 @@ def _part_str(p: dict[str, Any]) -> str:
     return "/".join(out)
 
 
-def _pyiceberg_footprint(tbl: Any, sid: int) -> dict[str, tuple[int, int, int]]:
-    """partition → (added data, deleted data, added delete files) of snapshot `sid`."""
+def _pyiceberg_footprint(tbl: Any, sid: int) -> dict[str, tuple[int, int, int, int]]:
+    """partition → (added data, deleted data, added delete, removed delete files) of `sid`."""
     ents = tbl.inspect.entries(snapshot_id=sid).to_pylist()
     acc: dict[str, list[int]] = {}
     for e in ents:
@@ -158,12 +158,12 @@ def _pyiceberg_footprint(tbl: Any, sid: int) -> dict[str, tuple[int, int, int]]:
             continue
         df = e["data_file"]
         key = _part_str(df["partition"])
-        a = acc.setdefault(key, [0, 0, 0])
+        a = acc.setdefault(key, [0, 0, 0, 0])
         if df["content"] == 0:
             a[0 if e["status"] == 1 else 1] += 1
-        elif e["status"] == 1:
-            a[2] += 1
-    return {k: (v[0], v[1], v[2]) for k, v in acc.items()}
+        else:
+            a[2 if e["status"] == 1 else 3] += 1
+    return {k: (v[0], v[1], v[2], v[3]) for k, v in acc.items()}
 
 
 def test_journal_and_footprints(spark: Any) -> None:
@@ -223,17 +223,17 @@ def test_journal_and_footprints(spark: Any) -> None:
     n_parts = 0
     for sid in sample:
         exp = _pyiceberg_footprint(tbl, sid)
-        got = {r[0]: (r[1], r[2], r[3]) for r in _pq(
-            "SELECT partition, added_data_files, deleted_data_files, added_delete_files "
-            "FROM stand.commit_partitions WHERE table_name = %s AND snapshot_id = %s",
+        got = {r[0]: (r[1], r[2], r[3], r[4]) for r in _pq(
+            "SELECT partition, added_data_files, deleted_data_files, added_delete_files, "
+            "removed_delete_files FROM stand.commit_partitions WHERE table_name = %s AND snapshot_id = %s",
             f"{NS}.{table}", sid)}
         n_parts += len(exp)
         if exp != got:
             mismatches.append({"snapshot_id": sid, "pyiceberg": exp, "capl": got})
     compared = Counter()
     for sid in sample:
-        for a, d, df in _pyiceberg_footprint(tbl, sid).values():
-            compared.update(added_data=a, deleted_data=d, added_delete=df)
+        for a, d, df, rd in _pyiceberg_footprint(tbl, sid).values():
+            compared.update(added_data=a, deleted_data=d, added_delete=df, removed_delete=rd)
 
     # MoR v2: per partition against PyIceberg; v3 (DV): PyIceberg 0.12.0 inspect.entries fails on
     # DV tables (pyiceberg/table/inspect.py:271), so totals are compared with the snapshot summary
@@ -241,12 +241,14 @@ def test_journal_and_footprints(spark: Any) -> None:
     for snap in mor_v2.snapshots():
         sid = snap.snapshot_id
         exp = _pyiceberg_footprint(mor_v2, sid)
-        got = {r[0]: (r[1], r[2], r[3]) for r in _pq(
-            "SELECT partition, added_data_files, deleted_data_files, added_delete_files "
-            "FROM stand.commit_partitions WHERE table_name = %s AND snapshot_id = %s", mor[2], sid)}
+        got = {r[0]: (r[1], r[2], r[3], r[4]) for r in _pq(
+            "SELECT partition, added_data_files, deleted_data_files, added_delete_files, "
+            "removed_delete_files FROM stand.commit_partitions WHERE table_name = %s AND snapshot_id = %s",
+            mor[2], sid)}
         n_parts += len(exp)
-        for a, d, df in exp.values():
-            compared.update(mor_v2_added_data=a, mor_v2_deleted_data=d, mor_v2_added_delete=df)
+        for a, d, df, rd in exp.values():
+            compared.update(mor_v2_added_data=a, mor_v2_deleted_data=d, mor_v2_added_delete=df,
+                            mor_v2_removed_delete=rd)
         if exp != got:
             mismatches.append({"table": mor[2], "snapshot_id": sid, "pyiceberg": exp, "capl": got})
     mor_v3 = direct.load_table(mor[3])
@@ -254,12 +256,12 @@ def test_journal_and_footprints(spark: Any) -> None:
     for snap in mor_v3.snapshots():
         summ = snap.summary.additional_properties if snap.summary else {}
         want = (int(summ.get("added-data-files", 0)), int(summ.get("deleted-data-files", 0)),
-                int(summ.get("added-delete-files", 0)))
-        row = _pq("SELECT added_data_files, deleted_data_files, added_delete_files "
+                int(summ.get("added-delete-files", 0)), int(summ.get("removed-delete-files", 0)))
+        row = _pq("SELECT added_data_files, deleted_data_files, added_delete_files, removed_delete_files "
                   "FROM stand.commit_events WHERE table_name = %s AND snapshot_id = %s",
                   mor[3], snap.snapshot_id)
         got3 = tuple(row[0]) if row else None
-        compared.update(mor_v3_added_delete=want[2], mor_v3_snapshots=1)
+        compared.update(mor_v3_added_delete=want[2], mor_v3_removed_delete=want[3], mor_v3_snapshots=1)
         if got3 != want:
             v3_mismatches.append({"snapshot_id": snap.snapshot_id, "summary": want, "capl": got3})
     ok_after = _metric("capl_body_integrity_total", {"result": "ok"})
@@ -286,7 +288,7 @@ def test_journal_and_footprints(spark: Any) -> None:
     assert not v3_mismatches, v3_mismatches[:3]
     # each compared quantity is non-zero somewhere (a 0 = 0 comparison proves nothing, S2-R1-04)
     for k in ("added_data", "deleted_data", "mor_v2_added_delete", "mor_v2_deleted_data",
-              "mor_v3_added_delete"):
+              "mor_v2_removed_delete", "mor_v3_added_delete", "mor_v3_removed_delete"):
         assert compared[k] > 0, (k, compared)
     assert report["integrity_ok"] >= len(attempts) and report["integrity_mismatch"] == 0
 

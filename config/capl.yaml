@@ -33,7 +33,7 @@ hold:
 enricher:
   workers: 4
   queue_max: 10000
-  read_deleted_paths_for: [cow_dml, mor_dml, rewrite_data, overwrite]
+  read_deleted_paths_for: [cow_dml, mor_dml, mor_delete, mor_update, mor_merge, rewrite_data, overwrite]
   s3:
     endpoint: ${CAPL_S3_ENDPOINT}
     path_style: true

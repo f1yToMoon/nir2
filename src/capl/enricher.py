@@ -69,6 +69,7 @@ class Footprint:
             "added_data_files": sum(p.added_data_files for p in ps),
             "deleted_data_files": sum(p.deleted_data_files for p in ps),
             "added_delete_files": sum(p.added_delete_files for p in ps),
+            "removed_delete_files": sum(p.removed_delete_files for p in ps),
             "added_bytes": sum(p.added_bytes for p in ps),
         }
 
@@ -250,7 +251,8 @@ class Enricher:
             "partitions": [
                 {"partition": p.partition, "added_data_files": p.added_data_files,
                  "deleted_data_files": p.deleted_data_files,
-                 "added_delete_files": p.added_delete_files, "added_bytes": p.added_bytes,
+                 "added_delete_files": p.added_delete_files,
+                 "removed_delete_files": p.removed_delete_files, "added_bytes": p.added_bytes,
                  **({"deleted_file_paths": p.deleted_file_paths} if keep_paths else {})}
                 for p in fp.partitions.values()
             ],
@@ -268,7 +270,8 @@ class Enricher:
             self._telemetry.write("commit_partitions", {
                 "table_name": job.table, "snapshot_id": job.snapshot_id, "partition": p.partition,
                 "added_data_files": p.added_data_files, "deleted_data_files": p.deleted_data_files,
-                "added_delete_files": p.added_delete_files, "added_bytes": p.added_bytes,
+                "added_delete_files": p.added_delete_files,
+                "removed_delete_files": p.removed_delete_files, "added_bytes": p.added_bytes,
                 "deleted_file_paths": p.deleted_file_paths if keep_paths else None,
             })
         if self._state is not None:

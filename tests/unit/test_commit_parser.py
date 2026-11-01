@@ -15,6 +15,7 @@ import yaml
 from capl.config import ProxyConfig
 from capl.proxy.commit_parser import (
     AMBIGUOUS,
+    EQUIVALENT,
     CommitParseError,
     CommitPath,
     PathMatcher,
@@ -36,12 +37,28 @@ def _load(p: Path) -> dict[str, Any]:
     return json.loads(p.read_text())  # type: ignore[no-any-return]
 
 
+def _outcomes(pending: str) -> dict[tuple[str, str], str]:
+    """Outcome of `pending` for every (committed class, condition) of the matrix rules."""
+    table = {}
+    for r in MATRIX["rules"]:
+        pend = r["pending"]
+        if pending not in (pend if isinstance(pend, list) else [pend]):
+            continue
+        committed = r["committed"]
+        committed = list(OP_CLASSES) if committed == "*" else [committed] if isinstance(committed, str) \
+            else committed
+        when = json.dumps(r.get("when", {}), sort_keys=True)
+        for c in committed:
+            table[(c, when)] = r["outcome"]
+    return table
+
+
 def test_fixture_set_is_complete() -> None:
     docs = [_load(p) for p in FIXTURES]
     assert len(docs) >= 20
     classes = {d["expected"]["op_class"] for d in docs}
-    assert classes >= {"append", "overwrite", "cow_dml", "mor_dml", "rewrite_data", "rewrite_deletes",
-                       "stream_upsert", "expire", "metadata"}
+    assert classes >= {"append", "overwrite", "cow_dml", "mor_delete", "mor_update", "rewrite_data",
+                       "rewrite_deletes", "rewrite_manifests", "stream_upsert", "expire", "metadata"}
     ops = {d["expected"]["iceberg_op"] for d in docs}
     assert ops >= {"append", "overwrite", "replace", "delete", None}
     assert any(d["source"] == "flink" for d in docs)
@@ -50,16 +67,30 @@ def test_fixture_set_is_complete() -> None:
     assert {d["format_version"] for d in docs} >= {2, 3}
     # every ambiguity case has at least one real body, incl. MERGE with inserts only (S2-R1-03)
     assert {d["expected"]["ambiguity"] for d in docs} >= set(AMBIGUOUS)
-    assert {"cow_dml", "mor_dml"} <= {d["expected"]["true_class"] for d in docs
-                                       if d["expected"]["iceberg_op"] == "append"}
+    assert {"cow_dml", "mor_merge"} <= {d["expected"]["true_class"] for d in docs
+                                         if d["expected"]["iceberg_op"] == "append"}
+    # MoR MERGE deleting only has the body of MoR DELETE (S2-R2-03)
+    assert "mor_merge" in {d["expected"]["true_class"] for d in docs
+                           if d["expected"]["ambiguity"] == "delete_files_added_only"}
     assert all(d["git_sha"] not in ("unknown", "") for d in docs)
 
 
 def test_ambiguity_candidates_are_matrix_classes() -> None:
     for amb, cands in AMBIGUOUS.items():
         assert set(cands) <= set(OP_CLASSES), (amb, set(cands) - set(OP_CLASSES))
-        # an ambiguity is only declared where validation really differs between candidates
-        assert len({str(OP_CLASSES[c]["validates"]) for c in cands}) > 1, amb
+        # an ambiguity is declared where candidates differ in the outcome of at least one pair of
+        # the matrix (a boolean `validates` misses mor_delete vs mor_merge, S2-R2-03) or in validation
+        tables = {json.dumps(sorted(_outcomes(c).items())) for c in cands}
+        validates = {str(OP_CLASSES[c]["validates"]) for c in cands}
+        assert len(tables) > 1 or len(validates) > 1, amb
+
+
+def test_equivalent_classes_have_identical_outcomes() -> None:
+    for body_class, cands in EQUIVALENT.items():
+        assert body_class in cands and set(cands) <= set(OP_CLASSES)
+        tables = {json.dumps(sorted(_outcomes(c).items())) for c in cands}
+        assert len(tables) == 1 and _outcomes(body_class), (body_class, cands)
+        assert len({str(OP_CLASSES[c]["validates"]) for c in cands}) == 1
 
 
 @pytest.mark.parametrize("path", FIXTURES, ids=lambda p: p.stem)
@@ -83,7 +114,7 @@ def test_real_commit_body(path: Path) -> None:
         # the class of the executed operation must be reachable from the body: either exact, or
         # one of the declared candidates (then only the slot → op binding decides)
         assert exp["true_class"] in c.candidates, (exp["true_class"], c.candidates)
-        if exp["true_class"] != c.op_class:
+        if exp["true_class"] not in EQUIVALENT.get(c.op_class, (c.op_class,)):
             assert c.ambiguity is not None
         assert c.iceberg_op == exp["iceberg_op"]
         assert c.has_deletes == exp["has_deletes"]
@@ -112,8 +143,10 @@ def test_classify_synthetic_edges() -> None:
     assert classify("append", {}, ("add-snapshot",)) == "append"
     assert classify("overwrite", {"replace-partitions": "true"}, ()) == "overwrite"
     assert classify("overwrite", {"added-equality-deletes": "3"}, ()) == "stream_upsert"
-    assert classify("overwrite", {"added-dvs": "1", "added-position-deletes": "2"}, ()) == "mor_dml"
-    assert classify("delete", {"added-position-deletes": "1"}, ()) == "mor_dml"
+    assert classify("overwrite", {"added-dvs": "1", "added-position-deletes": "2"}, ()) == "mor_update"
+    assert classify("delete", {"added-position-deletes": "1"}, ()) == "mor_delete"
+    rewrite_manifests = {"manifests-created": "1", "manifests-replaced": "3"}
+    assert classify("replace", rewrite_manifests, ()) == "rewrite_manifests"
     assert classify("delete", {"deleted-data-files": "2"}, ()) == "cow_dml"
     assert classify("replace", {"added-data-files": "1", "deleted-data-files": "4"}, ()) == "rewrite_data"
     assert classify("replace", {"removed-delete-files": "3", "added-delete-files": "1"}, ()) == \

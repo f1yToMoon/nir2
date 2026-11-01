@@ -31,12 +31,12 @@ COLUMNS: dict[str, tuple[str, ...]] = {
         "run_id", "table_name", "snapshot_id", "parent_snapshot_id", "sequence_number",
         "committed_at", "iceberg_op", "op_class", "op_class_source", "op_id", "writer_class",
         "writer_id",
-        "added_data_files", "deleted_data_files", "added_delete_files", "added_bytes",
-        "n_partitions", "enriched_at",
+        "added_data_files", "deleted_data_files", "added_delete_files", "removed_delete_files",
+        "added_bytes", "n_partitions", "enriched_at",
     ),
     "commit_partitions": (
         "table_name", "snapshot_id", "partition", "added_data_files", "deleted_data_files",
-        "added_delete_files", "added_bytes", "deleted_file_paths",
+        "added_delete_files", "removed_delete_files", "added_bytes", "deleted_file_paths",
     ),
     "client_reports": ("run_id", "table_name", "received_at", "report_type", "report"),
 }
@@ -47,6 +47,9 @@ MIGRATIONS = (
     "ALTER TABLE {s}.commit_attempts ADD COLUMN IF NOT EXISTS op_class_ambiguity text",
     "ALTER TABLE {s}.commit_attempts ADD COLUMN IF NOT EXISTS op_class_source text",
     "ALTER TABLE {s}.commit_events ADD COLUMN IF NOT EXISTS op_class_source text",
+    "ALTER TABLE {s}.commit_events ADD COLUMN IF NOT EXISTS removed_delete_files integer",
+    "ALTER TABLE {s}.commit_partitions"
+    " ADD COLUMN IF NOT EXISTS removed_delete_files integer NOT NULL DEFAULT 0",
 )
 # idempotent re-insert of an enriched snapshot
 ON_CONFLICT = {

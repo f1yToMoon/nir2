@@ -59,6 +59,8 @@ def _fixture(tmp: Path) -> str:
     ])
     m_del = _write(tmp / "m-del.avro", ENTRY, [
         {"status": 1, "snapshot_id": None, "data_file": _df("s3://w/pd1", D1, 3, content=1, size=77)},
+        # delete file removed by this snapshot (rewrite of position deletes / DV, S2-R2-06)
+        {"status": 2, "snapshot_id": SID, "data_file": _df("s3://w/pd-old", D2, 0, content=1)},
     ])
     m_old = _write(tmp / "m-old.avro", ENTRY, [
         {"status": 1, "snapshot_id": None, "data_file": _df("s3://w/x", D2, 5)},
@@ -88,10 +90,10 @@ def test_read_footprint(tmp_path: Path) -> None:
     assert p1.deleted_file_paths == ["s3://w/old1"]
     assert p1.added_bytes == 1000 + 77
     p2 = fp.partitions["dt=2026-11-02/key_bucket=0"]
-    assert (p2.added_data_files, p2.added_bytes) == (1, 500)
+    assert (p2.added_data_files, p2.added_bytes, p2.removed_delete_files) == (1, 500, 1)
     assert set(fp.partitions) == {"dt=2026-11-01/key_bucket=3", "dt=2026-11-02/key_bucket=0"}
     assert fp.totals() == {"added_data_files": 2, "deleted_data_files": 1, "added_delete_files": 1,
-                           "added_bytes": 1577}
+                           "removed_delete_files": 1, "added_bytes": 1577}
 
 
 async def test_enricher_publishes_event(tmp_path: Path) -> None:

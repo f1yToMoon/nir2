@@ -45,6 +45,10 @@ op_classes:
   insert_overwrite: {iceberg_api: OverwriteFiles-by-filter, validates: by_write_option_isolation_level, controlled: true,
                      note: "SQL INSERT OVERWRITE ... PARTITION (static), SparkWrite.java:374-404"}
   insert_overwrite_opts: {iceberg_api: OverwriteFiles-by-filter-with-options, validates: true, controlled: true}
+  # Этап 2, ревью S2-R2-03: operation=replace без изменения файлов; проверяет только, что
+  # заменяемые манифесты ещё в таблице (BaseRewriteManifests.java:174, 286-298), не данные.
+  # В сценариях не используется, правил нет.
+  rewrite_manifests: {iceberg_api: RewriteManifests, validates: manifests_only, controlled: true}
 
 rules:
   # Итерация 3 (ревью stage-1-r1). Исходная гипотеза — версии на коммитах c6e9a4e (до опытов)
@@ -177,6 +181,8 @@ rules:
      note: "исследовательский (гипотезы нет; c6e9a4e: «проверить»): история валидации доходит до снапшота, чей parent = базовый (MSP:990-994) → проверка проходит"}
   - {pending: mor_update, committed: append_expire, outcome: base_expired, overlap: none,
      note: "исследовательский: RowDelta требует, чтобы базовый снапшот был предком текущего (BRD:134-139); удалённый снапшот не найден → IllegalArgumentException без повтора: работа потеряна, как при K2, но вне классов K1/K2"}
+  - {pending: mor_merge, committed: append_expire, outcome: base_expired, overlap: none,
+     note: "этап 2 (S2-R2-03): тот же путь RowDelta (BRD:134-139), что у mor_update; опытом не проверено"}
 
 verified:
   - {"pending": "append", "committed": "append", "isolation": "serializable", "format_version": 2, "client": "1.12.0", "catalog_server": "b0df3ca", "valid_trials": 20, "trials": 20, "observed": {"K1": 20}, "control": {"K1": 5}, "expected": "K1", "matches": true, "date": "2026-10-24"}

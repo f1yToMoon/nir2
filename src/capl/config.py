@@ -79,7 +79,8 @@ class EnricherConfig(_Section):
     executor: Literal["process", "thread"] = "process"
     queue_max: int = 10000
     read_deleted_paths_for: list[str] = Field(
-        default_factory=lambda: ["cow_dml", "mor_dml", "rewrite_data", "overwrite"])
+        default_factory=lambda: ["cow_dml", "mor_dml", "mor_delete", "mor_update", "mor_merge",
+                                 "rewrite_data", "overwrite"])
     s3: dict[str, Any] = Field(default_factory=dict)
 
 

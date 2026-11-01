@@ -179,27 +179,38 @@ def capture_spark() -> None:
 
     # MERGE that only inserts (no target row matched): the commit class reports "append"
     # (BaseOverwriteFiles.java:54-56, BaseRowDelta.java:51-53) although the operation validates
-    for mode, true in (("copy-on-write", "cow_dml"), ("merge-on-read", "mor_dml")):
-        t = f"merge_insert_only_{true}"
+    for mode, label, true in (("copy-on-write", "cow_dml", "cow_dml"),
+                              ("merge-on-read", "mor_dml", "mor_merge")):
+        t = f"merge_insert_only_{label}"
         full = make_table(spark, t, 2, mode=mode)
-        run_op(f"spark_{true}_merge_insert_only", t,
+        run_op(f"spark_{label}_merge_insert_only", t,
                lambda f=full: sql(f"MERGE INTO {f} t USING (SELECT 999999L AS id, 0 AS bkt) s "
                                   "ON t.id = s.id AND t.bkt = s.bkt WHEN MATCHED THEN UPDATE SET val = 'm' "
                                   "WHEN NOT MATCHED THEN INSERT (id, bkt, val) VALUES (s.id, s.bkt, 'new')"),
                exp("append", "append", true=true, amb="data_files_added_only"), "spark",
                f"MERGE with inserts only ({mode})", 2)
 
+    # MoR: the body tells DELETE (delete files only) from UPDATE/MERGE (data + delete files), but a
+    # MERGE that only deletes has the body of a DELETE (BaseRowDelta.java:55-57) and validates more
+    # (SparkPositionDeltaWrite.java:277-280); UPDATE and MERGE have identical matrix outcomes
+    mor_cases = (
+        ("DELETE FROM {f} WHERE id = 3", "delete",
+         exp("mor_delete", "delete", True, amb="delete_files_added_only")),
+        ("UPDATE {f} SET val = 'u' WHERE id = 4", "update", exp("mor_update", "overwrite", True)),
+        ("MERGE INTO {f} t USING (SELECT 5L AS id, 1 AS bkt) s ON t.id = s.id "
+         "AND t.bkt = s.bkt WHEN MATCHED THEN UPDATE SET val = 'm'", "merge",
+         exp("mor_update", "overwrite", True, true="mor_merge")),
+        ("MERGE INTO {f} t USING (SELECT 6L AS id, 0 AS bkt) s ON t.id = s.id "
+         "AND t.bkt = s.bkt WHEN MATCHED THEN DELETE", "merge_delete_only",
+         exp("mor_delete", "delete", True, true="mor_merge", amb="delete_files_added_only")),
+    )
     for fmt in (2, 3):
-        for stmt, label, op in (("DELETE FROM {f} WHERE id = 3", "delete", "delete"),
-                                ("UPDATE {f} SET val = 'u' WHERE id = 4", "update", "overwrite"),
-                                ("MERGE INTO {f} t USING (SELECT 5L AS id, 1 AS bkt) s ON t.id = s.id "
-                                 "AND t.bkt = s.bkt WHEN MATCHED THEN UPDATE SET val = 'm'",
-                                 "merge", "overwrite")):
+        for stmt, label, expected in mor_cases:
             t = f"mor_{label}_v{fmt}"
             full = make_table(spark, t, fmt, mode="merge-on-read")
             run_op(f"spark_mor_{label}_v{fmt}", t, lambda f=full, st=stmt: sql(st.format(f=f)),
-                   exp("mor_dml", op, True), "spark",
-                   f"MoR {label.upper()} ({'DV' if fmt == 3 else 'position deletes'})", fmt)
+                   expected, "spark",
+                   f"MoR {label.upper().replace('_', ' ')} ({'DV' if fmt == 3 else 'position deletes'})", fmt)
 
     t = "rewrite_data"
     full = make_table(spark, t, 2, files=6)
@@ -216,6 +227,12 @@ def capture_spark() -> None:
            lambda f=full: sql(f"CALL {CAT}.system.rewrite_position_delete_files(table => '{NS}.{t}', "
                               "options => map('rewrite-all', 'true'))"),
            exp("rewrite_deletes", "replace", True), "spark", "CALL rewrite_position_delete_files", 2)
+
+    t = "rewrite_manifests"
+    full = make_table(spark, t, 2, files=3)
+    run_op("spark_rewrite_manifests", t,
+           lambda f=full: sql(f"CALL {CAT}.system.rewrite_manifests(table => '{NS}.{t}')"),
+           exp("rewrite_manifests", "replace"), "spark", "CALL rewrite_manifests", 2)
 
     t = "expire"
     full = make_table(spark, t, 2)

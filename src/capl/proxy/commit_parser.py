@@ -18,17 +18,23 @@ from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 NAMESPACE_SEP = "\x1f"   # REST spec: multi-level namespace parts joined by %1F
 
-OpClass = Literal["append", "stream_upsert", "overwrite", "cow_dml", "mor_dml", "rewrite_data",
-                  "rewrite_deletes", "expire", "metadata", "unknown"]
+OpClass = Literal["append", "stream_upsert", "overwrite", "cow_dml", "mor_delete", "mor_update",
+                  "rewrite_data", "rewrite_deletes", "rewrite_manifests", "expire", "metadata", "unknown"]
 
 # Body classes that do not determine whether (and how) the commit validates data: the operation
 # of the commit class depends only on what files were added/removed (tz/04 §1.2, ADR-007 п. 5).
-# ambiguity → classes of conflict_matrix.yaml op_classes the commit may belong to.
+# ambiguity → classes of conflict_matrix.yaml op_classes the commit may belong to; candidates differ
+# in the outcome of at least one pair of the matrix rules (tests/unit/test_commit_parser.py).
 AMBIGUOUS: dict[str, tuple[str, ...]] = {
     # OverwriteFiles / RowDelta that only add data files report "append"
     # (BaseOverwriteFiles.java:54-56, BaseRowDelta.java:51-53): CoW/MoR MERGE with inserts only,
     # which validates at serializable (SparkWrite.java:460-476, SparkPositionDeltaWrite.java:282-284)
-    "data_files_added_only": ("append", "cow_dml", "mor_dml"),
+    "data_files_added_only": ("append", "cow_dml", "mor_merge"),
+    # RowDelta that only adds delete files reports "delete" (BaseRowDelta.java:55-57): MoR DELETE,
+    # or MoR MERGE with WHEN MATCHED THEN DELETE only, which also validates conflicting delete files
+    # (SparkPositionDeltaWrite.java:277-280): mor_delete x mor_delete is K1 in v2, mor_merge x
+    # mor_delete is K2 (conflict_matrix.yaml rules)
+    "delete_files_added_only": ("mor_delete", "mor_merge"),
     # ReplacePartitions validates only with the write option isolation-level (SparkWrite.java:353-356);
     # options are not in the body → K1 (overwrite) or K2 (overwrite_opts)
     "overwrite_options": ("overwrite", "overwrite_opts"),
@@ -37,6 +43,14 @@ AMBIGUOUS: dict[str, tuple[str, ...]] = {
     # data files removed, nothing added: StreamingDelete (metadata delete, no validation,
     # StreamingDelete.java:73-78, SparkTable.java:458-462) or CoW OverwriteFiles (validates)
     "data_files_removed_only": ("cow_dml", "metadata_delete"),
+}
+
+# Exact body classes that stand for several operation classes with identical outcomes in every
+# rule of the matrix (so the conflict model does not need to tell them apart): RowDelta with data
+# and delete files is MoR UPDATE or MERGE (both validateNoConflictingDataFiles and
+# validateNoConflictingDeleteFiles, SparkPositionDeltaWrite.java:277-284).
+EQUIVALENT: dict[str, tuple[str, ...]] = {
+    "mor_update": ("mor_update", "mor_merge"),
 }
 
 
@@ -105,7 +119,7 @@ class ParsedCommit:
     flink_job_id: str | None
     op_id: str | None                       # summary[capl.op-id]
     ambiguity: str | None                   # key of AMBIGUOUS, None if the body class is exact
-    candidates: tuple[str, ...]             # classes the commit may belong to
+    candidates: tuple[str, ...]             # classes the commit may belong to (AMBIGUOUS, EQUIVALENT)
     requirements: tuple[dict[str, Any], ...] = field(default=())
 
 
@@ -177,20 +191,24 @@ def classify(iceberg_op: str | None, summary: dict[str, str], actions: tuple[str
     if iceberg_op == "append":
         return "append"
     if iceberg_op == "replace":
-        if added_data == 0 and deleted_data == 0 and (added_del_files or removed_del_files):
-            return "rewrite_deletes"
+        if added_data == 0 and deleted_data == 0:
+            if added_del_files or removed_del_files:
+                return "rewrite_deletes"
+            # RewriteManifests: no file changes, validates manifests only
+            # (BaseRewriteManifests.java:87-89, 174, 286-298)
+            return "rewrite_manifests"
         return "rewrite_data"
     if iceberg_op == "overwrite":
         if added_eq > 0:
             return "stream_upsert"
         if added_pos > 0:
-            return "mor_dml"                  # MoR UPDATE/MERGE: data + delete files
+            return "mor_update"               # MoR UPDATE/MERGE: data + delete files (EQUIVALENT)
         if summary.get("replace-partitions") == "true":
             return "overwrite"                # ReplacePartitions (dynamic overwrite)
         return "cow_dml"                      # OverwriteFiles (CoW DML, overwrite by filter)
     if iceberg_op == "delete":
         if added_pos > 0:
-            return "mor_dml"                  # MoR DELETE: delete files only
+            return "mor_delete"               # MoR DELETE, or MERGE deleting only (AMBIGUOUS)
         if added_eq > 0:
             return "stream_upsert"
         return "cow_dml"                      # metadata delete / CoW removing whole files
@@ -206,6 +224,8 @@ def ambiguity(op_class: str, iceberg_op: str | None, summary: dict[str, str]) ->
         return "overwrite_options"
     if op_class == "cow_dml":
         return "data_files_removed_only" if iceberg_op == "delete" else "overwrite_by_filter"
+    if op_class == "mor_delete":
+        return "delete_files_added_only"
     return None
 
 
@@ -239,7 +259,7 @@ def _parse_table_change(req: CommitTableRequest, table: str) -> ParsedCommit:
         flink_job_id=flink_job,
         op_id=summary.get("capl.op-id"),
         ambiguity=amb,
-        candidates=AMBIGUOUS[amb] if amb else (op_class,),
+        candidates=AMBIGUOUS[amb] if amb else EQUIVALENT.get(op_class, (op_class,)),
         requirements=tuple(r.model_dump(by_alias=True, exclude_none=True) for r in req.requirements),
     )
 

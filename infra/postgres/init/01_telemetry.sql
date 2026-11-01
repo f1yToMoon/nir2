@@ -139,6 +139,7 @@ BEGIN
         added_data_files    integer,
         deleted_data_files  integer,
         added_delete_files  integer,
+        removed_delete_files integer,   -- delete-файлы, удалённые снапшотом (компакция delete-файлов, DV)
         added_bytes         bigint,
         n_partitions        integer,
         enriched_at         timestamptz,
@@ -153,6 +154,7 @@ BEGIN
         added_data_files    integer NOT NULL DEFAULT 0,
         deleted_data_files  integer NOT NULL DEFAULT 0,
         added_delete_files  integer NOT NULL DEFAULT 0,
+        removed_delete_files integer NOT NULL DEFAULT 0,
         added_bytes         bigint NOT NULL DEFAULT 0,
         deleted_file_paths  text[],     -- только для DML/rewrite (нужны для q)
         PRIMARY KEY (table_name, snapshot_id, partition)
