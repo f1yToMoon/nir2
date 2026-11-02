@@ -1,0 +1,54 @@
+{
+ "mor_tables": {
+  "2": "stage2.mor_v2_1793635184",
+  "3": "stage2.mor_v3_1793635190"
+ },
+ "compared_nonzero": {
+  "added_data": 432,
+  "deleted_data": 2055,
+  "added_delete": 0,
+  "removed_delete": 0,
+  "mor_v2_added_data": 304,
+  "mor_v2_deleted_data": 292,
+  "mor_v2_added_delete": 18,
+  "mor_v2_removed_delete": 18,
+  "mor_v3_added_delete": 9,
+  "mor_v3_removed_delete": 9,
+  "mor_v3_snapshots": 16
+ },
+ "mor_v3_total_mismatches": [],
+ "table": "stage2.journal_1793635025",
+ "run": "stage2-1793635020",
+ "appends": 1000,
+ "other_ops": {
+  "cow_delete": 20,
+  "metadata_delete": 3,
+  "rewrite_data": 5
+ },
+ "append_phase_s": 149.4,
+ "snapshots": 1028,
+ "commit_attempts": 1028,
+ "attempts_status": {
+  "200": 1028
+ },
+ "attempts_ok_with_snapshot": 1028,
+ "missing_in_attempts": [],
+ "commit_events": 1028,
+ "missing_in_events": [],
+ "op_class_events": {
+  "append": 1000,
+  "cow_dml": 23,
+  "rewrite_data": 5
+ },
+ "footprint_sample_snapshots": 178,
+ "footprint_sample_non_append": 28,
+ "footprint_partitions_compared": 571,
+ "footprint_mismatches": [],
+ "n_footprint_mismatches": 0,
+ "flush": {
+  "enriched": 1061,
+  "enrich_failed": 0
+ },
+ "integrity_ok": 5375.0,
+ "integrity_mismatch": 0.0
+}
