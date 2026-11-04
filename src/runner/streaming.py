@@ -85,8 +85,11 @@ class KafkaFeed:
 
     def delete_topic(self) -> None:
         from confluent_kafka.admin import AdminClient
+        # delete_topics is asynchronous: wait for the futures, else the process may exit first
+        # (topics of the first stage-3 runs were left in Kafka)
         with contextlib.suppress(Exception):
-            AdminClient({"bootstrap.servers": self.env.kafka}).delete_topics([self.topic])
+            for f in AdminClient({"bootstrap.servers": self.env.kafka}).delete_topics([self.topic]).values():
+                f.result(timeout=30)
 
     def _rate(self) -> float:
         from runner.intents import drift_factor
