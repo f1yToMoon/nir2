@@ -28,7 +28,6 @@ Env: MATRIX_TRIALS_OVERLAP (20), MATRIX_TRIALS_CONTROL (5), MATRIX_FORMAT_VERSIO
 from __future__ import annotations
 
 import contextlib
-import itertools
 import json
 import os
 import re
@@ -45,6 +44,7 @@ import requests
 import yaml
 
 sys.path.insert(0, "/workspace/src")
+from runner.matrix_cases import Case, load_cases
 from runner.ops.effects import (
     OP_KIND,
     added_snapshot,
@@ -87,44 +87,12 @@ DML_ROWS     = 10         # DML predicate covers ids [base, base+DML_ROWS-1] —
 TRIAL_STRIDE = 10_000
 BKT_OFFSET   = 1_000_000
 EXPIRE_BKT   = 2          # append_expire appends here (outside both footprints)
+PARTITION_ONLY_OFFSET = 5_000   # separate-file rows of a partition-only case (S2-R4-06)
 
 _MOR_DELETE_OPS = {"mor_dml", "mor_delete", "rewrite_deletes"}
 _REWRITE_OPS    = {"rewrite_data", "rewrite_deletes"}
 _ROWLEVEL_OPS   = {"cow_dml", "mor_dml", "mor_delete", "mor_update", "mor_merge"}
-# '*' in a rule expands to one op of each commit kind
-STAR_COMMITTED  = ["append", "cow_dml", "mor_delete", "rewrite_data"]
-
-
-# ── test-case definition ─────────────────────────────────────────────────────
-
-@dataclass
-class Case:
-    pending:   str
-    committed: str
-    isolation: str          # "serializable" | "snapshot"
-    fmt_ver:   int
-    overlap:   str          # "none" | "partition" | "file" | "predicate"
-    expected:  str          # "K1" | "K2" | "success" | other observed class
-    variant:   str = ""     # "" | "nostartseq"
-    note:      str = ""
-    control_expected_k2: bool = False
-
-    @property
-    def case_id(self) -> str:
-        v = f"_{self.variant}" if self.variant else ""
-        return f"{self.pending}_x_{self.committed}_{self.isolation}_v{self.fmt_ver}{v}"
-
-    @property
-    def table_name(self) -> str:
-        v = f"_{self.variant}" if self.variant else ""
-        iso = "ser" if self.isolation == "serializable" else "snap"
-        return f"t_{self.pending}_{self.committed}_{iso}_v{self.fmt_ver}{v}"
-
-    @property
-    def cow_stmt(self) -> str:
-        """SQL statement used for cow_dml: the one the MoR op of the pair does not use."""
-        return "merge" if "mor_update" in (self.pending, self.committed) else "update"
-
+# ── test-case definition (runner.matrix_cases; dedup key includes overlap, S2-R4-06) ─
 
 def _format_versions() -> list[int]:
     fv_env = os.environ.get("MATRIX_FORMAT_VERSIONS", "")
@@ -140,40 +108,7 @@ FORMAT_VERSIONS = _format_versions()
 def _load_cases() -> list[Case]:
     with open(MATRIX_YAML) as fh:
         mx = yaml.safe_load(fh)
-    fmt_versions = FORMAT_VERSIONS
-    default_iso = mx["defaults"].get("isolation", "serializable")
-    cases: list[Case] = []
-    for rule in mx["rules"]:
-        when = rule.get("when", {})
-        committed_ = rule["committed"]
-        if committed_ == "*":
-            committed_list = STAR_COMMITTED
-        elif isinstance(committed_, list):
-            committed_list = committed_
-        else:
-            committed_list = [committed_]
-        variant = ""
-        if when.get("rewrite_use_starting_sequence_number") is False:
-            variant = "nostartseq"
-        rule_fv = when.get("format_version")
-        rule_fvs = rule_fv if isinstance(rule_fv, list) else [rule_fv] if rule_fv else fmt_versions
-        pendings = rule["pending"] if isinstance(rule["pending"], list) else [rule["pending"]]
-        for pending, committed, fv in itertools.product(pendings, committed_list, rule_fvs):
-            if fv not in fmt_versions:
-                continue
-            cases.append(Case(
-                pending=pending, committed=committed,
-                isolation=when.get("isolation", default_iso), fmt_ver=fv,
-                overlap=rule["overlap"], expected=rule["outcome"], variant=variant,
-                note=rule.get("note", ""),
-            ))
-    seen: set[str] = set()
-    unique: list[Case] = []
-    for c in cases:
-        if c.case_id not in seen and ONLY in c.case_id:
-            seen.add(c.case_id)
-            unique.append(c)
-    return unique
+    return load_cases(mx, FORMAT_VERSIONS, ONLY)
 
 
 CASES = _load_cases()
@@ -509,6 +444,21 @@ def _exec_op(spark: Any, jv: Jv, case: Case, op: str, cat: str, bkt: int, seq: i
             w = (w.option("isolation-level", "serializable")
                   .option("validate-from-snapshot-id", str(base_snapshot_id)))
         w.overwritePartitions()
+    elif op in ("mor_update", "mor_merge") and case.overlap_only and op == case.committed:
+        # partition-only case (S2-R4-06): the committed MoR op touches a separate data file
+        # of the partition (rows at `base`) and moves one row into the pending range, so its
+        # new data file falls under the pending conflictDetectionFilter without file overlap
+        target = _trial_base(seq, 0) + 3
+        if op == "mor_update":
+            spark.sql(f"UPDATE {full} SET id = {target}, val = 'moved-{seq}' "
+                      f"WHERE bkt = {bkt} AND id = {base}")
+        else:
+            spark.sql(f"""
+                MERGE INTO {full} t
+                USING (SELECT {base} AS id, {bkt} AS bkt) s
+                ON t.id = s.id AND t.bkt = {bkt} AND t.id = {base}
+                WHEN MATCHED THEN UPDATE SET id = {target}, val = 'moved-{seq}'
+            """)
     elif (op == "cow_dml" and case.cow_stmt == "update") or op == "mor_update":
         spark.sql(f"UPDATE {full} SET val = CONCAT('{op}-{seq}-', CAST(id AS STRING)) "
                   f"WHERE {pred}")
@@ -592,6 +542,11 @@ def _run_one_trial(spark: Any, jv: Jv, case: Case, seq: int, with_overlap: bool
     base_p = _insert_trial_data(spark, full_p, case, seq, pending_bkt)
     base_c = base_p if with_overlap else _insert_trial_data(spark, full_p, case, seq,
                                                             committed_bkt)
+    if case.overlap_only:
+        # separate file of the committed partition for the partition-only case (S2-R4-06)
+        base_c = _trial_base(seq, committed_bkt) + PARTITION_ONLY_OFFSET
+        spark.sql(f"INSERT INTO {full_p} SELECT CAST({base_c} + id AS INT), {committed_bkt}, "
+                  f"CONCAT('sep{seq}-', CAST(id AS STRING)) FROM RANGE({DML_ROWS})")
     tbl = jv.table(CAT_P, table)
     base_snap_id = jv.current_id(tbl)
     n_snap_before = len(jv.snapshot_ids(tbl))
@@ -702,6 +657,8 @@ def _run_one_trial(spark: Any, jv: Jv, case: Case, seq: int, with_overlap: bool
         reasons.append(f"committed: {out['committed_effect_err']}")
     if with_overlap and case.overlap != "none" and not out["overlap"][case.overlap]:
         reasons.append(f"no {case.overlap} overlap")
+    if with_overlap and case.overlap_only and out["overlap"]["file"]:
+        reasons.append(f"file overlap in a {case.overlap}-only case")
     if not with_overlap and any(out["overlap"].values()):
         reasons.append(f"control has overlap {out['overlap']}")
     out["invalid_reasons"] = reasons
