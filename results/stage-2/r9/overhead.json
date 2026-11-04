@@ -1,0 +1,829 @@
+{
+ "n_per_path": 3000,
+ "unit": "ms",
+ "proxy": {
+  "p50": 67.2073019995878,
+  "p95": 113.42115799925523,
+  "p99": 120.2140639998106,
+  "mean": 64.08749359133859
+ },
+ "bypass": {
+  "p50": 64.34905199967034,
+  "p95": 106.791019999946,
+  "p99": 113.01235300015833,
+  "mean": 60.45261443201313
+ },
+ "proxy_internal_overhead_mean_ms": 0.1904032651135493,
+ "overhead_p50": 2.8582499999174615,
+ "overhead_p95": 6.630137999309227,
+ "overhead_p50_ci95": [
+  2.3587299983773846,
+  3.33531199976278
+ ],
+ "overhead_p95_ci95": [
+  5.784483000752516,
+  7.486694998078747
+ ],
+ "trend": {
+  "statistic": "paired_median_diff",
+  "windows": [
+   {
+    "w0": 0,
+    "snapshots_mid": 102,
+    "snapshots_max": 152,
+    "metadata_bytes_max": 173637,
+    "proxy_p50": 13.747268999395601,
+    "bypass_p50": 12.175177999779407,
+    "diff_p50": 1.5720909996161936,
+    "paired_median_diff": 1.305378500092047,
+    "paired_median_ci95": [
+     1.1144264994982223,
+     1.5465194996977516
+    ]
+   },
+   {
+    "w0": 100,
+    "snapshots_mid": 202,
+    "snapshots_max": 252,
+    "metadata_bytes_max": 277382,
+    "proxy_p50": 17.916375999448064,
+    "bypass_p50": 16.540372999770625,
+    "diff_p50": 1.3760029996774392,
+    "paired_median_diff": 1.3401070000327309,
+    "paired_median_ci95": [
+     1.1153590007779712,
+     1.467564000904531
+    ]
+   },
+   {
+    "w0": 200,
+    "snapshots_mid": 302,
+    "snapshots_max": 352,
+    "metadata_bytes_max": 381149,
+    "proxy_p50": 22.157028999572503,
+    "bypass_p50": 20.823969000048237,
+    "diff_p50": 1.3330599995242665,
+    "paired_median_diff": 1.289969499794097,
+    "paired_median_ci95": [
+     1.1283865001132654,
+     1.4875289998599328
+    ]
+   },
+   {
+    "w0": 300,
+    "snapshots_mid": 402,
+    "snapshots_max": 452,
+    "metadata_bytes_max": 484997,
+    "proxy_p50": 26.48723600032099,
+    "bypass_p50": 25.189824000335648,
+    "diff_p50": 1.2974119999853428,
+    "paired_median_diff": 1.4602675000787713,
+    "paired_median_ci95": [
+     1.1930340006074402,
+     1.852846000019781
+    ]
+   },
+   {
+    "w0": 400,
+    "snapshots_mid": 502,
+    "snapshots_max": 552,
+    "metadata_bytes_max": 588821,
+    "proxy_p50": 30.766921000576986,
+    "bypass_p50": 29.02774500034866,
+    "diff_p50": 1.7391760002283263,
+    "paired_median_diff": 1.980873499178415,
+    "paired_median_ci95": [
+     1.4470759997493587,
+     2.2614365002482373
+    ]
+   },
+   {
+    "w0": 500,
+    "snapshots_mid": 602,
+    "snapshots_max": 652,
+    "metadata_bytes_max": 692669,
+    "proxy_p50": 35.028055000111635,
+    "bypass_p50": 33.375537999745575,
+    "diff_p50": 1.6525170003660605,
+    "paired_median_diff": 1.5860129997236072,
+    "paired_median_ci95": [
+     1.4011049997861846,
+     2.1630705000461603
+    ]
+   },
+   {
+    "w0": 600,
+    "snapshots_mid": 702,
+    "snapshots_max": 752,
+    "metadata_bytes_max": 796529,
+    "proxy_p50": 39.382981000017026,
+    "bypass_p50": 37.31618499932665,
+    "diff_p50": 2.066796000690374,
+    "paired_median_diff": 1.9088069993813406,
+    "paired_median_ci95": [
+     1.6641174997857888,
+     2.532711499497964
+    ]
+   },
+   {
+    "w0": 700,
+    "snapshots_mid": 802,
+    "snapshots_max": 852,
+    "metadata_bytes_max": 900389,
+    "proxy_p50": 43.86279899972578,
+    "bypass_p50": 41.1590450003132,
+    "diff_p50": 2.7037539994125837,
+    "paired_median_diff": 2.5709514998197847,
+    "paired_median_ci95": [
+     1.9892889999937324,
+     3.045259999908012
+    ]
+   },
+   {
+    "w0": 800,
+    "snapshots_mid": 902,
+    "snapshots_max": 952,
+    "metadata_bytes_max": 1004257,
+    "proxy_p50": 47.91746499904548,
+    "bypass_p50": 46.02501599947573,
+    "diff_p50": 1.8924489995697513,
+    "paired_median_diff": 2.667945499979396,
+    "paired_median_ci95": [
+     1.6401900002165348,
+     3.1226249993778765
+    ]
+   },
+   {
+    "w0": 900,
+    "snapshots_mid": 1002,
+    "snapshots_max": 1052,
+    "metadata_bytes_max": 1108220,
+    "proxy_p50": 52.47726800007513,
+    "bypass_p50": 49.87579599946912,
+    "diff_p50": 2.601472000606009,
+    "paired_median_diff": 3.6948994993508677,
+    "paired_median_ci95": [
+     2.328082997337333,
+     4.479433999222238
+    ]
+   },
+   {
+    "w0": 1000,
+    "snapshots_mid": 1102,
+    "snapshots_max": 1152,
+    "metadata_bytes_max": 1212260,
+    "proxy_p50": 57.338452999829315,
+    "bypass_p50": 54.58759800058033,
+    "diff_p50": 2.750854999248986,
+    "paired_median_diff": 2.7365979995011003,
+    "paired_median_ci95": [
+     0.641983499917842,
+     5.459076499391813
+    ]
+   },
+   {
+    "w0": 1100,
+    "snapshots_mid": 1202,
+    "snapshots_max": 1252,
+    "metadata_bytes_max": 1316308,
+    "proxy_p50": 60.948987998926896,
+    "bypass_p50": 58.42287099949317,
+    "diff_p50": 2.526116999433725,
+    "paired_median_diff": 1.7319184998996207,
+    "paired_median_ci95": [
+     0.6163604994071648,
+     2.9819614992447896
+    ]
+   },
+   {
+    "w0": 1200,
+    "snapshots_mid": 1302,
+    "snapshots_max": 1352,
+    "metadata_bytes_max": 1420344,
+    "proxy_p50": 68.81836400134489,
+    "bypass_p50": 65.26394699903904,
+    "diff_p50": 3.554417002305854,
+    "paired_median_diff": 4.671704999964277,
+    "paired_median_ci95": [
+     3.328081002109684,
+     6.2168790009309305
+    ]
+   },
+   {
+    "w0": 1300,
+    "snapshots_mid": 1402,
+    "snapshots_max": 1452,
+    "metadata_bytes_max": 1421385,
+    "proxy_p50": 69.94071799999801,
+    "bypass_p50": 67.52022299951932,
+    "diff_p50": 2.420495000478695,
+    "paired_median_diff": 2.5494854999124072,
+    "paired_median_ci95": [
+     0.9018380005727522,
+     5.172365999897011
+    ]
+   },
+   {
+    "w0": 1400,
+    "snapshots_mid": 1370,
+    "snapshots_max": 1420,
+    "metadata_bytes_max": 1492500,
+    "proxy_p50": 70.29657100065378,
+    "bypass_p50": 66.34763200054294,
+    "diff_p50": 3.9489390001108404,
+    "paired_median_diff": 5.623609500617022,
+    "paired_median_ci95": [
+     2.3819159987397143,
+     6.5782789988588775
+    ]
+   },
+   {
+    "w0": 1500,
+    "snapshots_mid": 1370,
+    "snapshots_max": 1452,
+    "metadata_bytes_max": 1493541,
+    "proxy_p50": 70.79586000145355,
+    "bypass_p50": 66.93063499915297,
+    "diff_p50": 3.8652250023005763,
+    "paired_median_diff": 4.820531499717617,
+    "paired_median_ci95": [
+     1.7175499997392762,
+     6.577482999091444
+    ]
+   },
+   {
+    "w0": 1600,
+    "snapshots_mid": 1402,
+    "snapshots_max": 1452,
+    "metadata_bytes_max": 1460672,
+    "proxy_p50": 70.95537400164176,
+    "bypass_p50": 67.56196199967235,
+    "diff_p50": 3.393412001969409,
+    "paired_median_diff": 2.6329819993407,
+    "paired_median_ci95": [
+     -0.20109199977014214,
+     6.239319000087562
+    ]
+   },
+   {
+    "w0": 1700,
+    "snapshots_mid": 1402,
+    "snapshots_max": 1452,
+    "metadata_bytes_max": 1427806,
+    "proxy_p50": 71.1187830002018,
+    "bypass_p50": 68.08531900060188,
+    "diff_p50": 3.033463999599917,
+    "paired_median_diff": 3.7025134997747955,
+    "paired_median_ci95": [
+     1.5166414996201638,
+     5.823175000841729
+    ]
+   },
+   {
+    "w0": 1800,
+    "snapshots_mid": 1374,
+    "snapshots_max": 1424,
+    "metadata_bytes_max": 1497979,
+    "proxy_p50": 70.35422400076641,
+    "bypass_p50": 66.35248099883029,
+    "diff_p50": 4.00174300193612,
+    "paired_median_diff": 4.097273999832396,
+    "paired_median_ci95": [
+     0.5984850013192045,
+     5.928371499066998
+    ]
+   },
+   {
+    "w0": 1900,
+    "snapshots_mid": 1370,
+    "snapshots_max": 1452,
+    "metadata_bytes_max": 1499021,
+    "proxy_p50": 70.13531800112105,
+    "bypass_p50": 66.60189799913496,
+    "diff_p50": 3.5334200019860873,
+    "paired_median_diff": 3.296020997368032,
+    "paired_median_ci95": [
+     -0.15163400166784413,
+     5.916917500144336
+    ]
+   },
+   {
+    "w0": 2000,
+    "snapshots_mid": 1402,
+    "snapshots_max": 1452,
+    "metadata_bytes_max": 1466062,
+    "proxy_p50": 69.67171600081201,
+    "bypass_p50": 68.38097299987567,
+    "diff_p50": 1.2907430009363452,
+    "paired_median_diff": 1.5071124998939922,
+    "paired_median_ci95": [
+     -0.04316099875723012,
+     4.244121999363415
+    ]
+   },
+   {
+    "w0": 2100,
+    "snapshots_mid": 1402,
+    "snapshots_max": 1452,
+    "metadata_bytes_max": 1433122,
+    "proxy_p50": 70.61347600028967,
+    "bypass_p50": 67.491997999241,
+    "diff_p50": 3.121478001048672,
+    "paired_median_diff": 3.0390499996428844,
+    "paired_median_ci95": [
+     0.3970314992329804,
+     5.823192997922888
+    ]
+   },
+   {
+    "w0": 2200,
+    "snapshots_mid": 1378,
+    "snapshots_max": 1428,
+    "metadata_bytes_max": 1503244,
+    "proxy_p50": 70.3658140009793,
+    "bypass_p50": 66.91882099948998,
+    "diff_p50": 3.446993001489318,
+    "paired_median_diff": 1.2876950013378519,
+    "paired_median_ci95": [
+     -0.25595999977667816,
+     5.710572999305441
+    ]
+   },
+   {
+    "w0": 2300,
+    "snapshots_mid": 1370,
+    "snapshots_max": 1452,
+    "metadata_bytes_max": 1504286,
+    "proxy_p50": 69.83036999918113,
+    "bypass_p50": 66.37242000033439,
+    "diff_p50": 3.4579499988467433,
+    "paired_median_diff": 2.785635500003991,
+    "paired_median_ci95": [
+     0.9778274989002966,
+     5.830289999721572
+    ]
+   },
+   {
+    "w0": 2400,
+    "snapshots_mid": 1402,
+    "snapshots_max": 1452,
+    "metadata_bytes_max": 1471244,
+    "proxy_p50": 70.32382599936682,
+    "bypass_p50": 67.20800599941867,
+    "diff_p50": 3.115819999948144,
+    "paired_median_diff": 3.030349000255228,
+    "paired_median_ci95": [
+     1.12455150065216,
+     5.490459499924327
+    ]
+   },
+   {
+    "w0": 2500,
+    "snapshots_mid": 1402,
+    "snapshots_max": 1452,
+    "metadata_bytes_max": 1438044,
+    "proxy_p50": 70.85309499962023,
+    "bypass_p50": 68.37062900012825,
+    "diff_p50": 2.4824659994919784,
+    "paired_median_diff": 2.586916498330538,
+    "paired_median_ci95": [
+     0.5552049997277209,
+     5.532205001145485
+    ]
+   },
+   {
+    "w0": 2600,
+    "snapshots_mid": 1382,
+    "snapshots_max": 1432,
+    "metadata_bytes_max": 1507982,
+    "proxy_p50": 70.50200300000142,
+    "bypass_p50": 66.56874399959634,
+    "diff_p50": 3.933259000405087,
+    "paired_median_diff": 4.262536499481939,
+    "paired_median_ci95": [
+     0.8640359992568847,
+     6.063320997782284
+    ]
+   },
+   {
+    "w0": 2700,
+    "snapshots_mid": 1370,
+    "snapshots_max": 1452,
+    "metadata_bytes_max": 1509024,
+    "proxy_p50": 70.75227000132145,
+    "bypass_p50": 67.13260400101717,
+    "diff_p50": 3.619666000304278,
+    "paired_median_diff": 5.339757000001555,
+    "paired_median_ci95": [
+     1.9828980002785102,
+     6.0835770000267075
+    ]
+   },
+   {
+    "w0": 2800,
+    "snapshots_mid": 1402,
+    "snapshots_max": 1452,
+    "metadata_bytes_max": 1475832,
+    "proxy_p50": 70.76153400157636,
+    "bypass_p50": 67.17976599975373,
+    "diff_p50": 3.5817680018226383,
+    "paired_median_diff": 4.282052499547717,
+    "paired_median_ci95": [
+     0.49827149996417575,
+     5.611406999378232
+    ]
+   },
+   {
+    "w0": 2900,
+    "snapshots_mid": 1402,
+    "snapshots_max": 1452,
+    "metadata_bytes_max": 1442608,
+    "proxy_p50": 71.17157199900248,
+    "bypass_p50": 67.4624750008661,
+    "diff_p50": 3.709096998136374,
+    "paired_median_diff": 3.597233001528366,
+    "paired_median_ci95": [
+     0.6883249998281826,
+     5.80392999927426
+    ]
+   }
+  ],
+  "slope_ms_per_1000_snapshots": 1.8305987729163136,
+  "intercept_ms": 0.9158117284459324,
+  "fitted_at_max_snapshots_ms": 3.5738411467204196,
+  "r": 0.6147638811675767
+ },
+ "first_window_over_5ms": {
+  "w0": 1400,
+  "snapshots_mid": 1370,
+  "snapshots_max": 1420,
+  "metadata_bytes_max": 1492500,
+  "proxy_p50": 70.29657100065378,
+  "bypass_p50": 66.34763200054294,
+  "diff_p50": 3.9489390001108404,
+  "paired_median_diff": 5.623609500617022,
+  "paired_median_ci95": [
+   2.3819159987397143,
+   6.5782789988588775
+  ]
+ },
+ "metadata_bytes": {
+  "per_snapshot": 1042.9815454918,
+  "intercept": 12911.302841437748,
+  "samples": [
+   {
+    "commit": 0,
+    "snapshots": 53,
+    "metadata_bytes": 63585
+   },
+   {
+    "commit": 99,
+    "snapshots": 152,
+    "metadata_bytes": 173637
+   },
+   {
+    "commit": 100,
+    "snapshots": 153,
+    "metadata_bytes": 174674
+   },
+   {
+    "commit": 199,
+    "snapshots": 252,
+    "metadata_bytes": 277382
+   },
+   {
+    "commit": 200,
+    "snapshots": 253,
+    "metadata_bytes": 278420
+   },
+   {
+    "commit": 299,
+    "snapshots": 352,
+    "metadata_bytes": 381149
+   },
+   {
+    "commit": 300,
+    "snapshots": 353,
+    "metadata_bytes": 382188
+   },
+   {
+    "commit": 399,
+    "snapshots": 452,
+    "metadata_bytes": 484997
+   },
+   {
+    "commit": 400,
+    "snapshots": 453,
+    "metadata_bytes": 486031
+   },
+   {
+    "commit": 499,
+    "snapshots": 552,
+    "metadata_bytes": 588821
+   },
+   {
+    "commit": 500,
+    "snapshots": 553,
+    "metadata_bytes": 589860
+   },
+   {
+    "commit": 599,
+    "snapshots": 652,
+    "metadata_bytes": 692669
+   },
+   {
+    "commit": 600,
+    "snapshots": 653,
+    "metadata_bytes": 693708
+   },
+   {
+    "commit": 699,
+    "snapshots": 752,
+    "metadata_bytes": 796529
+   },
+   {
+    "commit": 700,
+    "snapshots": 753,
+    "metadata_bytes": 797568
+   },
+   {
+    "commit": 799,
+    "snapshots": 852,
+    "metadata_bytes": 900389
+   },
+   {
+    "commit": 800,
+    "snapshots": 853,
+    "metadata_bytes": 901428
+   },
+   {
+    "commit": 899,
+    "snapshots": 952,
+    "metadata_bytes": 1004257
+   },
+   {
+    "commit": 900,
+    "snapshots": 953,
+    "metadata_bytes": 1005296
+   },
+   {
+    "commit": 999,
+    "snapshots": 1052,
+    "metadata_bytes": 1108220
+   },
+   {
+    "commit": 1000,
+    "snapshots": 1053,
+    "metadata_bytes": 1109261
+   },
+   {
+    "commit": 1099,
+    "snapshots": 1152,
+    "metadata_bytes": 1212260
+   },
+   {
+    "commit": 1100,
+    "snapshots": 1153,
+    "metadata_bytes": 1213301
+   },
+   {
+    "commit": 1199,
+    "snapshots": 1252,
+    "metadata_bytes": 1316308
+   },
+   {
+    "commit": 1200,
+    "snapshots": 1253,
+    "metadata_bytes": 1317349
+   },
+   {
+    "commit": 1299,
+    "snapshots": 1352,
+    "metadata_bytes": 1420344
+   },
+   {
+    "commit": 1300,
+    "snapshots": 1353,
+    "metadata_bytes": 1421385
+   },
+   {
+    "commit": 1399,
+    "snapshots": 1320,
+    "metadata_bytes": 1388436
+   },
+   {
+    "commit": 1400,
+    "snapshots": 1321,
+    "metadata_bytes": 1389477
+   },
+   {
+    "commit": 1499,
+    "snapshots": 1420,
+    "metadata_bytes": 1492500
+   },
+   {
+    "commit": 1500,
+    "snapshots": 1421,
+    "metadata_bytes": 1493541
+   },
+   {
+    "commit": 1599,
+    "snapshots": 1388,
+    "metadata_bytes": 1459629
+   },
+   {
+    "commit": 1600,
+    "snapshots": 1389,
+    "metadata_bytes": 1460672
+   },
+   {
+    "commit": 1699,
+    "snapshots": 1356,
+    "metadata_bytes": 1426763
+   },
+   {
+    "commit": 1700,
+    "snapshots": 1357,
+    "metadata_bytes": 1427806
+   },
+   {
+    "commit": 1799,
+    "snapshots": 1324,
+    "metadata_bytes": 1393831
+   },
+   {
+    "commit": 1800,
+    "snapshots": 1325,
+    "metadata_bytes": 1394868
+   },
+   {
+    "commit": 1899,
+    "snapshots": 1424,
+    "metadata_bytes": 1497979
+   },
+   {
+    "commit": 1900,
+    "snapshots": 1425,
+    "metadata_bytes": 1499021
+   },
+   {
+    "commit": 1999,
+    "snapshots": 1392,
+    "metadata_bytes": 1465020
+   },
+   {
+    "commit": 2000,
+    "snapshots": 1393,
+    "metadata_bytes": 1466062
+   },
+   {
+    "commit": 2099,
+    "snapshots": 1360,
+    "metadata_bytes": 1432080
+   },
+   {
+    "commit": 2100,
+    "snapshots": 1361,
+    "metadata_bytes": 1433122
+   },
+   {
+    "commit": 2199,
+    "snapshots": 1328,
+    "metadata_bytes": 1399120
+   },
+   {
+    "commit": 2200,
+    "snapshots": 1329,
+    "metadata_bytes": 1400162
+   },
+   {
+    "commit": 2299,
+    "snapshots": 1428,
+    "metadata_bytes": 1503244
+   },
+   {
+    "commit": 2300,
+    "snapshots": 1429,
+    "metadata_bytes": 1504286
+   },
+   {
+    "commit": 2399,
+    "snapshots": 1396,
+    "metadata_bytes": 1470202
+   },
+   {
+    "commit": 2400,
+    "snapshots": 1397,
+    "metadata_bytes": 1471244
+   },
+   {
+    "commit": 2499,
+    "snapshots": 1364,
+    "metadata_bytes": 1437002
+   },
+   {
+    "commit": 2500,
+    "snapshots": 1365,
+    "metadata_bytes": 1438044
+   },
+   {
+    "commit": 2599,
+    "snapshots": 1332,
+    "metadata_bytes": 1403838
+   },
+   {
+    "commit": 2600,
+    "snapshots": 1333,
+    "metadata_bytes": 1404875
+   },
+   {
+    "commit": 2699,
+    "snapshots": 1432,
+    "metadata_bytes": 1507982
+   },
+   {
+    "commit": 2700,
+    "snapshots": 1433,
+    "metadata_bytes": 1509024
+   },
+   {
+    "commit": 2799,
+    "snapshots": 1400,
+    "metadata_bytes": 1474790
+   },
+   {
+    "commit": 2800,
+    "snapshots": 1401,
+    "metadata_bytes": 1475832
+   },
+   {
+    "commit": 2899,
+    "snapshots": 1368,
+    "metadata_bytes": 1441566
+   },
+   {
+    "commit": 2900,
+    "snapshots": 1369,
+    "metadata_bytes": 1442608
+   },
+   {
+    "commit": 2999,
+    "snapshots": 1336,
+    "metadata_bytes": 1408298
+   }
+  ]
+ },
+ "commit_response_bytes_at_end": 1408298,
+ "snapshot_entry_bytes": {
+  "target": 960,
+  "mean": 975.5778443113772,
+  "summary_padding": 95
+ },
+ "top_band": {
+  "snapshots_from": 1306.8,
+  "snapshots_to": 1452,
+  "windows": [
+   1300,
+   1400,
+   1500,
+   1600,
+   1700,
+   1800,
+   1900,
+   2000,
+   2100,
+   2200,
+   2300,
+   2400,
+   2500,
+   2600,
+   2700,
+   2800,
+   2900
+  ],
+  "n_pairs": 1700,
+  "paired_median_diff": 3.5813269996651798,
+  "paired_median_ci95": [
+   2.4715720010135556,
+   4.3020755001634825
+  ],
+  "p95_diff": 6.97089099958248,
+  "max_window_paired_median": 5.623609500617022
+ },
+ "bench_table_properties": {
+  "commit.manifest-merge.enabled": "true"
+ },
+ "bench_expire": {
+  "s1_commits_per_s": 2.2,
+  "interval_s": 60,
+  "older_than_s": 600,
+  "retain": 1320,
+  "expire_at": 1452,
+  "n_expires": {
+   "proxy": 13,
+   "bypass": 13
+  },
+  "max_snapshots": 1452
+ },
+ "manifest_list_entries_at_end": 82
+}

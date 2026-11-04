@@ -1,0 +1,122 @@
+[
+ {
+  "method": "GET",
+  "path": "/v1/config",
+  "proxy": [
+   200,
+   "66e34a9071f4634ab8eb4537e1d62f362622e26a1a8ac1df56778616a6aefa36"
+  ],
+  "direct": [
+   200,
+   "66e34a9071f4634ab8eb4537e1d62f362622e26a1a8ac1df56778616a6aefa36"
+  ],
+  "same_status": true,
+  "same_headers": true,
+  "same_body": true
+ },
+ {
+  "method": "GET",
+  "path": "/v1/namespaces/stage2",
+  "proxy": [
+   200,
+   "3bfc6e00831c1f54766977f9659051a7808180821dfdbdbd666097d5d4285528"
+  ],
+  "direct": [
+   200,
+   "3bfc6e00831c1f54766977f9659051a7808180821dfdbdbd666097d5d4285528"
+  ],
+  "same_status": true,
+  "same_headers": true,
+  "same_body": true
+ },
+ {
+  "method": "GET",
+  "path": "/v1/namespaces/stage2/tables/resp_1793789190",
+  "proxy": [
+   200,
+   "51ccdeedaa387d9d0d2e8f3720db54ab2353affb8e4b2c973f478dbea9137762"
+  ],
+  "direct": [
+   200,
+   "51ccdeedaa387d9d0d2e8f3720db54ab2353affb8e4b2c973f478dbea9137762"
+  ],
+  "same_status": true,
+  "same_headers": true,
+  "same_body": true
+ },
+ {
+  "method": "GET",
+  "path": "/v1/namespaces/stage2/tables/no_such_table",
+  "proxy": [
+   404,
+   "6403ff7ee4845a97caad7eaa7863f17777ee30f238db6a62d3fa409268a3a168"
+  ],
+  "direct": [
+   404,
+   "6403ff7ee4845a97caad7eaa7863f17777ee30f238db6a62d3fa409268a3a168"
+  ],
+  "same_status": true,
+  "same_headers": true,
+  "same_body": true
+ },
+ {
+  "method": "HEAD",
+  "path": "/v1/namespaces/stage2/tables/resp_1793789190",
+  "proxy": [
+   204,
+   "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  ],
+  "direct": [
+   204,
+   "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  ],
+  "same_status": true,
+  "same_headers": true,
+  "same_body": true
+ },
+ {
+  "method": "POST",
+  "path": "/v1/namespaces/stage2/tables/resp_1793789190",
+  "proxy": [
+   409,
+   "45d6e4841b5e6e8c3bea2850125d3f9a5c8d094380f3a8d051ae17a739977c5d"
+  ],
+  "direct": [
+   409,
+   "45d6e4841b5e6e8c3bea2850125d3f9a5c8d094380f3a8d051ae17a739977c5d"
+  ],
+  "same_status": true,
+  "same_headers": true,
+  "same_body": true
+ },
+ {
+  "method": "POST",
+  "path": "/v1/namespaces/stage2/tables/no_such_table",
+  "proxy": [
+   404,
+   "4b65ae3825f50441acb962a8d5ac7518961cd9f99573988af87b8b2fc2618463"
+  ],
+  "direct": [
+   404,
+   "4b65ae3825f50441acb962a8d5ac7518961cd9f99573988af87b8b2fc2618463"
+  ],
+  "same_status": true,
+  "same_headers": true,
+  "same_body": true
+ },
+ {
+  "method": "POST",
+  "path": "/v1/namespaces/stage2/tables/resp_1793789190",
+  "proxy": [
+   500,
+   "c6077e5cc8f6c9dc56610b6da328687dbd7a8d91a3843b00529542d71280cd9f"
+  ],
+  "direct": [
+   500,
+   "c6077e5cc8f6c9dc56610b6da328687dbd7a8d91a3843b00529542d71280cd9f"
+  ],
+  "same_status": true,
+  "same_headers": true,
+  "same_body": true
+ }
+]

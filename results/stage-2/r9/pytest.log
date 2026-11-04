@@ -1,0 +1,18 @@
+docker compose --env-file infra/.env -f infra/docker-compose.yml exec -T -e GIT_SHA=ae712f3f0c80f0808da9db4a334e6e095add9e05 -e RESULTS_NAME=r9 \
+  -e STAGE2_BENCH_COMMITS=3000 -e STAGE2_BENCH_EXPIRE=true \
+  -e STAGE2_BENCH_SNAPSHOT_BYTES=960 runner \
+  pytest -q -p no:cacheprovider tests/integration/test_proxy_stage2.py 
+.....                                                                    [100%]
+=============================== warnings summary ===============================
+../usr/local/lib/python3.10/dist-packages/_pytest/config/__init__.py:1464
+  /usr/local/lib/python3.10/dist-packages/_pytest/config/__init__.py:1464: PytestConfigWarning: Unknown config option: asyncio_default_fixture_loop_scope
+  
+    self._warn_or_fail_if_strict(f"Unknown config option: {key}\n")
+
+../usr/local/lib/python3.10/dist-packages/_pytest/config/__init__.py:1464
+  /usr/local/lib/python3.10/dist-packages/_pytest/config/__init__.py:1464: PytestConfigWarning: Unknown config option: asyncio_mode
+  
+    self._warn_or_fail_if_strict(f"Unknown config option: {key}\n")
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+5 passed, 2 warnings in 5049.30s (1:24:09)
