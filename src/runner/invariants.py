@@ -58,8 +58,9 @@ PART_EXPR = ("concat('dt=', CAST(dt AS STRING), '/key_bucket=', "
 
 class Invariants:
     def __init__(self, spark: Any, db: DB, run_id: str, table: str, n_buckets: int,
-                 current_snapshot_id: int | None) -> None:
+                 current_snapshot_id: int | None, env: Any = None) -> None:
         self.spark, self.db, self.run_id, self.table = spark, db, run_id, table
+        self.env = env
         self.nb = n_buckets
         self.current = current_snapshot_id
 
@@ -128,19 +129,33 @@ class Invariants:
         for (_p, o), n in actual.items():
             by_origin[o] += n
         # proxy journal: Σ(added - deleted records) of successful commits since the golden snapshot
+        # only snapshots of the main lineage (a commit later rolled back is not part of the table)
+        chain, _err = self._lineage(led)
         jr = self.db.query(
             "SELECT coalesce(sum((summary->>'added-records')::bigint), 0) AS added,"
             " coalesce(sum((summary->>'deleted-records')::bigint), 0) AS deleted, count(*) AS n"
             " FROM {s}.commit_attempts WHERE run_id = %s AND table_name = %s"
-            " AND http_status BETWEEN 200 AND 299 AND summary IS NOT NULL", [self.run_id, self.table])[0]
+            " AND http_status BETWEEN 200 AND 299 AND summary IS NOT NULL"
+            " AND new_snapshot_id = ANY(%s)", [self.run_id, self.table, chain])[0]
         golden_total = int(self._sql(f"SELECT count(*) AS n FROM lake.{self.table} "
                                      f"VERSION AS OF {led.golden_snapshot_id}")[0]["n"])
         total = int(self._sql(f"SELECT count(*) AS n FROM lake.{self.table}")[0]["n"])
+        # physical rows of data files: the journal must contain every commit since the golden
+        # snapshot; with MoR, deleted rows are position deletes (not deleted-records), so the
+        # comparison is with total-records of the current snapshot, not with count(*)
+        from runner.ops.executor import load_table_state
+        st = load_table_state(self.env, self.table) if self.env is not None else None
+        cur_summary = {}
+        if st is not None and st.current_snapshot_id is not None:
+            cur_summary = next((x.get("summary", {}) for x in st.metadata.get("snapshots", [])
+                                if int(x["snapshot-id"]) == st.current_snapshot_id), {})
+        physical = int(cur_summary.get("total-records", -1))
         journal_total = golden_total + int(jr["added"]) - int(jr["deleted"])
         nonzero = {o: n for o, n in by_origin.items() if n}
-        return {"ok": not diff and journal_total == total, "partitions_checked": len(expected),
+        return {"ok": not diff and journal_total == physical, "partitions_checked": len(expected),
                 "mismatches": dict(list(diff.items())[:50]), "n_mismatches": len(diff),
-                "rows_by_origin": nonzero, "journal_total": journal_total, "table_total": total,
+                "rows_by_origin": nonzero, "journal_physical_records": journal_total,
+                "snapshot_total_records": physical, "table_live_rows": total,
                 "journal_commits": int(jr["n"])}
 
     def _lineage(self, led: Ledger) -> tuple[list[int], str | None]:

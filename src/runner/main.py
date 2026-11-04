@@ -70,10 +70,20 @@ def _fs(env: Env) -> Any:
                              region=_aws("AWS_REGION", "us-east-1"))
 
 
+def drop_table(env: Env, table: str) -> None:
+    """DROP without purge through the REST API: unlike Spark DROP TABLE it does not load the
+    table, so it works when files of the previous run are already gone."""
+    ns, name = table.split(".", 1)
+    r = requests.delete(f"{env.catalog_uri}/v1/namespaces/{ns}/tables/{name}",
+                        params={"purgeRequested": "false"}, timeout=30)
+    if r.status_code not in (200, 204, 404):
+        r.raise_for_status()
+
+
 def reset_table(spark: Any, env: Env, table: str, metadata_location: str) -> None:
     ns = table.split(".")[0]
     spark.sql(f"CREATE NAMESPACE IF NOT EXISTS lake.{ns}")
-    spark.sql(f"DROP TABLE IF EXISTS lake.{table}")              # without PURGE: files stay
+    drop_table(env, table)                                       # without purge: files stay
     spark.sql(f"CALL lake.system.register_table(table => '{table}', "
               f"metadata_file => '{metadata_location}')")
 
@@ -253,6 +263,7 @@ class Run:
         # 1. reset: files of earlier runs, golden metadata, S3 latency
         keep = set((GOLDEN_DIR / dg_name(gj)).with_suffix(".keep.txt").read_text().split())
         t = time.monotonic()
+        drop_table(env, table)                    # before gc: gc removes its metadata.json
         gc = gc_table_files(env, dg["location"], keep) if not args.no_gc else {}
         log("gc", **gc, s=round(time.monotonic() - t))
         reset_table(spark, env, table, gj["metadata_location"])
@@ -356,7 +367,7 @@ class Run:
             pickle.dump({"ledger": led, "ops": ops_rows, "current": st.current_snapshot_id,
                          "checks": list(sc.invariants.checks), "n_buckets": sc.table.n_buckets,
                          "table": table}, fh)
-        inv = Invariants(spark, db, self.run_id, table, sc.table.n_buckets, st.current_snapshot_id)
+        inv = Invariants(spark, db, self.run_id, table, sc.table.n_buckets, st.current_snapshot_id, env)
         inv_res: dict[str, Any] = {"ok": True}
         if sc.invariants.enabled:
             inv_res = inv.run(led, ops_rows, list(sc.invariants.checks))
@@ -455,8 +466,16 @@ class Run:
             r = rec.row
             if r.get("outcome") != "committed":
                 continue
-            sids = [int(a["new_snapshot_id"]) for a in db.attempts_for_op(r["op_id"])
+            att = db.attempts_for_op(r["op_id"])
+            sids = [int(a["new_snapshot_id"]) for a in att
                     if a["http_status"] and 200 <= a["http_status"] < 300 and a["new_snapshot_id"]]
+            # final read of the journal (the executor may have read it before the last flush)
+            r["attempts"] = len(att)
+            r["held_ms"] = sum(int(a["hold_ms"] or 0) for a in att)
+            if att:
+                r["last_attempt_at"] = att[-1]["received_at"]
+            if sids:
+                r["snapshot_id"] = sids[-1]
             parts: set[str] = set()
             for sid in sids:
                 while True:
@@ -471,7 +490,9 @@ class Run:
             r["footprint_executed"] = sorted(parts)
             db.upsert_op({"op_id": r["op_id"], "run_id": r["run_id"], "table_name": r["table_name"],
                           "op_type": r["op_type"], "writer_class": r["writer_class"],
-                          "intent_at": r["intent_at"], "footprint_executed": r["footprint_executed"]})
+                          "intent_at": r["intent_at"], "footprint_executed": r["footprint_executed"],
+                          "attempts": r["attempts"], "held_ms": r["held_ms"],
+                          "last_attempt_at": r.get("last_attempt_at"), "snapshot_id": r.get("snapshot_id")})
 
     def _ledger(self, dg: dict[str, Any], gj: dict[str, Any], feeds: list[Any], agents: list[Any]
                 ) -> Ledger:

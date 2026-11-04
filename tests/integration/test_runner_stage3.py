@@ -94,7 +94,7 @@ def test_stage3_invariants_detect_injected_faults(spark: Any) -> None:
     if st.current_snapshot_id != saved["current"]:
         pytest.skip(f"table was reset after run {run_id}")
     led, ops, checks = saved["ledger"], saved["ops"], saved["checks"]
-    inv = Invariants(spark, db, run_id, table, saved["n_buckets"], saved["current"])
+    inv = Invariants(spark, db, run_id, table, saved["n_buckets"], saved["current"], env)
 
     def run_checks(ledger: Any = led) -> dict[str, Any]:
         inv.current = load_table_state(env, table).current_snapshot_id

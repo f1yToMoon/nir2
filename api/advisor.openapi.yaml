@@ -232,7 +232,7 @@ components:
       properties:
         outcome:
           type: string
-          enum: [committed, data_conflict, retry_exhausted, base_expired, commit_unknown, error, skipped]
+          enum: [committed, data_conflict, retry_exhausted, base_expired, history_unresolved, commit_unknown, noop, error, skipped]
         finished_at: {type: number}
         commit_requested_at: {type: number, nullable: true}
         attempts: {type: integer}

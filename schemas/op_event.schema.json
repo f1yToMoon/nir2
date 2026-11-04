@@ -25,7 +25,7 @@
       }
     },
     "progress": {"type": "number", "minimum": 0, "maximum": 1},
-    "outcome": {"enum": ["committed", "data_conflict", "retry_exhausted", "base_expired", "commit_unknown", "error", "skipped"]},
+    "outcome": {"enum": ["committed", "data_conflict", "retry_exhausted", "base_expired", "history_unresolved", "commit_unknown", "noop", "error", "skipped"]},
     "attempts": {"type": "integer"},
     "cpu_ms": {"type": "integer"},
     "run_ms": {"type": "integer"},

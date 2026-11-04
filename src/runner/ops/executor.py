@@ -379,9 +379,11 @@ class OpExecutor:
         if self.ctx.env.routing != "proxy":
             return
         att: list[dict[str, Any]] = []
-        for _ in range(10):
+        for _ in range(20):
             att = self.ctx.db.attempts_for_op(row["op_id"])
-            if att or row["outcome"] not in ("committed",):
+            ok_seen = any(a["http_status"] and 200 <= a["http_status"] < 300 for a in att)
+            # the proxy journal is written in batches: a committed op waits for its 2xx attempt
+            if (row["outcome"] == "committed" and ok_seen) or (row["outcome"] != "committed" and att):
                 break
             time.sleep(0.5)
         row["attempts"] = len(att)

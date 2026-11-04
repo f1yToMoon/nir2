@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 2026-11-04 — этап 3 (runner и телеметрия), в работе
+
+- Runner: `runner.scenario` (pydantic, `extends`, варианты с патчем операций по `id`, уровни, `make validate-config`), `runner.intents` (план операций по зерну, bucket Iceberg — murmur3, сверен с PyIceberg на 20 000 ключей), `runner.datagen` + `make seed` (30 млн строк, 40 файлов на партицию, тег `golden`), `runner.slots` (каталоги слотов, привязка слот → op_id в прокси, job group + job tag), `runner.ops.executor` (все `statement`, rewrite, expire, исходы), `runner.cost` (Spark REST по job tag), `runner.streaming` (Kafka → Flink через SQL Gateway, Spark-агенты), `runner.health` (`table_health`, `table_meta`), `runner.invariants` (5 инвариантов, orphan-файлы), `runner.main`/`batch`/`export`/`gc`, `analysis.metrics` (`run_summary`).
+- ADR-009: «золотая» таблица с тегом `golden` (expire не удаляет её файлы); стоимость по job tag (Iceberg заменяет job group, `BaseSparkAction.java:129-130`).
+- `base_expired` ставится только при подтверждении данными, иначе `history_unresolved` (S2-R4-05, решение автора 2026-11-04); прокси пишет `removed_snapshot_ids` коммитов expire. Новые метки — в FR-RUN-4, tz/05, JSON-схеме, OpenAPI, DDL, AGENTS.md (огр. 6).
+- S2-R4-01: числа §7 отчёта этапа 2 (552 пары, 431 коммит), ADR-008 (960 Б — `spark_mor_merge_v2`, `gdpr_delete`). S2-R4-06: кейсы матрицы дедуплицируются с учётом `overlap`, каждое правило даёт кейс (`runner.matrix_cases`).
+
 ## 2026-11-04 — этап 2, раунд 4 (ответ на ревью stage-2-r3)
 
 - NFR-1 на снапшотах размера Spark/Flink (`snapshot_properties`, 960 Б на запись): граница без expire — B = 1800 снапшотов ≈ 1,88 МБ метаданных (`r8-boundary`; в снапшотах PyIceberg было ~2200).
