@@ -44,6 +44,21 @@ BENCH_TABLE_PROPS = {"commit.manifest-merge.enabled":
                      os.environ.get("STAGE2_BENCH_MANIFEST_MERGE", "true")}
 N_FOOTPRINT_SAMPLE = int(os.environ.get("STAGE2_FOOTPRINT_SAMPLE", "150"))
 BENCH_EXPIRE = os.environ.get("STAGE2_BENCH_EXPIRE", "true") == "true"
+# Size of one snapshot entry in the table metadata (compact JSON), bytes: the scenario writers are
+# Spark and Flink, whose snapshot summary carries engine/app properties (fixtures spark_append_v2
+# 871 B, flink_append 882 B, spark_mor_merge_v2 960 B) that PyIceberg's does not (~544 B on the
+# stand). The bench appends with snapshot_properties padded to this size (S2-R3-02); 0 = PyIceberg
+# as is (r3, r4, r7).
+BENCH_SNAPSHOT_BYTES = int(os.environ.get("STAGE2_BENCH_SNAPSHOT_BYTES", "960"))
+# windows whose median snapshot count is within the top band of the history get pooled for the
+# NFR-1 check (S2-R3-01): band = snapshots >= BENCH_BAND * expire_at (or * max without expire)
+BENCH_BAND = float(os.environ.get("STAGE2_BENCH_BAND", "0.9"))
+BENCH_MIN_BAND_PAIRS = 300
+# summary keys of a Spark 4.0 append (tests/fixtures/commits/spark_append_v2.json) absent from PyIceberg's
+SPARK_SUMMARY = {"spark.app.id": "app-20261101154946-0005", "app-id": "app-20261101154946-0005",
+                 "engine-name": "spark", "engine-version": "4.0.1", "app-name": "capl-stage2-bench",
+                 "iceberg-version": "Apache Iceberg 1.12.0 (commit 212aa894e919ff9fdf89160da4aadcbe6858ac01)",
+                 "manifests-created": "1", "manifests-kept": "0", "manifests-replaced": "0"}
 WORKLOADS = Path(__file__).parents[2] / "config" / "workloads"
 OUT = Path(os.environ.get("STAGE2_OUT",
                           f"/workspace/results/stage-2/{os.environ.get('RESULTS_NAME', 'run')}"))
@@ -443,19 +458,42 @@ def _q(xs: list[float], q: float) -> float:
     return s[min(len(s) - 1, int(q * len(s)))]
 
 
+def _metadata(tname: str) -> tuple[int, list[dict[str, Any]]]:
+    """Table metadata read from the catalog directly (not measured): uncompressed bytes of the
+    loadTable response (the same JSON a commit response carries) and the snapshot entries."""
+    r = requests.get(f"{DIRECT_URL}/v1/namespaces/{NS}/tables/{tname}", timeout=60)
+    r.raise_for_status()
+    return len(r.content), r.json()["metadata"].get("snapshots", [])
+
+
+def _snapshot_bytes(snap: dict[str, Any]) -> int:
+    return len(json.dumps(snap, separators=(",", ":")))
+
+
+def _paired_median_ci(diffs: list[float], rng: random.Random, n_boot: int) -> list[float]:
+    """Bootstrap 95 % CI of the median of paired differences (pairs resampled with replacement)."""
+    meds = sorted(statistics.median(rng.choices(diffs, k=len(diffs))) for _ in range(n_boot))
+    return [meds[int(0.025 * n_boot)], meds[min(n_boot - 1, int(0.975 * n_boot))]]
+
+
 def test_overhead_bypass_vs_proxy() -> None:
     """Latency of the commit request (RestCatalog.commit_table: one POST) for appends of the
     same data, alternating proxy/bypass, N_BENCH commits each; overhead = proxy - bypass.
 
     Bench tables merge manifests (`commit.manifest-merge.enabled=true`, min count 100), as the
     stand's writers do: Iceberg Java default, TableProperties.java:119,122 (Spark, Flink); PyIceberg
-    0.12.0 defaults to false (pyiceberg/table/__init__.py:208). Without merging the manifest list
-    grows with every snapshot, and so does the cost of enriching each commit (stage-2 r3:
-    results/stage-2/r3/enricher_*). STAGE2_BENCH_MANIFEST_MERGE=false reproduces that case.
+    0.12.0 defaults to false (pyiceberg/table/__init__.py:208). STAGE2_BENCH_MANIFEST_MERGE=false
+    reproduces the growing manifest list (stage-2 r3).
+
+    Snapshots are of the size Spark/Flink writes (BENCH_SNAPSHOT_BYTES, S2-R3-02): the overhead
+    grows with the table metadata, so the history boundary is measured in both snapshots and bytes.
 
     The table history follows the scheduled expire of the scenarios (ADR-008, `_bench_expire_plan`):
-    NFR-1 is confirmed only up to ~2200 snapshots (stage-2 r4), and the scenarios keep their table
-    below that. STAGE2_BENCH_EXPIRE=false lets the history grow without bound (r3, r4)."""
+    it grows to expire_at, then saws between retain and expire_at. NFR-1 is checked on the top band
+    of that history (windows with a median snapshot count >= BENCH_BAND * expire_at, pooled): the
+    upper bound of the bootstrap 95 % CI of the paired median <= 5 ms (S2-R3-01). The run has to
+    pass at least one full saw cycle per path (two expires), otherwise the check fails.
+    STAGE2_BENCH_EXPIRE=false lets the history grow without bound (r3, r4; boundary search)."""
     import pyarrow as pa
     from pyiceberg.schema import Schema
     from pyiceberg.types import LongType, NestedField
@@ -481,18 +519,32 @@ def test_overhead_bypass_vs_proxy() -> None:
 
         cat.commit_table = timed
     data = pa.table({"id": pa.array([1, 2, 3], pa.int64())})
+    # snapshot summary of the size Spark/Flink writes: engine keys + padding, calibrated on the
+    # first (unmeasured) commit of each table
+    props: dict[str, dict[str, str]] = {"proxy": {}, "bypass": {}}
+    for name in tables:
+        tables[name].append(data)
+        if BENCH_SNAPSHOT_BYTES:
+            props[name] = dict(SPARK_SUMMARY)
+            tables[name].append(data, snapshot_properties=props[name])
+            size = _snapshot_bytes(_metadata(tables[name].name()[-1])[1][-1])
+            pad = BENCH_SNAPSHOT_BYTES - size - len('"capl.bench.pad":"",')
+            if pad > 0:
+                props[name]["capl.bench.pad"] = "x" * pad
     rng = random.Random(SEED)
     plan = _bench_expire_plan() if BENCH_EXPIRE else None
-    n_snaps = {"proxy": 0, "bypass": 0}
+    n_snaps = {name: len(_metadata(t.name()[-1])[1]) for name, t in tables.items()}
     snaps_at: dict[str, list[int]] = {"proxy": [], "bypass": []}
-    n_expires = 0
+    n_expires = {"proxy": 0, "bypass": 0}
+    win = 100
+    meta_at: list[dict[str, int]] = []                    # proxy table: (snapshots, metadata bytes)
     over_before = (_metric("capl_proxy_overhead_seconds_sum"), _metric("capl_proxy_overhead_seconds_count"))
     for i in range(N_BENCH + 50):
         order = ["proxy", "bypass"]
         rng.shuffle(order)
         for name in order:
             timing_on[name] = i >= 50                     # 50 warm-up commits per path
-            tables[name].append(data)
+            tables[name].append(data, snapshot_properties=props[name])
             n_snaps[name] += 1
             if i >= 50:
                 snaps_at[name].append(n_snaps[name])
@@ -503,10 +555,13 @@ def test_overhead_bypass_vs_proxy() -> None:
                 drop = [sid for _, sid in ids[:len(ids) - plan["retain"]]]
                 tables[name].maintenance.expire_snapshots().by_ids(drop).commit()
                 n_snaps[name] = len(tables[name].snapshots())
-                n_expires += 1
+                n_expires[name] += 1
+        if i >= 50 and (i - 50) % win in (0, win - 1):  # metadata size at window start and end
+            nbytes, snaps = _metadata(tables["proxy"].name()[-1])
+            meta_at.append({"commit": i - 50, "snapshots": len(snaps), "metadata_bytes": nbytes})
     over_after = (_metric("capl_proxy_overhead_seconds_sum"), _metric("capl_proxy_overhead_seconds_count"))
     p, b = lat["proxy"], lat["bypass"]
-    rep = {
+    rep: dict[str, Any] = {
         "n_per_path": len(p), "unit": "ms",
         "proxy": {"p50": _q(p, .5), "p95": _q(p, .95), "p99": _q(p, .99), "mean": statistics.fmean(p)},
         "bypass": {"p50": _q(b, .5), "p95": _q(b, .95), "p99": _q(b, .99), "mean": statistics.fmean(b)},
@@ -515,7 +570,7 @@ def test_overhead_bypass_vs_proxy() -> None:
     }
     rep["overhead_p50"] = rep["proxy"]["p50"] - rep["bypass"]["p50"]
     rep["overhead_p95"] = rep["proxy"]["p95"] - rep["bypass"]["p95"]
-    # bootstrap 95 % CI of the p50/p95 differences
+    # whole series, for reference only: its value depends on the series length (S2-R2-01)
     boot = random.Random(SEED)
     d50, d95 = [], []
     for _ in range(2000):
@@ -525,47 +580,77 @@ def test_overhead_bypass_vs_proxy() -> None:
         d95.append(_q(ps, .95) - _q(bs, .95))
     rep["overhead_p50_ci95"] = [_q(d50, .025), _q(d50, .975)]
     rep["overhead_p95_ci95"] = [_q(d95, .025), _q(d95, .975)]
-    rep["nfr1"] = {"p50_le_5ms": rep["overhead_p50"] <= 5, "p95_le_15ms": rep["overhead_p95"] <= 15}
-    # trend with table state (S2-R1-02): windows of 100 commits, the table size of a window is the
-    # median snapshot count of its commits (sawtooth with the scheduled expire), least squares
-    win = 100
+    # windows of 100 commits; the table size of a window is the median snapshot count of its
+    # commits (sawtooth with the scheduled expire); paired medians (proxy_i - bypass_i of
+    # interleaved commits) are robust to window-level drift of the catalog (r4: -32.4 ms)
     windows = []
-    for w0 in range(0, len(p) - win + 1, win):
+    for k, w0 in enumerate(range(0, len(p) - win + 1, win)):
         pw, bw = p[w0:w0 + win], b[w0:w0 + win]
-        windows.append({"snapshots_mid": int(statistics.median(snaps_at["proxy"][w0:w0 + win])),
-                        "snapshots_max": max(snaps_at["proxy"][w0:w0 + win]), "proxy_p50": _q(pw, .5),
-                        "bypass_p50": _q(bw, .5), "diff_p50": _q(pw, .5) - _q(bw, .5),
-                        "paired_median_diff": statistics.median(x - y for x, y in zip(pw, bw, strict=True))})
+        diffs = [x - y for x, y in zip(pw, bw, strict=True)]
+        ends = [m["metadata_bytes"] for m in meta_at if w0 <= m["commit"] < w0 + win]
+        windows.append({"w0": w0, "snapshots_mid": int(statistics.median(snaps_at["proxy"][w0:w0 + win])),
+                        "snapshots_max": max(snaps_at["proxy"][w0:w0 + win]),
+                        "metadata_bytes_max": max(ends) if ends else None,
+                        "proxy_p50": _q(pw, .5), "bypass_p50": _q(bw, .5),
+                        "diff_p50": _q(pw, .5) - _q(bw, .5),
+                        "paired_median_diff": statistics.median(diffs),
+                        "paired_median_ci95": _paired_median_ci(diffs, random.Random(SEED + k), 1000)})
     xs = [w["snapshots_mid"] for w in windows]
-    # paired medians (proxy_i - bypass_i of interleaved commits): robust to window-level drift
-    # of the catalog; a difference of window medians can swing by tens of ms (r4: -32.4 ms)
     ys = [w["paired_median_diff"] for w in windows]
     mx, my = statistics.fmean(xs), statistics.fmean(ys)
-    sxx = sum((x - mx) ** 2 for x in xs)
+    sxx = sum((x - mx) ** 2 for x in xs) or 1.0
     slope = sum((x - mx) * (y - my) for x, y in zip(xs, ys, strict=True)) / sxx
+    max_snaps = max(snaps_at["proxy"] + snaps_at["bypass"])
     rep["trend"] = {"statistic": "paired_median_diff", "windows": windows,
-                    "slope_ms_per_1000_snapshots": 1000 * slope,
-                    "intercept_ms": my - slope * mx, "fitted_at_end_ms": my + slope * (xs[-1] - mx),
+                    "slope_ms_per_1000_snapshots": 1000 * slope, "intercept_ms": my - slope * mx,
+                    "fitted_at_max_snapshots_ms": my + slope * (max_snaps - mx),   # reference only
                     "r": slope * (sxx ** 0.5) / (sum((y - my) ** 2 for y in ys) ** 0.5 or 1.0)}
-    meta = requests.get(f"{DIRECT_URL}/v1/namespaces/{NS}/tables/{tables['proxy'].name()[-1]}",
-                        timeout=30)
-    rep["commit_response_bytes_at_end"] = len(meta.content)
-    rep["last_window_diff_p50"] = windows[-1]["diff_p50"]
-    rep["last_window_paired_median_diff"] = windows[-1]["paired_median_diff"]
+    over = [w for w in windows if w["paired_median_diff"] > 5.0]
+    rep["first_window_over_5ms"] = over[0] if over else None
+    # metadata bytes per snapshot (linear: every snapshot adds one entry to snapshots and snapshot-log)
+    mx2 = statistics.fmean(m["snapshots"] for m in meta_at)
+    my2 = statistics.fmean(m["metadata_bytes"] for m in meta_at)
+    sxx2 = sum((m["snapshots"] - mx2) ** 2 for m in meta_at) or 1.0
+    per_snap = sum((m["snapshots"] - mx2) * (m["metadata_bytes"] - my2) for m in meta_at) / sxx2
+    rep["metadata_bytes"] = {"per_snapshot": per_snap, "intercept": my2 - per_snap * mx2, "samples": meta_at}
+    nbytes, snaps = _metadata(tables["proxy"].name()[-1])
+    rep["commit_response_bytes_at_end"] = nbytes
+    rep["snapshot_entry_bytes"] = {"target": BENCH_SNAPSHOT_BYTES,
+                                   "mean": statistics.fmean(_snapshot_bytes(s) for s in snaps),
+                                   "summary_padding": len(props["proxy"].get("capl.bench.pad", ""))}
+    # NFR-1 on the top band of the history (S2-R3-01)
+    top = plan["expire_at"] if plan else max_snaps
+    band = [w for w in windows if w["snapshots_mid"] >= BENCH_BAND * top]
+    band_diffs = [p[i] - b[i] for w in band for i in range(w["w0"], w["w0"] + win)]
+    band_p = [p[i] for w in band for i in range(w["w0"], w["w0"] + win)]
+    band_b = [b[i] for w in band for i in range(w["w0"], w["w0"] + win)]
+    rep["top_band"] = {
+        "snapshots_from": BENCH_BAND * top, "snapshots_to": top, "windows": [w["w0"] for w in band],
+        "n_pairs": len(band_diffs),
+        "paired_median_diff": statistics.median(band_diffs) if band_diffs else None,
+        "paired_median_ci95": (_paired_median_ci(band_diffs, random.Random(SEED), 4000)
+                               if band_diffs else None),
+        "p95_diff": _q(band_p, .95) - _q(band_b, .95) if band_diffs else None,
+        "max_window_paired_median": max(w["paired_median_diff"] for w in band) if band else None}
     rep["bench_table_properties"] = BENCH_TABLE_PROPS
-    rep["bench_expire"] = {**(plan or {"enabled": False}), "n_expires": n_expires,
-                           "max_snapshots": max(snaps_at["proxy"] + snaps_at["bypass"])}
+    rep["bench_expire"] = {**(plan or {"enabled": False}), "n_expires": n_expires, "max_snapshots": max_snaps}
     tp = tables["proxy"].refresh()
     rep["manifest_list_entries_at_end"] = len(tp.current_snapshot().manifests(tp.io))
     _save("overhead.json", rep)
     _save("overhead_raw.json", lat)
     assert len(p) == len(b) == N_BENCH
+    if BENCH_SNAPSHOT_BYTES:      # the bench writes snapshots of the size it claims (±5 %)
+        sb = rep["snapshot_entry_bytes"]
+        assert abs(sb["mean"] - BENCH_SNAPSHOT_BYTES) <= 0.05 * BENCH_SNAPSHOT_BYTES, sb
+    if plan:                      # a full saw cycle per path: up to expire_at, down, up again
+        assert min(n_expires.values()) >= 2 and max_snaps >= plan["expire_at"], rep["bench_expire"]
+    tb = rep["top_band"]
+    assert tb["n_pairs"] >= BENCH_MIN_BAND_PAIRS, tb
+    assert tb["paired_median_ci95"][1] <= 5.0, tb
+    assert tb["p95_diff"] <= 15.0, tb
+    # whole series (weaker than the band; kept)
     assert rep["overhead_p50"] <= 5.0, rep
     assert rep["overhead_p95"] <= 15.0, rep
-    # NFR-1 also holds at the end of the series (largest metadata), not only on average:
-    # both the last window and the linear trend at the end
-    assert rep["last_window_paired_median_diff"] <= 5.0, rep["trend"]
-    assert rep["trend"]["fitted_at_end_ms"] <= 5.0, rep["trend"]
 
 
 # ---------------------------------------------------------------- fail-open

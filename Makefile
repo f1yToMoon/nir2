@@ -77,9 +77,17 @@ gc: ## Уборка файлов прошедших прогонов
 # коммит, на котором выполняется прогон; -dirty — есть незакоммиченные изменения
 GIT_SHA = $(shell git rev-parse HEAD)$(shell test -z "$$(git status --porcelain)" || echo -dirty)
 
-proxy-verify: ## Интеграционные проверки прокси (этап 2): NAME=<имя каталога результатов>
-	$(COMPOSE) exec -T -e GIT_SHA=$(GIT_SHA) -e RESULTS_NAME=$(or $(NAME),run) runner \
-	  pytest -q -p no:cacheprovider tests/integration/test_proxy_stage2.py
+# NFR-1: по умолчанию бенчмарк проходит полный цикл «пилы» истории ADR-008 (рост до expire_at,
+# два expire на путь); BENCH_EXPIRE=false — неограниченный рост истории (поиск границы);
+# BENCH_SNAPSHOT_BYTES=0 — снапшоты PyIceberg без добавленных свойств; K — выбор тестов (pytest -k)
+BENCH_COMMITS ?= 3000
+BENCH_EXPIRE ?= true
+BENCH_SNAPSHOT_BYTES ?= 960
+proxy-verify: ## Интеграционные проверки прокси (этап 2): NAME=<каталог результатов> [K=<pytest -k>]
+	$(COMPOSE) exec -T -e GIT_SHA=$(GIT_SHA) -e RESULTS_NAME=$(or $(NAME),run) \
+	  -e STAGE2_BENCH_COMMITS=$(BENCH_COMMITS) -e STAGE2_BENCH_EXPIRE=$(BENCH_EXPIRE) \
+	  -e STAGE2_BENCH_SNAPSHOT_BYTES=$(BENCH_SNAPSHOT_BYTES) runner \
+	  pytest -q -p no:cacheprovider tests/integration/test_proxy_stage2.py $(if $(K),-k "$(K)")
 
 fixtures-capture: ## Снять реальные тела коммитов в tests/fixtures/commits (этап 2)
 	$(COMPOSE) exec -T -e GIT_SHA=$(GIT_SHA) runner python3 -m scripts.capture_commit_fixtures
