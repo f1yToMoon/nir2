@@ -33,7 +33,7 @@ hold:
 enricher:
   workers: 4
   queue_max: 10000
-  read_deleted_paths_for: [cow_dml, mor_dml, mor_delete, mor_update, mor_merge, rewrite_data, overwrite]
+  read_deleted_paths_for: [cow_dml, mor_delete, mor_update, mor_merge, rewrite_data, overwrite]
   s3:
     endpoint: ${CAPL_S3_ENDPOINT}
     path_style: true
@@ -74,13 +74,17 @@ analytic:
     rewrite_data: {a_s: 20, b_s_per_gb: 90}
     rewrite_deletes: {a_s: 15, b_s_per_gb: 60}
     cow_dml: {a_s: 15, b_s_per_gb: 120}
-    mor_dml: {a_s: 10, b_s_per_gb: 40}
+    mor_delete: {a_s: 10, b_s_per_gb: 40}
+    mor_update: {a_s: 10, b_s_per_gb: 40}
+    mor_merge: {a_s: 10, b_s_per_gb: 40}
     overwrite: {a_s: 10, b_s_per_gb: 60}
   cost_fallback_cpu_s_per_gb:
     rewrite_data: 300
     rewrite_deletes: 200
     cow_dml: 400
-    mor_dml: 150
+    mor_delete: 150
+    mor_update: 150
+    mor_merge: 150
     overwrite: 200
 
 policy:

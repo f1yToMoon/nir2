@@ -8,7 +8,7 @@
 | `stream_upsert` | Потоковый upsert с equality deletes | `RowDelta` (equality deletes) | Flink SQL sink `'write.upsert.enabled'='true'` |
 | `overwrite` | INSERT OVERWRITE (dynamic) / `overwritePartitions()` с опциями записи `isolation-level` и `validate-from-snapshot-id` | `ReplacePartitions` | Spark SQL `INSERT OVERWRITE t WITH (…)` / DataFrame |
 | `cow_dml` | DELETE/UPDATE/MERGE copy-on-write | `OverwriteFiles` | Spark SQL, `write.{delete,update,merge}.mode=copy-on-write` |
-| `mor_dml` | DELETE/UPDATE/MERGE merge-on-read | `RowDelta` (position deletes / DV в v3) | Spark SQL, `...mode=merge-on-read` |
+| `mor_dml` → `mor_delete`, `mor_update`, `mor_merge` | DELETE / UPDATE / MERGE merge-on-read. В правилах `config/conflict_matrix.yaml`, журнале прокси и сценариях — подклассы по оператору SQL (исходы различаются, ADR-007 п. 5); `mor_dml` остаётся именем класса гипотезы и опытов этапа 1 (исполнялся как MoR DELETE) | `RowDelta` (position deletes / DV в v3) | Spark SQL, `...mode=merge-on-read` |
 | `rewrite_data` | Компакция | `RewriteFiles` | `CALL system.rewrite_data_files(...)` |
 | `rewrite_deletes` | Переписывание delete-файлов (только format v2) | `RewriteFiles` (delete files) | `CALL system.rewrite_position_delete_files(...)` |
 | `expire` | Удаление старых снапшотов | `ExpireSnapshots` | `CALL system.expire_snapshots(...)` |
@@ -39,6 +39,7 @@
 | {rewrite_data, cow_dml, mor_dml} × `expire` (базовый снапшот ожидающей не удалён) | success |
 | {rewrite_data, cow_dml} × append + `expire`, удаливший базовый снапшот ожидающей | K1 |
 | MoR UPDATE × append + `expire`, удаливший базовый снапшот ожидающей | `base_expired`: `IllegalArgumentException` без повтора (`BaseRowDelta.java:134-139`) |
+| {rewrite_data, cow_dml, overwrite_opts, MoR DML} × `expire`, удаливший снапшот, **следующий** за базовым ожидающей | `base_expired`: `ValidationException` «Cannot determine history …» (`MergingSnapshotProducer.java:967-994`); класс исключения — как у К2, разметка — по сообщению (`src/runner/ops/errors.py`), опытом не проверено (ADR-008) |
 
 Пояснения:
 
@@ -47,7 +48,7 @@
 3. Строка `overwrite`: в Spark проверки конфликтов `ReplacePartitions`/`OverwriteByFilter` включает **только опция записи** `isolation-level` (`SparkWrite.java:353-356, 393-402`; свойство таблицы `write.*.isolation-level` не читается, `SparkWriteConf.java:484-488`). Опция `isolation-level` без `validate-from-snapshot-id` берёт историю валидации от начала таблицы (`MergingSnapshotProducer.java:967-994`) и отказывает с `ValidationException` на каждом запуске без параллельных операций (ложный К2), поэтому в сценариях обе опции задаются вместе; `validate-from-snapshot-id` — снапшот, от которого планировалась операция.
 4. `cow_dml × stream_upsert` даёт К2 и при `snapshot`: CoW вызывает `validateNoConflictingDeletes` при любом уровне изоляции (`SparkWrite.java:527`).
 5. `rewrite_deletes` × {cow_dml, rewrite_data} — K1: `BaseRewriteFiles` проверяет только заменённые data-файлы (`BaseRewriteFiles.java:135-142`). В формате v3 `rewrite_position_delete_files` ничего не коммитит (`RewritePositionDeleteFilesSparkAction.java:121-124`), поэтому операция применяется только к v2.
-6. `base_expired` — отдельный исход (не К1 и не К2): работа операции теряется, но причина — удаление её базового снапшота, а не конфликт данных (§4.2).
+6. `base_expired` — отдельный исход (не К1 и не К2): работа операции теряется, но причина — удаление части её истории (базового снапшота у `RowDelta` или снапшота, следующего за базовым, у любой операции с проверкой истории), а не конфликт данных (§4.2, ADR-008).
 7. Метрика совпадения с **исходной** гипотезой (до опытов, коммит `c6e9a4e`) — 72,9 % повторов (`docs/gate-G1-report.md`); все расхождения детерминированы и объяснены кодом (ADR-006). Таблица выше — исправленная матрица; при смене версии Iceberg матрица перепроверяется тестом `tests/integration/test_conflict_matrix.py`.
 
 ## 3. Аналитическая модель

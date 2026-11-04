@@ -21,7 +21,9 @@ numeric:
   - {name: narrowed_fraction,   expr: "len(F) / len(F_requested)"}
 
   # --- интенсивности конфликтующих классов в следе ---
-  - {name: "lam_{k}_{w}_sum",   for: {k: [append, stream_upsert, overwrite, cow_dml, mor_dml, rewrite_data], w: [60, 300, 900]},
+  # k — классы журнала прокси (op_class: по привязке слот → операция, иначе по телу коммита);
+  # mor_dml этапа 1 разделён на подклассы (ADR-007 п. 5, ревью S2-R3-04)
+  - {name: "lam_{k}_{w}_sum",   for: {k: [append, stream_upsert, overwrite, cow_dml, mor_delete, mor_update, mor_merge, rewrite_data], w: [60, 300, 900]},
      expr: "sum(rate(k, p, window=w) for p in F)", unit: "commits/s"}
   - {name: "lam_{w}_conflicting_sum", for: {w: [60, 300, 900]},
      expr: "sum(rate(k, p, window=w) for p in F for k in K)"}

@@ -72,7 +72,7 @@ maintenance:                       # фоновое обслуживание п�
 controlled_ops: []                 # переопределяется в сценариях; формат см. ниже
 # Формат элемента controlled_ops:
 #  - id: compaction
-#    type: rewrite_data | rewrite_deletes | cow_dml | mor_dml | overwrite | expire
+#    type: rewrite_data | rewrite_deletes | cow_dml | mor_delete | mor_update | mor_merge | overwrite | expire
 #    arrival: {process: poisson | fixed, interval_s: 120}
 #    max_concurrent: 2
 #    sla_s: 1800                   # крайний срок запуска от момента intent
@@ -84,6 +84,11 @@ controlled_ops: []                 # переопределяется в сце�
 #    params: {...}                 # параметры конкретной операции
 
 concurrency_levels:                # множители, выбираемые матрицей экспериментов
+# rate_mult — делитель arrival.interval_s управляемых операций (интенсивность ×rate_mult);
+# max_concurrent_mult — множитель max_concurrent (с округлением вверх, не меньше 1);
+# stream_rate_mult — множитель streams[].rate_events_per_s (события в секунду). Период коммитов
+#   потоков (commit_period_s: интервал checkpoint Flink / trigger Spark) он не меняет, поэтому число
+#   снапшотов от потоков от уровня не зависит; меняется размер коммита (ADR-008, ревью S2-R3-06)
   low:  {rate_mult: 0.5, max_concurrent_mult: 0.5, stream_rate_mult: 0.5}
   mid:  {rate_mult: 1.0, max_concurrent_mult: 1.0, stream_rate_mult: 1.0}
   high: {rate_mult: 2.0, max_concurrent_mult: 2.0, stream_rate_mult: 1.5}
@@ -94,7 +99,7 @@ runner:
   n_slots: 8
   heartbeat_interval_s: 5
   health_sample_interval_s: 30
-  spark_pool_by_type: {rewrite_data: maintenance, rewrite_deletes: maintenance, cow_dml: dml, mor_dml: dml, overwrite: dml, expire: maintenance}
+  spark_pool_by_type: {rewrite_data: maintenance, rewrite_deletes: maintenance, cow_dml: dml, mor_delete: dml, mor_update: dml, mor_merge: dml, overwrite: dml, expire: maintenance}
 
 invariants:
   enabled: true

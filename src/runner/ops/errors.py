@@ -19,14 +19,35 @@ _CLASS: dict[str, str] = {
 }
 
 
-# RowDelta whose base snapshot was expired concurrently: the operation fails without a
-# retry (BaseRowDelta.java:134-139) — work is lost as with K2, but it is not a data conflict
-_BASE_EXPIRED = re.compile(r"Snapshot -?\d+ is not an ancestor of -?\d+")
+# History of the operation removed by a concurrent expire_snapshots: work is lost as with K2,
+# but it is not a data conflict (AGENTS.md, constraint 6; ADR-008, «Последствия»). Two code paths:
+# - RowDelta (MoR DML) whose base snapshot itself was expired: IllegalArgumentException without
+#   a retry (BaseRowDelta.java:134-139, SnapshotUtil.isAncestorOf stops at the missing snapshot);
+# - any MergingSnapshotProducer that validates history (CoW OverwriteFiles, ReplacePartitions /
+#   OverwriteByFilter with validate-from-snapshot-id, RewriteFiles, and RowDelta past the ancestor
+#   check) whose first snapshot after the base was expired: validationHistory cannot walk back to
+#   the base and throws ValidationException (MergingSnapshotProducer.java:967-994). The exception
+#   class is the one of a data conflict, so the message decides; it must win over the class.
+_EXPIRED: dict[str, re.Pattern[str]] = {
+    "base_snapshot": re.compile(r"Snapshot -?\d+ is not an ancestor of -?\d+"),
+    "validation_history": re.compile(
+        r"Cannot determine history between starting snapshot -?\d+ and the last known ancestor"),
+}
+
+
+def expire_cause(exc_text: str) -> str | None:
+    """'base_snapshot' | 'validation_history' when the failure is due to expired history, else None."""
+    for cause, rx in _EXPIRED.items():
+        if rx.search(exc_text):
+            return cause
+    return None
 
 
 def classify(exc_text: str) -> str:
-    """Return 'K2', 'K1', 'base_expired' or 'unknown' for an exception text (with stack trace)."""
-    if _BASE_EXPIRED.search(exc_text):
+    """Return 'K2', 'K1', 'base_expired' or 'unknown' for an exception text (with stack trace).
+
+    'base_expired' covers both paths of expired history (`expire_cause`), never 'K2'."""
+    if expire_cause(exc_text) is not None:
         return "base_expired"
     names = _ICEBERG_EXC.findall(exc_text)
     for name in reversed(names):            # deepest cause is printed last

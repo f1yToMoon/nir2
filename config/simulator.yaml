@@ -15,14 +15,18 @@ client_commit:
   attempt_time_s:     # запись манифестов + manifest list + metadata при повторе; calibrated
     append:       {dist: lognormal, median: 0.6, sigma: 0.5}
     cow_dml:      {dist: lognormal, median: 1.2, sigma: 0.5}
-    mor_dml:      {dist: lognormal, median: 0.9, sigma: 0.5}
+    mor_delete:   {dist: lognormal, median: 0.9, sigma: 0.5}
+    mor_update:   {dist: lognormal, median: 0.9, sigma: 0.5}
+    mor_merge:    {dist: lognormal, median: 0.9, sigma: 0.5}
     rewrite_data: {dist: lognormal, median: 1.5, sigma: 0.5}
   retry: {num_retries: 4, min_wait_ms: 100, max_wait_ms: 60000, total_timeout_ms: 1800000, jitter: true}
 
 durations:            # длительность до запроса коммита: D = a + b * GB * noise; calibrated
   rewrite_data: {a_s: 20, b_s_per_gb: 90, noise_sigma: 0.25}
   cow_dml:      {a_s: 15, b_s_per_gb: 120, noise_sigma: 0.3}
-  mor_dml:      {a_s: 10, b_s_per_gb: 40, noise_sigma: 0.3}
+  mor_delete:   {a_s: 10, b_s_per_gb: 40, noise_sigma: 0.3}
+  mor_update:   {a_s: 10, b_s_per_gb: 40, noise_sigma: 0.3}
+  mor_merge:    {a_s: 10, b_s_per_gb: 40, noise_sigma: 0.3}
   overwrite:    {a_s: 10, b_s_per_gb: 60, noise_sigma: 0.3}
 
 cluster:

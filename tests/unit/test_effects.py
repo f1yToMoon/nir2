@@ -9,7 +9,7 @@ from runner.ops.effects import (
     summary_effect,
     trial_outcome,
 )
-from runner.ops.errors import classify
+from runner.ops.errors import classify, expire_cause
 
 # Summaries copied from the stand (Iceberg 1.12.0, Spark 4.0.1)
 MOR_DELETE_PARTIAL = {"operation": "delete", "added-position-delete-files": "1",
@@ -89,6 +89,15 @@ def test_hold_window() -> None:
      "has changed", "K1"),
     ("java.lang.IllegalArgumentException: Snapshot 1 is not an ancestor of 2", "base_expired"),
     ("java.lang.IllegalArgumentException: something else", "unknown"),
+    # expired history behind a CoW/overwrite/rewrite validation: ValidationException, not K2
+    # (MergingSnapshotProducer.java:990-994, S2-R3-03)
+    ("org.apache.iceberg.exceptions.ValidationException: Cannot determine history between "
+     "starting snapshot 123 and the last known ancestor 456", "base_expired"),
+    ("org.apache.iceberg.exceptions.ValidationException: Cannot determine history between "
+     "starting snapshot -5 and the last known ancestor null", "base_expired"),
+    ("java.lang.RuntimeException: Cannot commit rewrite because of a ValidationException or "
+     "CommitFailedException.\nCaused by: org.apache.iceberg.exceptions.ValidationException: "
+     "Cannot determine history between starting snapshot 7 and the last known ancestor 9", "base_expired"),
     # Spark rewrite action wrapper: the message names both, the cause decides
     ("java.lang.RuntimeException: Cannot commit rewrite because of a ValidationException or "
      "CommitFailedException.\n\tat org.apache.iceberg.spark.actions.X\nCaused by: "
@@ -100,3 +109,11 @@ def test_hold_window() -> None:
 ])
 def test_classify(text: str, expected: str) -> None:
     assert classify(text) == expected
+
+
+def test_expire_cause() -> None:
+    assert expire_cause("java.lang.IllegalArgumentException: Snapshot 1 is not an ancestor of 2") == \
+        "base_snapshot"
+    assert expire_cause("org.apache.iceberg.exceptions.ValidationException: Cannot determine history "
+                        "between starting snapshot 1 and the last known ancestor 2") == "validation_history"
+    assert expire_cause("org.apache.iceberg.exceptions.ValidationException: Found conflicting files") is None

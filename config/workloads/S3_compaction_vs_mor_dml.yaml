@@ -17,7 +17,7 @@ controlled_ops:
     footprint: {selector: small_files_topn, top_n: 12, min_age_days: 0, min_files: 10}
     params: {strategy: binpack, min_input_files: 5, delete_file_threshold: 2}
   - id: mor_updates
-    type: mor_dml
+    type: mor_update               # MoR UPDATE (до S2-R3-04 — mor_dml)
     arrival: {process: poisson, interval_s: 45}
     max_concurrent: 3
     sla_s: 300

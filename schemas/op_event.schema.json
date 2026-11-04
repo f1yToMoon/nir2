@@ -11,7 +11,7 @@
     "kind": {"enum": ["intent", "decision", "start", "heartbeat", "commit_requested", "finish"]},
     "at": {"type": "number"},
     "table": {"type": "string"},
-    "op_type": {"enum": ["append", "stream_upsert", "overwrite", "cow_dml", "mor_dml", "rewrite_data", "rewrite_deletes", "expire", "orphan_cleanup"]},
+    "op_type": {"enum": ["append", "stream_upsert", "overwrite", "cow_dml", "mor_delete", "mor_update", "mor_merge", "rewrite_data", "rewrite_deletes", "expire", "orphan_cleanup"]},
     "slot": {"type": ["string", "null"]},
     "footprint": {"type": "array", "items": {"type": "string"}},
     "decision": {

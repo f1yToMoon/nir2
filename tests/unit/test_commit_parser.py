@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any
+from typing import Any, get_args
 
 import pytest
 import yaml
@@ -18,6 +18,7 @@ from capl.proxy.commit_parser import (
     EQUIVALENT,
     CommitParseError,
     CommitPath,
+    OpClass,
     PathMatcher,
     classify,
     decode_namespace,
@@ -37,20 +38,38 @@ def _load(p: Path) -> dict[str, Any]:
     return json.loads(p.read_text())  # type: ignore[no-any-return]
 
 
-def _outcomes(pending: str) -> dict[tuple[str, str], str]:
-    """Outcome of `pending` for every (committed class, condition) of the matrix rules."""
+def _as_list(x: Any) -> list[str]:
+    return list(OP_CLASSES) if x == "*" else [x] if isinstance(x, str) else list(x)
+
+
+def _outcomes(cls: str) -> dict[tuple[str, str, str], tuple[str, str]]:
+    """(outcome, overlap) of every matrix rule that names `cls`, in both roles (S2-R3-04): as
+    pending against each committed class and as committed against each pending class, per
+    condition. A class named via "*" only is not distinguished from the others."""
     table = {}
     for r in MATRIX["rules"]:
-        pend = r["pending"]
-        if pending not in (pend if isinstance(pend, list) else [pend]):
-            continue
-        committed = r["committed"]
-        committed = list(OP_CLASSES) if committed == "*" else [committed] if isinstance(committed, str) \
-            else committed
         when = json.dumps(r.get("when", {}), sort_keys=True)
-        for c in committed:
-            table[(c, when)] = r["outcome"]
+        val = (r["outcome"], r["overlap"])
+        if cls in _as_list(r["pending"]):
+            for c in _as_list(r["committed"]):
+                table[("pending", c, when)] = val
+        if r["committed"] != "*" and cls in _as_list(r["committed"]):
+            for pnd in _as_list(r["pending"]):
+                table[("committed", pnd, when)] = val
     return table
+
+
+def _body_classes() -> set[str]:
+    """Every class the proxy can put into the journal: classify() results and the candidates of
+    ambiguous / equivalent body classes."""
+    emitted = set(get_args(OpClass))
+    for cands in (*AMBIGUOUS.values(), *EQUIVALENT.values()):
+        emitted |= set(cands)
+    return emitted
+
+
+def _named_in_rules(cls: str, role: str) -> bool:
+    return any(r[role] != "*" and cls in _as_list(r[role]) for r in MATRIX["rules"])
 
 
 def test_fixture_set_is_complete() -> None:
@@ -85,12 +104,46 @@ def test_ambiguity_candidates_are_matrix_classes() -> None:
         assert len(tables) > 1 or len(validates) > 1, amb
 
 
+def _relabel(table: dict[tuple[str, str, str], tuple[str, str]], cands: tuple[str, ...],
+             to: str) -> str:
+    """Outcome table with the other candidates renamed to `to` (mor_update x mor_merge and
+    mor_merge x mor_update are the same pair for equivalent classes)."""
+    return json.dumps(sorted(((role, to if c in cands else c, w), v) for (role, c, w), v in table.items()))
+
+
 def test_equivalent_classes_have_identical_outcomes() -> None:
     for body_class, cands in EQUIVALENT.items():
         assert body_class in cands and set(cands) <= set(OP_CLASSES)
-        tables = {json.dumps(sorted(_outcomes(c).items())) for c in cands}
-        assert len(tables) == 1 and _outcomes(body_class), (body_class, cands)
+        tables = {_relabel(_outcomes(c), cands, body_class) for c in cands}
+        assert len(tables) == 1, (body_class, cands)
+        out = _outcomes(body_class)
+        assert {k[0] for k in out} == {"pending", "committed"}, out    # compared in both roles
         assert len({str(OP_CLASSES[c]["validates"]) for c in cands}) == 1
+
+
+def test_outcomes_cover_both_roles_and_overlap() -> None:
+    # the helper itself: a class that differs only as committed, or only in overlap, is told apart
+    t = _outcomes("mor_update")
+    assert ("committed", "cow_dml", json.dumps({}, sort_keys=True)) in t
+    assert t[("pending", "cow_dml", "{}")] == ("K2", "file")
+    assert _outcomes("mor_delete") != _outcomes("mor_merge")
+
+
+def test_body_classes_are_in_rules() -> None:
+    """Every class the proxy journals is named in the matrix rules in both roles (not only via "*"),
+    or the role is marked `no_rules` with a reason in op_classes (S2-R3-04); no rule names a
+    class that is not in op_classes or that the proxy no longer emits (`superseded_by`)."""
+    for cls in sorted(_body_classes()):
+        assert cls in OP_CLASSES, cls
+        marks = OP_CLASSES[cls].get("no_rules", {})
+        for role in ("pending", "committed"):
+            assert _named_in_rules(cls, role) or marks.get(role), (cls, role)
+    superseded = {c for c, v in OP_CLASSES.items() if v.get("superseded_by")}
+    named = {c for r in MATRIX["rules"] for role in ("pending", "committed") if r[role] != "*"
+             for c in _as_list(r[role])}
+    pseudo = {"append_expire"}           # committed append + expire of the base (stage 1)
+    assert not named & superseded, named & superseded
+    assert named - pseudo <= set(OP_CLASSES), named - pseudo - set(OP_CLASSES)
 
 
 @pytest.mark.parametrize("path", FIXTURES, ids=lambda p: p.stem)
@@ -182,3 +235,14 @@ def test_response_error_type() -> None:
     assert response_error_type(b'{"error": {"type": "CommitFailedException", "code": 409}}') == \
         "CommitFailedException"
     assert response_error_type(b"<html>") is None
+
+
+def test_consumers_use_journal_classes() -> None:
+    """Consumers of the journal op_class know every class the proxy writes, and the features
+    count only classes it writes (a renamed class would leave a feature always 0, S2-R3-04)."""
+    root = Path(__file__).parents[2]
+    schema = json.loads((root / "schemas" / "commit_event.schema.json").read_text())
+    assert _body_classes() <= set(schema["properties"]["op_class"]["enum"])
+    feats = yaml.safe_load((root / "config" / "features.yaml").read_text())
+    ks = {k for f in feats["numeric"] if isinstance(f.get("for"), dict) for k in f["for"].get("k", [])}
+    assert ks and ks <= _body_classes(), ks - _body_classes()
