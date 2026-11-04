@@ -32,7 +32,7 @@ CREATE TEMPORARY TABLE src_events (
   'topic' = '{{topic}}',
   'properties.bootstrap.servers' = '{{kafka_bootstrap}}',
   'properties.group.id' = 'capl-{{stream_id}}-{{run_id}}',
-  'scan.startup.mode' = 'latest-offset',
+  'scan.startup.mode' = 'earliest-offset',          -- топик создаётся на прогон: все события прогона
   'format' = 'json',
   'json.timestamp-format.standard' = 'ISO-8601'
 );

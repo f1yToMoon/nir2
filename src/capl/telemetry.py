@@ -26,6 +26,7 @@ COLUMNS: dict[str, tuple[str, ...]] = {
         "received_at", "forwarded_at", "responded_at", "hold_ms", "hold_reason", "http_status",
         "base_snapshot_id", "new_snapshot_id", "sequence_number", "iceberg_op", "op_class",
         "op_class_body", "op_class_ambiguity", "op_class_source", "summary", "error_type",
+        "removed_snapshot_ids",
     ),
     "commit_events": (
         "run_id", "table_name", "snapshot_id", "parent_snapshot_id", "sequence_number",
@@ -50,6 +51,8 @@ MIGRATIONS = (
     "ALTER TABLE {s}.commit_events ADD COLUMN IF NOT EXISTS removed_delete_files integer",
     "ALTER TABLE {s}.commit_partitions"
     " ADD COLUMN IF NOT EXISTS removed_delete_files integer NOT NULL DEFAULT 0",
+    # snapshots removed by an expire commit: evidence for the base_expired label (stage 3, S2-R4-05)
+    "ALTER TABLE {s}.commit_attempts ADD COLUMN IF NOT EXISTS removed_snapshot_ids bigint[]",
 )
 # idempotent re-insert of an enriched snapshot
 ON_CONFLICT = {

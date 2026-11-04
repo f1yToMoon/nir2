@@ -119,7 +119,8 @@ BEGIN
         op_class_ambiguity text,        -- почему класс по телу может не совпадать (ADR-007)
         op_class_source  text,          -- op_id | body
         summary          jsonb,
-        error_type       text           -- из тела ответа (CommitFailedException и т. п.)
+        error_type       text,          -- из тела ответа (CommitFailedException и т. п.)
+        removed_snapshot_ids bigint[]   -- снапшоты, удалённые коммитом expire (этап 3, base_expired)
       );
       CREATE INDEX IF NOT EXISTS ca_run_idx ON %1$I.commit_attempts(run_id, received_at);
 

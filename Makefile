@@ -57,22 +57,35 @@ smoke: ## Smoke-тест стенда (этап 0)
 	$(RUNNER) python3 -m scripts.smoke
 
 validate-config: ## Валидация YAML сценариев и конфигураций
-	PYTHONPATH=src $(PY) -m runner.scenario --validate config/workloads config/experiments/matrix.yaml
+	PYTHONPATH=src $(VENV_BIN)python -m runner.scenario --validate config/workloads config/experiments/matrix.yaml
 
-seed: ## Создать «золотую» таблицу для SCENARIO
-	$(RUNNER) python -m runner.main seed --scenario $(SCENARIO)
+VARIANT  ?=
+RUNFLAGS ?=
+seed: ## Создать «золотую» таблицу для SCENARIO [VARIANT]
+	$(COMPOSE) exec -T -e GIT_SHA=$(GIT_SHA) runner python3 -m runner.main seed --scenario $(SCENARIO) \
+	  $(if $(VARIANT),--variant $(VARIANT)) $(SEEDFLAGS)
 
-run: ## Один прогон: SCENARIO POLICY CONC SEED
-	$(RUNNER) python -m runner.main run --scenario $(SCENARIO) --policy $(POLICY) --concurrency $(CONC) --seed $(SEED)
+run: ## Один прогон: SCENARIO POLICY CONC SEED [VARIANT] [RUNFLAGS="--duration 300 ..."]
+	$(COMPOSE) exec -T -e GIT_SHA=$(GIT_SHA) runner python3 -m runner.main run --scenario $(SCENARIO) \
+	  --policy $(POLICY) --concurrency $(CONC) --seed $(SEED) $(if $(VARIANT),--variant $(VARIANT)) $(RUNFLAGS)
+
+RUN_ID ?=
+run-measured: ## Прогон с замером CPU воркеров (cgroup): RUN_ID SCENARIO CONC SEED [RUNFLAGS]
+	bash scripts/run_measured.sh $(RUN_ID) $(MAKE) run RUNFLAGS="--run-id $(RUN_ID) $(RUNFLAGS)"
+
+RUNS ?=
+DET ?=
+stage3-checks: ## [auto]-проверки этапа 3 по прогонам: RUNS="<run_id> ..." DET="<run_a> <run_b>"
+	$(RUNNER) python3 scripts/stage3_checks.py --runs $(RUNS) $(if $(DET),--determinism $(DET))
 
 batch: ## Серия из config/experiments/matrix.yaml: SERIES
-	$(RUNNER) python -m runner.batch --matrix config/experiments/matrix.yaml --series $(SERIES)
+	$(COMPOSE) exec -T -e GIT_SHA=$(GIT_SHA) runner python3 -m runner.batch --matrix config/experiments/matrix.yaml --series $(SERIES)
 
 export: ## Экспорт трасс прогона в Parquet: RUN=<run_id> (пусто = все завершённые)
-	$(RUNNER) python -m runner.export --run "$(RUN)" --out data/traces
+	$(RUNNER) python3 -m runner.export --run "$(RUN)" --out data/traces
 
-gc: ## Уборка файлов прошедших прогонов
-	$(RUNNER) python -m runner.gc
+gc: ## Уборка файлов прошедших прогонов (всё, на что не ссылаются «золотые» версии)
+	$(RUNNER) python3 -m runner.gc
 
 # коммит, на котором выполняется прогон; -dirty — есть незакоммиченные изменения
 GIT_SHA = $(shell git rev-parse HEAD)$(shell test -z "$$(git status --porcelain)" || echo -dirty)
@@ -110,7 +123,7 @@ test-e2e: ## E2E: короткие прогоны всех сценариев
 lint: ## ruff
 	$(VENV_BIN)ruff check src tests scripts/update_matrix.py scripts/capture_commit_fixtures.py \
 	  scripts/overhead_enricher_ablation.py scripts/overhead_localization_blocks.py \
-	  scripts/overhead_localization_timestamps.py scripts/grafana_check.py
+	  scripts/overhead_localization_timestamps.py scripts/grafana_check.py scripts/stage3_checks.py
 
 typecheck: ## mypy
 	$(VENV_BIN)mypy --strict src/capl

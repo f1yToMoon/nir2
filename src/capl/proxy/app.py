@@ -460,6 +460,7 @@ class ProxyService:
                 "op_class": op_class, "op_class_body": c.op_class,
                 "op_class_ambiguity": c.ambiguity, "op_class_source": source,
                 "summary": c.summary or None, "error_type": error_type,
+                "removed_snapshot_ids": list(c.removed_snapshot_ids) or None,
             })
             if 200 <= status < 300 and self.enricher is not None and self.enrich_enabled \
                     and c.new_snapshot_id is not None \
