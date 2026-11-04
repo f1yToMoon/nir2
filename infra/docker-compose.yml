@@ -39,7 +39,9 @@ services:
       interval: 5s
       timeout: 3s
       retries: 30
-    mem_limit: 1g
+    # этап 3: под полной нагрузкой сценариев (поток + MERGE/компакция по 30 млн строк) SeaweedFS
+    # с лимитом 1g завершался по OOM (exit 137, OOMKilled=true) — лимит поднят до 3g
+    mem_limit: 3g
     logging: *default-logging
 
   s3-init:
