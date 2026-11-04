@@ -74,8 +74,9 @@ def _bench_expire_plan() -> dict[str, Any]:
     and rate * (older_than_s + interval_s) snapshots."""
     import yaml
 
-    exp = yaml.safe_load((WORKLOADS / "_base.yaml").read_text())["maintenance"]["expire_snapshots"]
     s1 = yaml.safe_load(next(WORKLOADS.glob("S1_*.yaml")).read_text())
+    exp = {**yaml.safe_load((WORKLOADS / "_base.yaml").read_text())["maintenance"]["expire_snapshots"],
+           **s1.get("maintenance", {}).get("expire_snapshots", {})}     # S1 may override (ADR-008)
     rate = sum(st.get("writers", 1) / st["commit_period_s"] for st in s1["streams"])
     return {"s1_commits_per_s": rate, "interval_s": exp["interval_s"], "older_than_s": exp["older_than_s"],
             "retain": round(rate * exp["older_than_s"]),

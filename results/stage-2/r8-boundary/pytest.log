@@ -1,0 +1,199 @@
+docker compose --env-file infra/.env -f infra/docker-compose.yml exec -T -e GIT_SHA=50ebfb5463d6bf066f8a8960bee7e532960510e7 -e RESULTS_NAME=r8-boundary \
+  -e STAGE2_BENCH_COMMITS=3000 -e STAGE2_BENCH_EXPIRE=false \
+  -e STAGE2_BENCH_SNAPSHOT_BYTES=960 runner \
+  pytest -q -p no:cacheprovider tests/integration/test_proxy_stage2.py -k "overhead"
+F                                                                        [100%]
+=================================== FAILURES ===================================
+________________________ test_overhead_bypass_vs_proxy _________________________
+
+    
+    def test_overhead_bypass_vs_proxy() -> None:
+        """Latency of the commit request (RestCatalog.commit_table: one POST) for appends of the
+        same data, alternating proxy/bypass, N_BENCH commits each; overhead = proxy - bypass.
+    
+        Bench tables merge manifests (`commit.manifest-merge.enabled=true`, min count 100), as the
+        stand's writers do: Iceberg Java default, TableProperties.java:119,122 (Spark, Flink); PyIceberg
+        0.12.0 defaults to false (pyiceberg/table/__init__.py:208). STAGE2_BENCH_MANIFEST_MERGE=false
+        reproduces the growing manifest list (stage-2 r3).
+    
+        Snapshots are of the size Spark/Flink writes (BENCH_SNAPSHOT_BYTES, S2-R3-02): the overhead
+        grows with the table metadata, so the history boundary is measured in both snapshots and bytes.
+    
+        The table history follows the scheduled expire of the scenarios (ADR-008, `_bench_expire_plan`):
+        it grows to expire_at, then saws between retain and expire_at. NFR-1 is checked on the top band
+        of that history (windows with a median snapshot count >= BENCH_BAND * expire_at, pooled): the
+        upper bound of the bootstrap 95 % CI of the paired median <= 5 ms (S2-R3-01). The run has to
+        pass at least one full saw cycle per path (two expires), otherwise the check fails.
+        STAGE2_BENCH_EXPIRE=false lets the history grow without bound (r3, r4; boundary search)."""
+        import pyarrow as pa
+        from pyiceberg.schema import Schema
+        from pyiceberg.types import LongType, NestedField
+    
+        schema = Schema(NestedField(1, "id", LongType(), required=False))
+        cats = {"proxy": _pyiceberg(PROXY_URL, "bench"), "bypass": _pyiceberg(DIRECT_URL)}
+        tables, lat = {}, {"proxy": [], "bypass": []}
+        timing_on = {"proxy": False, "bypass": False}   # per path; a function attribute on `timed`
+        # would be looked up through the loop variable and read the last path's flag
+        for name, cat in cats.items():
+            cat.create_namespace_if_not_exists(NS)
+            tname = f"{NS}.bench_{name}_{int(time.time())}"
+            tables[name] = cat.create_table(tname, schema, properties=BENCH_TABLE_PROPS)
+            orig = cat.commit_table
+    
+            def timed(*a: Any, _orig: Any = orig, _name: str = name, **k: Any) -> Any:
+                t0 = time.perf_counter()
+                try:
+                    return _orig(*a, **k)
+                finally:
+                    if timing_on[_name]:
+                        lat[_name].append((time.perf_counter() - t0) * 1000)
+    
+            cat.commit_table = timed
+        data = pa.table({"id": pa.array([1, 2, 3], pa.int64())})
+        # snapshot summary of the size Spark/Flink writes: engine keys + padding, calibrated on the
+        # first (unmeasured) commit of each table
+        props: dict[str, dict[str, str]] = {"proxy": {}, "bypass": {}}
+        for name in tables:
+            tables[name].append(data)
+            if BENCH_SNAPSHOT_BYTES:
+                props[name] = dict(SPARK_SUMMARY)
+                tables[name].append(data, snapshot_properties=props[name])
+                size = _snapshot_bytes(_metadata(tables[name].name()[-1])[1][-1])
+                pad = BENCH_SNAPSHOT_BYTES - size - len('"capl.bench.pad":"",')
+                if pad > 0:
+                    props[name]["capl.bench.pad"] = "x" * pad
+        rng = random.Random(SEED)
+        plan = _bench_expire_plan() if BENCH_EXPIRE else None
+        n_snaps = {name: len(_metadata(t.name()[-1])[1]) for name, t in tables.items()}
+        snaps_at: dict[str, list[int]] = {"proxy": [], "bypass": []}
+        n_expires = {"proxy": 0, "bypass": 0}
+        win = 100
+        meta_at: list[dict[str, int]] = []                    # proxy table: (snapshots, metadata bytes)
+        over_before = (_metric("capl_proxy_overhead_seconds_sum"), _metric("capl_proxy_overhead_seconds_count"))
+        for i in range(N_BENCH + 50):
+            order = ["proxy", "bypass"]
+            rng.shuffle(order)
+            for name in order:
+                timing_on[name] = i >= 50                     # 50 warm-up commits per path
+                tables[name].append(data, snapshot_properties=props[name])
+                n_snaps[name] += 1
+                if i >= 50:
+                    snaps_at[name].append(n_snaps[name])
+                if plan and n_snaps[name] >= plan["expire_at"]:
+                    # scheduled expire of the scenarios (ADR-008); its commit is not measured
+                    timing_on[name] = False
+                    ids = sorted((s.timestamp_ms, s.snapshot_id) for s in tables[name].snapshots())
+                    drop = [sid for _, sid in ids[:len(ids) - plan["retain"]]]
+                    tables[name].maintenance.expire_snapshots().by_ids(drop).commit()
+                    n_snaps[name] = len(tables[name].snapshots())
+                    n_expires[name] += 1
+            if i >= 50 and (i - 50) % win in (0, win - 1):  # metadata size at window start and end
+                nbytes, snaps = _metadata(tables["proxy"].name()[-1])
+                meta_at.append({"commit": i - 50, "snapshots": len(snaps), "metadata_bytes": nbytes})
+        over_after = (_metric("capl_proxy_overhead_seconds_sum"), _metric("capl_proxy_overhead_seconds_count"))
+        p, b = lat["proxy"], lat["bypass"]
+        rep: dict[str, Any] = {
+            "n_per_path": len(p), "unit": "ms",
+            "proxy": {"p50": _q(p, .5), "p95": _q(p, .95), "p99": _q(p, .99), "mean": statistics.fmean(p)},
+            "bypass": {"p50": _q(b, .5), "p95": _q(b, .95), "p99": _q(b, .99), "mean": statistics.fmean(b)},
+            "proxy_internal_overhead_mean_ms": 1000 * (over_after[0] - over_before[0])
+            / max(1.0, over_after[1] - over_before[1]),
+        }
+        rep["overhead_p50"] = rep["proxy"]["p50"] - rep["bypass"]["p50"]
+        rep["overhead_p95"] = rep["proxy"]["p95"] - rep["bypass"]["p95"]
+        # whole series, for reference only: its value depends on the series length (S2-R2-01)
+        boot = random.Random(SEED)
+        d50, d95 = [], []
+        for _ in range(2000):
+            ps = [boot.choice(p) for _ in p]
+            bs = [boot.choice(b) for _ in b]
+            d50.append(_q(ps, .5) - _q(bs, .5))
+            d95.append(_q(ps, .95) - _q(bs, .95))
+        rep["overhead_p50_ci95"] = [_q(d50, .025), _q(d50, .975)]
+        rep["overhead_p95_ci95"] = [_q(d95, .025), _q(d95, .975)]
+        # windows of 100 commits; the table size of a window is the median snapshot count of its
+        # commits (sawtooth with the scheduled expire); paired medians (proxy_i - bypass_i of
+        # interleaved commits) are robust to window-level drift of the catalog (r4: -32.4 ms)
+        windows = []
+        for k, w0 in enumerate(range(0, len(p) - win + 1, win)):
+            pw, bw = p[w0:w0 + win], b[w0:w0 + win]
+            diffs = [x - y for x, y in zip(pw, bw, strict=True)]
+            ends = [m["metadata_bytes"] for m in meta_at if w0 <= m["commit"] < w0 + win]
+            windows.append({"w0": w0, "snapshots_mid": int(statistics.median(snaps_at["proxy"][w0:w0 + win])),
+                            "snapshots_max": max(snaps_at["proxy"][w0:w0 + win]),
+                            "metadata_bytes_max": max(ends) if ends else None,
+                            "proxy_p50": _q(pw, .5), "bypass_p50": _q(bw, .5),
+                            "diff_p50": _q(pw, .5) - _q(bw, .5),
+                            "paired_median_diff": statistics.median(diffs),
+                            "paired_median_ci95": _paired_median_ci(diffs, random.Random(SEED + k), 1000)})
+        xs = [w["snapshots_mid"] for w in windows]
+        ys = [w["paired_median_diff"] for w in windows]
+        mx, my = statistics.fmean(xs), statistics.fmean(ys)
+        sxx = sum((x - mx) ** 2 for x in xs) or 1.0
+        slope = sum((x - mx) * (y - my) for x, y in zip(xs, ys, strict=True)) / sxx
+        max_snaps = max(snaps_at["proxy"] + snaps_at["bypass"])
+        rep["trend"] = {"statistic": "paired_median_diff", "windows": windows,
+                        "slope_ms_per_1000_snapshots": 1000 * slope, "intercept_ms": my - slope * mx,
+                        "fitted_at_max_snapshots_ms": my + slope * (max_snaps - mx),   # reference only
+                        "r": slope * (sxx ** 0.5) / (sum((y - my) ** 2 for y in ys) ** 0.5 or 1.0)}
+        over = [w for w in windows if w["paired_median_diff"] > 5.0]
+        rep["first_window_over_5ms"] = over[0] if over else None
+        # metadata bytes per snapshot (linear: every snapshot adds one entry to snapshots and snapshot-log)
+        mx2 = statistics.fmean(m["snapshots"] for m in meta_at)
+        my2 = statistics.fmean(m["metadata_bytes"] for m in meta_at)
+        sxx2 = sum((m["snapshots"] - mx2) ** 2 for m in meta_at) or 1.0
+        per_snap = sum((m["snapshots"] - mx2) * (m["metadata_bytes"] - my2) for m in meta_at) / sxx2
+        rep["metadata_bytes"] = {"per_snapshot": per_snap, "intercept": my2 - per_snap * mx2, "samples": meta_at}
+        nbytes, snaps = _metadata(tables["proxy"].name()[-1])
+        rep["commit_response_bytes_at_end"] = nbytes
+        rep["snapshot_entry_bytes"] = {"target": BENCH_SNAPSHOT_BYTES,
+                                       "mean": statistics.fmean(_snapshot_bytes(s) for s in snaps),
+                                       "summary_padding": len(props["proxy"].get("capl.bench.pad", ""))}
+        # NFR-1 on the top band of the history (S2-R3-01)
+        top = plan["expire_at"] if plan else max_snaps
+        band = [w for w in windows if w["snapshots_mid"] >= BENCH_BAND * top]
+        band_diffs = [p[i] - b[i] for w in band for i in range(w["w0"], w["w0"] + win)]
+        band_p = [p[i] for w in band for i in range(w["w0"], w["w0"] + win)]
+        band_b = [b[i] for w in band for i in range(w["w0"], w["w0"] + win)]
+        rep["top_band"] = {
+            "snapshots_from": BENCH_BAND * top, "snapshots_to": top, "windows": [w["w0"] for w in band],
+            "n_pairs": len(band_diffs),
+            "paired_median_diff": statistics.median(band_diffs) if band_diffs else None,
+            "paired_median_ci95": (_paired_median_ci(band_diffs, random.Random(SEED), 4000)
+                                   if band_diffs else None),
+            "p95_diff": _q(band_p, .95) - _q(band_b, .95) if band_diffs else None,
+            "max_window_paired_median": max(w["paired_median_diff"] for w in band) if band else None}
+        rep["bench_table_properties"] = BENCH_TABLE_PROPS
+        rep["bench_expire"] = {**(plan or {"enabled": False}), "n_expires": n_expires, "max_snapshots": max_snaps}
+        tp = tables["proxy"].refresh()
+        rep["manifest_list_entries_at_end"] = len(tp.current_snapshot().manifests(tp.io))
+        _save("overhead.json", rep)
+        _save("overhead_raw.json", lat)
+        assert len(p) == len(b) == N_BENCH
+        if BENCH_SNAPSHOT_BYTES:      # the bench writes snapshots of the size it claims (±5 %)
+            sb = rep["snapshot_entry_bytes"]
+            assert abs(sb["mean"] - BENCH_SNAPSHOT_BYTES) <= 0.05 * BENCH_SNAPSHOT_BYTES, sb
+        if plan:                      # a full saw cycle per path: up to expire_at, down, up again
+            assert min(n_expires.values()) >= 2 and max_snaps >= plan["expire_at"], rep["bench_expire"]
+        tb = rep["top_band"]
+>       assert tb["n_pairs"] >= BENCH_MIN_BAND_PAIRS, tb
+E       AssertionError: {'snapshots_from': 2746.8, 'snapshots_to': 3052, 'windows': [2700, 2800, 2900], 'n_pairs': 300, ...}
+E       assert 6.8618010000136564 <= 5.0
+
+tests/integration/test_proxy_stage2.py:649: AssertionError
+=============================== warnings summary ===============================
+../usr/local/lib/python3.10/dist-packages/_pytest/config/__init__.py:1464
+  /usr/local/lib/python3.10/dist-packages/_pytest/config/__init__.py:1464: PytestConfigWarning: Unknown config option: asyncio_default_fixture_loop_scope
+  
+    self._warn_or_fail_if_strict(f"Unknown config option: {key}\n")
+
+../usr/local/lib/python3.10/dist-packages/_pytest/config/__init__.py:1464
+  /usr/local/lib/python3.10/dist-packages/_pytest/config/__init__.py:1464: PytestConfigWarning: Unknown config option: asyncio_mode
+  
+    self._warn_or_fail_if_strict(f"Unknown config option: {key}\n")
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/integration/test_proxy_stage2.py::test_overhead_bypass_vs_proxy
+1 failed, 4 deselected, 2 warnings in 6356.23s (1:45:56)
+make: *** [Makefile:87: proxy-verify] Error 1
