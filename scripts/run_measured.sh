@@ -6,6 +6,8 @@ set -euo pipefail
 RUN_ID="$1"; shift
 OUT="results/stage-3/runs/${RUN_ID}.cpu.json"
 mkdir -p results/stage-3/runs
+# каталог результатов создаётся и root-процессом контейнера runner
+docker exec nir-runner-1 chmod -R a+rwX /workspace/results/stage-3 /workspace/data 2>/dev/null || true
 read_cpu() {
   local total=0
   for c in nir-spark-worker-1-1 nir-spark-worker-2-1; do

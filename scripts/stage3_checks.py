@@ -135,6 +135,8 @@ def main(argv: list[str] | None = None) -> int:
             x["outcome"] not in ("data_conflict", "retry_exhausted") for x in over_r),
             R_s=R, over_r=over_r[:10], n_over_r=len(over_r), base_expired=be, history_unresolved=hu,
             errors=unk)
+        errs = [(o["op_id"], o["error_class"]) for o in ops if o["outcome"] in ("error", "commit_unknown")]
+        check(f"{rid}: no runner/infrastructure errors", not errs, errors=errs[:10])
         bgx = detail.get("background_expire") or {}
         info["background_expire"] = bgx
         # 7. history size

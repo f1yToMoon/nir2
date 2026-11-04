@@ -56,7 +56,9 @@ class KafkaFeed:
     def __init__(self, env: Env, sc: Scenario, stream: Stream, stream_idx: int, run_id: str,
                  seed: int, t0_mono: float) -> None:
         self.env, self.sc, self.stream = env, sc, stream
-        self.topic = f"capl-{run_id}-{stream.id}".replace("_", "-")
+        # attempt stamp: a topic left by an aborted attempt of the same run id (same seed → same
+        # event ids, earliest-offset) must never be read again (stage-3 S0 run: 1 277 600 duplicates)
+        self.topic = f"capl-{run_id}-{stream.id}-{int(time.time())}".replace("_", "-")
         self.gen = EventGen(sc, stream, stream_idx, None, seed)
         self.first_id = self.gen.next_id
         self.t0 = t0_mono
@@ -70,6 +72,12 @@ class KafkaFeed:
     def create_topic(self, partitions: int = 8) -> None:
         from confluent_kafka.admin import AdminClient, NewTopic
         adm = AdminClient({"bootstrap.servers": self.env.kafka})
+        prefix = self.topic.rsplit("-", 1)[0]
+        stale = [t for t in adm.list_topics(timeout=10).topics if t.startswith(prefix)]
+        if stale:                                   # topics of aborted attempts of this run id
+            for f in adm.delete_topics(stale).values():
+                with contextlib.suppress(Exception):
+                    f.result(timeout=30)
         fs = adm.create_topics([NewTopic(self.topic, num_partitions=partitions, replication_factor=1)])
         for f in fs.values():
             with contextlib.suppress(Exception):
