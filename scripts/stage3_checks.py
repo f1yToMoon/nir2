@@ -161,10 +161,10 @@ def main(argv: list[str] | None = None) -> int:
             return [(i["op_key"], i["seq"], i["op_type"], i["t_offset_s"], i["op_seed"],
                      json.dumps(i["footprint"], sort_keys=True)) for i in x]
         same = fp(a) == fp(b)
-        ra = {o["op_id"].split("-", 5)[-1]: set(o["footprint_requested"] or [])
+        ra = {"-".join(o["op_id"].rsplit("-", 2)[-2:]): set(o["footprint_requested"] or [])
               for o in db.query("SELECT op_id, footprint_requested FROM {s}.ops WHERE run_id = %s",
                                 [args.determinism[0]])}
-        rb = {o["op_id"].split("-", 5)[-1]: set(o["footprint_requested"] or [])
+        rb = {"-".join(o["op_id"].rsplit("-", 2)[-2:]): set(o["footprint_requested"] or [])
               for o in db.query("SELECT op_id, footprint_requested FROM {s}.ops WHERE run_id = %s",
                                 [args.determinism[1]])}
         jac = [len(ra[k] & rb[k]) / max(1, len(ra[k] | rb[k])) for k in ra if k in rb]
