@@ -1,0 +1,153 @@
+{
+  "nir-runner-1": {
+    "image_id": "sha256:e08a8356e5b7502461ffea19cc309cd35a3718a66ca08aa6fe8f520257d7f7ef",
+    "configured_image": "nir/spark:dev",
+    "started_at": "2026-11-07T16:39:08.658394041Z",
+    "oom": false,
+    "restart_count": 0
+  },
+  "nir-s3-1": {
+    "image_id": "sha256:7b5ca1f11aa4c91593612d2d4a9e253ec9152a4bd13a19e551290a042a4c52f5",
+    "configured_image": "chrislusf/seaweedfs:4.48",
+    "started_at": "2026-11-07T16:28:28.247238908Z",
+    "oom": false,
+    "restart_count": 0
+  },
+  "nir-capl-1": {
+    "image_id": "sha256:6bece1df8509c01f87eea4a7e6b646bd17bce9bffc8ca0788abaf2b1a2a38b28",
+    "configured_image": "nir/capl:dev",
+    "started_at": "2026-11-07T16:28:49.633335779Z",
+    "oom": false,
+    "restart_count": 0
+  },
+  "nir-flink-taskmanager-1": {
+    "image_id": "sha256:1a65d2a8311eae563b497299917f3a5d604a692320adcbe8506407e01a37591b",
+    "configured_image": "nir/flink:dev",
+    "started_at": "2026-11-07T16:29:21.375758502Z",
+    "oom": false,
+    "restart_count": 0
+  },
+  "nir-flink-sql-gateway-1": {
+    "image_id": "sha256:1a65d2a8311eae563b497299917f3a5d604a692320adcbe8506407e01a37591b",
+    "configured_image": "nir/flink:dev",
+    "started_at": "2026-11-07T16:29:21.376500086Z",
+    "oom": false,
+    "restart_count": 0
+  },
+  "nir-flink-jobmanager-1": {
+    "image_id": "sha256:1a65d2a8311eae563b497299917f3a5d604a692320adcbe8506407e01a37591b",
+    "configured_image": "nir/flink:dev",
+    "started_at": "2026-11-07T16:29:21.244054695Z",
+    "oom": false,
+    "restart_count": 0
+  },
+  "nir-spark-worker-1-1": {
+    "image_id": "sha256:f422855ebca1512590f228130a38b0e278cef724dd91eaab8cc329987d6bf0c3",
+    "configured_image": "nir/spark:dev",
+    "started_at": "2026-11-07T16:28:28.440559673Z",
+    "oom": false,
+    "restart_count": 0
+  },
+  "nir-spark-worker-2-1": {
+    "image_id": "sha256:f422855ebca1512590f228130a38b0e278cef724dd91eaab8cc329987d6bf0c3",
+    "configured_image": "nir/spark:dev",
+    "started_at": "2026-11-07T16:28:28.444097561Z",
+    "oom": false,
+    "restart_count": 0
+  },
+  "nir-spark-master-1": {
+    "image_id": "sha256:f422855ebca1512590f228130a38b0e278cef724dd91eaab8cc329987d6bf0c3",
+    "configured_image": "nir/spark:dev",
+    "started_at": "2026-11-07T16:28:28.251502745Z",
+    "oom": false,
+    "restart_count": 0
+  },
+  "nir-catalog-1": {
+    "image_id": "sha256:7ea2ad86a944938e5508721416e7c3f2b9b0b1bdfd63392d475bdaacba9a3cee",
+    "configured_image": "apache/iceberg-rest-fixture:latest@sha256:db8de90b5b7693d4ac334c336f91d9bbe320d7b19f4f514d26de84cdfbcbfe8d",
+    "started_at": "2026-11-07T16:28:44.01401383Z",
+    "oom": false,
+    "restart_count": 0
+  },
+  "nir-toxiproxy-1": {
+    "image_id": "sha256:3edf5d14625b9aa8ad71d5dd084da1f8a0eb46ee749457549ae91d29d96546aa",
+    "configured_image": "ghcr.io/shopify/toxiproxy:2.12.0",
+    "started_at": "2026-11-07T16:28:33.881296266Z",
+    "oom": false,
+    "restart_count": 0
+  },
+  "nir-grafana-1": {
+    "image_id": "sha256:75006c93b887a310c7d4b21b557de093cb67caa4e1e4d812cbc08edd7580b7e9",
+    "configured_image": "grafana/grafana:12.1.0",
+    "started_at": "2026-11-07T16:29:20.898621143Z",
+    "oom": false,
+    "restart_count": 0
+  },
+  "nir-prometheus-1": {
+    "image_id": "sha256:a3bc50fcb50fb1409287c32773d8fe799f6cad5511c4ba3e2e851784e7a05026",
+    "configured_image": "prom/prometheus:v3.5.0",
+    "started_at": "2026-11-07T16:29:20.587229529Z",
+    "oom": false,
+    "restart_count": 0
+  },
+  "nir-kafka-1": {
+    "image_id": "sha256:44a48f9d78af26959fa4d61accb9be35f939a79bfdae05cad6df4baca8e22eeb",
+    "configured_image": "apache/kafka:3.9.1",
+    "started_at": "2026-11-07T16:29:20.58574415Z",
+    "oom": false,
+    "restart_count": 0
+  },
+  "nir-postgres-1": {
+    "image_id": "sha256:066167ff39c2a612402ce99b734ea1cff92a9d1f2ac52f697a5f0384f0d88d6b",
+    "configured_image": "postgres:16",
+    "started_at": "2026-11-07T16:28:28.248023843Z",
+    "oom": false,
+    "restart_count": 0
+  },
+  "capl_sources": {
+    "src/capl/telemetry.py": {
+      "local_sha256": "3c90ad5f43dd15c3de8a55e5f28f6dfc017568c1c6adf304576c9a2e8c63ba46",
+      "container_sha256": "3c90ad5f43dd15c3de8a55e5f28f6dfc017568c1c6adf304576c9a2e8c63ba46"
+    },
+    "src/capl/enricher.py": {
+      "local_sha256": "944c8da6d145d0b24a7ac587888af1224a16f1e81e8902ee3de941bfc0fc76ef",
+      "container_sha256": "944c8da6d145d0b24a7ac587888af1224a16f1e81e8902ee3de941bfc0fc76ef"
+    },
+    "src/capl/metrics.py": {
+      "local_sha256": "6916dcf17cd8a0367d3f3f2d05f2d7e67632e059f6ce92e29a78c3c51ae3537e",
+      "container_sha256": "6916dcf17cd8a0367d3f3f2d05f2d7e67632e059f6ce92e29a78c3c51ae3537e"
+    },
+    "src/capl/digest.py": {
+      "local_sha256": "f60a4361aedd9cbef9f59f6a412ddf4509f04ed80248cdc944e8780fbe346fdc",
+      "container_sha256": "f60a4361aedd9cbef9f59f6a412ddf4509f04ed80248cdc944e8780fbe346fdc"
+    },
+    "src/capl/state.py": {
+      "local_sha256": "2ddb27e5306fa91514efad50b0d50f007072831c89ae75e56669cb3f6c746b06",
+      "container_sha256": "2ddb27e5306fa91514efad50b0d50f007072831c89ae75e56669cb3f6c746b06"
+    },
+    "src/capl/main.py": {
+      "local_sha256": "048ea2f90be9a295c1f3b5e745cc5cabffced1a2ff63cc21c639fd569afa1e64",
+      "container_sha256": "048ea2f90be9a295c1f3b5e745cc5cabffced1a2ff63cc21c639fd569afa1e64"
+    },
+    "src/capl/config.py": {
+      "local_sha256": "49fcb5ed121f710d0ba49a4a0229ad0c89c56fa276c421634a41f5f031d7f00b",
+      "container_sha256": "49fcb5ed121f710d0ba49a4a0229ad0c89c56fa276c421634a41f5f031d7f00b"
+    },
+    "src/capl/advisor/app.py": {
+      "local_sha256": "35a2c7497c1b118aa52c39f2cba6c2325a429ff22fcb067f2d97d7536008381e",
+      "container_sha256": "35a2c7497c1b118aa52c39f2cba6c2325a429ff22fcb067f2d97d7536008381e"
+    },
+    "src/capl/proxy/hold.py": {
+      "local_sha256": "03da8b51a343a306f6cfb5d648eeb20f6df41e59b155992f6ac9a3003ded06ae",
+      "container_sha256": "03da8b51a343a306f6cfb5d648eeb20f6df41e59b155992f6ac9a3003ded06ae"
+    },
+    "src/capl/proxy/commit_parser.py": {
+      "local_sha256": "2f6fc6d57604ff236636fd50882f901041434b81320b01fe428adc17231ebe93",
+      "container_sha256": "2f6fc6d57604ff236636fd50882f901041434b81320b01fe428adc17231ebe93"
+    },
+    "src/capl/proxy/app.py": {
+      "local_sha256": "d7b64efe004a6f35e8c6f3a244141fc6df48584833b4978a6712ac4ba44d921f",
+      "container_sha256": "d7b64efe004a6f35e8c6f3a244141fc6df48584833b4978a6712ac4ba44d921f"
+    }
+  }
+}

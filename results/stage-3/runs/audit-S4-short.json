@@ -1,0 +1,226 @@
+{
+ "run_id": "audit-S4-short",
+ "stream_freshness": {
+  "complete": true,
+  "n_expected": 490600,
+  "n_samples": 490600,
+  "missing": 0,
+  "p95_s": 14.58632550239563,
+  "errors": [],
+  "unresolved_snapshots": {},
+  "n_snapshots": 18,
+  "observer_cpu_s": 1.8179160470000009,
+  "clock": "producer UTC time.time \u2192 successful commit_attempts.responded_at"
+ },
+ "scenario": "S4_merge_vs_stream_serializable",
+ "variant": null,
+ "level": "mid",
+ "seed": 11,
+ "policy": "P0",
+ "git_sha": "64dd0f25b8f11c0b7ddd69164246573a370375d1",
+ "t0": "2026-11-07T16:39:32.378909+00:00",
+ "t_end": "2026-11-07T16:44:40.680167+00:00",
+ "intents": 2,
+ "overrun_after_cooldown": [
+  "audit-S4-short-batch_merge-0000"
+ ],
+ "streams": {
+  "kafka": [
+   {
+    "stream": "ingest",
+    "produced": 490600,
+    "errors": []
+   }
+  ],
+  "flink": [
+   {
+    "final_lag": 0,
+    "job_id": "0f6f7341899ec79179f19648f55068eb",
+    "checkpoints": {
+     "restored": 0,
+     "total": 20,
+     "in_progress": 0,
+     "completed": 20,
+     "failed": 0
+    }
+   }
+  ],
+  "agents": []
+ },
+ "invariants": {
+  "ledger_row_counts": {
+   "ok": true,
+   "partitions_checked": 277,
+   "mismatches": {},
+   "n_mismatches": 0,
+   "rows_by_origin": {
+    "golden": 30000000,
+    "stream": 490600,
+    "merge": 50000
+   },
+   "journal_physical_records": 30540600,
+   "snapshot_total_records": 30540600,
+   "table_live_rows": 30540600,
+   "journal_commits": 20
+  },
+  "no_duplicate_event_ids": {
+   "ok": true,
+   "duplicates": 0,
+   "rows": 30540600
+  },
+  "committed_ops_in_lineage": {
+   "ok": true,
+   "lineage_len": 20,
+   "lineage_error": null,
+   "committed_checked": 2,
+   "missing": [],
+   "n_missing": 0
+  },
+  "aborted_ops_absent": {
+   "ok": true,
+   "failed_ops": 0,
+   "snapshots_in_lineage": [],
+   "aborted_rows_checked": 0,
+   "aborted_rows_present": 0,
+   "lineage_error": null
+  },
+  "version_monotonic": {
+   "ok": true,
+   "rows_checked": 30540600,
+   "rows_expected_updated": 50000,
+   "mismatches": 0
+  },
+  "ok": true
+ },
+ "orphans": {
+  "orphan_files": 0,
+  "orphan_bytes": 0,
+  "old_metadata_json": 0,
+  "listed_since_start": 740
+ },
+ "spark_app_totals": {
+  "cpu_ms": 851327,
+  "run_ms": 1474759,
+  "stages": 71
+ },
+ "health": {
+  "samples": 9,
+  "errors": [],
+  "max_snapshots": 21,
+  "max_metadata_bytes": 31706
+ },
+ "cooldown_s": 30.0,
+ "warmup_s": 20.0,
+ "duration_s": 150.0,
+ "summary": {
+  "run_id": "audit-S4-short",
+  "n_ops": 2,
+  "n_k2": 0,
+  "n_k1_fail": 0,
+  "n_base_expired": 0,
+  "n_history_unresolved": 0,
+  "n_errors": 0,
+  "wasted_cpu_s": 0.0,
+  "useful_cpu_s": 31.046,
+  "wasted_cpu_base_expired_s": 0.0,
+  "wasted_share": 0.0,
+  "background_cpu_s": 8.003,
+  "wasted_bytes": 0,
+  "goodput_commits_per_min": 0.8,
+  "commit_lat_p50_ms": 71.9165,
+  "commit_lat_p95_ms": 102.88954999999999,
+  "commit_lat_p99_ms": 105.64271,
+  "delay_p95_s": 1.1101028,
+  "sla_violations": 0,
+  "debt_mean": 1.0,
+  "debt_max": 1.0,
+  "orphan_bytes": 0,
+  "stream_freshness_p95_s": 14.58632550239563,
+  "detail": {
+   "stream_freshness": {
+    "complete": true,
+    "n_expected": 490600,
+    "n_samples": 490600,
+    "missing": 0,
+    "p95_s": 14.58632550239563,
+    "errors": [],
+    "unresolved_snapshots": {},
+    "n_snapshots": 18,
+    "observer_cpu_s": 1.8179160470000009,
+    "clock": "producer UTC time.time \u2192 successful commit_attempts.responded_at"
+   },
+   "outcomes": {
+    "committed": 2
+   },
+   "per_op": {
+    "batch_merge": {
+     "op_type": "cow_dml",
+     "n": 1,
+     "outcomes": {
+      "committed": 1
+     },
+     "d_exec_s": {
+      "n": 1,
+      "max": 15.2,
+      "p50": 15.2,
+      "p95": 15.2
+     },
+     "d_hist_s": {
+      "n": 1,
+      "max": 29.3,
+      "p50": 29.3,
+      "p95": 29.3
+     },
+     "cpu_s": {
+      "n": 1,
+      "max": 19.1,
+      "p50": 19.1,
+      "p95": 19.1
+     },
+     "attempts_max": 1
+    },
+    "reprocess_day": {
+     "op_type": "overwrite",
+     "n": 1,
+     "outcomes": {
+      "committed": 1
+     },
+     "d_exec_s": {
+      "n": 1,
+      "max": 4.9,
+      "p50": 4.9,
+      "p95": 4.9
+     },
+     "d_hist_s": {
+      "n": 1,
+      "max": 8.3,
+      "p50": 8.3,
+      "p95": 8.3
+     },
+     "cpu_s": {
+      "n": 1,
+      "max": 12.0,
+      "p50": 12.0,
+      "p95": 12.0
+     },
+     "attempts_max": 1
+    }
+   },
+   "background_expire": {
+    "n": 5,
+    "d_exec_max_s": 5.54931,
+    "d_exec_p50_s": 4.990332,
+    "late_max_s": 5.7,
+    "outcomes": {
+     "committed": 5
+    },
+    "cpu_s": 8.003
+   },
+   "d_hist_max_s": 29.267324,
+   "max_snapshots": 21,
+   "max_metadata_bytes": 31706,
+   "policy": "P0",
+   "scenario": "S4_merge_vs_stream_serializable"
+  }
+ }
+}

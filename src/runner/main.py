@@ -400,6 +400,16 @@ class Run:
                        "max_metadata_bytes": health.max_metadata_bytes},
             "cooldown_s": sc.cooldown_s, "warmup_s": sc.warmup_s, "duration_s": sc.duration_s,
         })
+        incomplete_cost = [r["op_id"] for r in ops_rows if r.get("outcome") != "noop"
+                           and not (r.get("cost_detail") or {}).get("complete")]
+        runner_errors = [r["op_id"] for r in ops_rows
+                         if r.get("outcome") in ("error", "commit_unknown", "history_unresolved")]
+        self.results["validation"] = {
+            "ok": bool(inv_res.get("ok")) and self.results["stream_freshness"]["complete"]
+                  and not incomplete_cost and not runner_errors and not health.errors
+                  and all(not feed.errors for feed in feeds)
+                  and all(fl["final_lag"] == 0 for fl in flink_out),
+            "incomplete_cost": incomplete_cost, "runner_errors": runner_errors}
         from analysis.metrics import compute_summary
         summ = compute_summary(db, self.run_id, extra=self.results)
         self.results["summary"] = summ
@@ -408,7 +418,7 @@ class Run:
         RESULTS_DIR.mkdir(parents=True, exist_ok=True)
         (RESULTS_DIR / f"{self.run_id}.json").write_text(json.dumps(self.results, indent=1, default=str))
         log("run finished", run_id=self.run_id, invariants_ok=inv_res.get("ok"))
-        return 0 if inv_res.get("ok") and self.results["stream_freshness"]["complete"] else 1
+        return 0 if self.results["validation"]["ok"] else 1
 
     def _op(self, ex: OpExecutor, rec: OpRecord, op: scn.ControlledOp, sem: threading.Semaphore,
             idx: int, t0: datetime) -> None:

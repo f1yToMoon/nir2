@@ -81,6 +81,59 @@ def test_stage3_insert_overwrite_dynamic_with(spark: Any) -> None:
     spark.sql(f"DROP TABLE IF EXISTS {t} PURGE")
 
 
+def test_stage3_history_labels_have_data_evidence(spark: Any) -> None:
+    """The real history ValidationException needs a removed ancestor and a causal expire."""
+    from types import SimpleNamespace
+
+    from runner.db import DB
+    from runner.ops.executor import OpExecutor, now
+
+    env = Env()
+    db = DB(env.pg_dsn, env.pg_schema)
+    name = "stage3_it.history"
+    table = f"lake.{name}"
+    spark.sql("CREATE NAMESPACE IF NOT EXISTS lake.stage3_it")
+    spark.sql(f"DROP TABLE IF EXISTS {table} PURGE")
+    spark.sql(f"CREATE TABLE {table} (id BIGINT, d INT) USING iceberg PARTITIONED BY (d) "
+              "TBLPROPERTIES ('format-version'='2')")
+    try:
+        spark.sql(f"INSERT INTO {table} VALUES (1, 1)")
+        base = load_table_state(env, name).current_snapshot_id
+        started = now()
+        spark.sql(f"INSERT INTO {table} VALUES (2, 1)")
+        child = load_table_state(env, name).current_snapshot_id
+        spark.sql(f"INSERT INTO {table} VALUES (3, 1)")
+        spark.sql(f"CALL lake.system.expire_snapshots(table => '{name}', "
+                  f"snapshot_ids => array(CAST({child} AS BIGINT)))")
+        assert child not in load_table_state(env, name).snapshots
+        with pytest.raises(Exception) as caught:
+            spark.sql(f"INSERT OVERWRITE {table} WITH ('isolation-level'='serializable', "
+                      f"'validate-from-snapshot-id'='{base}') "
+                      f"SELECT * FROM {table} VERSION AS OF {base}").collect()
+        failed = now()
+        text = str(caught.value)
+        assert "Cannot determine history" in text, text
+        executor = OpExecutor.__new__(OpExecutor)
+        executor.ctx = SimpleNamespace(env=env, db=db, table=name)
+        # Wait for journal flush without extending the causal event interval.
+        deadline = time.monotonic() + 10
+        while not db.expire_commits(name, started, failed) and time.monotonic() < deadline:
+            time.sleep(0.1)
+        outcome, detail = executor._outcome(text, started, failed)
+        assert outcome == "base_expired", detail
+        assert child in detail["expire_evidence"]["absent_in_metadata"]
+        # Same real exception, with no causal expire in the operation interval.
+        assert executor._outcome(text, failed, failed)[0] == "history_unresolved"
+        out = REPO / "results" / "stage-3" / "history_labels.json"
+        import json
+        out.write_text(json.dumps({"base": base, "expired_child": child, "outcome": outcome,
+                                   "without_causal_expire": "history_unresolved", "detail": detail},
+                                  default=str, indent=1))
+    finally:
+        db.close()
+        spark.sql(f"DROP TABLE IF EXISTS {table} PURGE")
+
+
 def test_stage3_invariants_detect_injected_faults(spark: Any) -> None:
     found = _last_ledger()
     if found is None:

@@ -43,19 +43,22 @@ class Ledger:
     aborted_inserted: list[int] = field(default_factory=list)
     deleted_ids: set[int] = field(default_factory=set)
     merge_updated: Counter[int] = field(default_factory=Counter)
+    _inserted_index: dict[int, tuple[int, int, str]] = field(default_factory=dict, repr=False)
 
     def apply_effects(self, jr: dict[str, Any]) -> None:
         """Replay one committed operation, in successful snapshot lineage order."""
         for i, _k, _p in jr.get("deleted_rows", []):
             self.deleted_ids.add(int(i))
             self.merge_updated.pop(int(i), None)
+        if not self._inserted_index and self.merge_inserted:
+            self._inserted_index = {r[0]: r for r in self.merge_inserted}
         for i, k, part in jr.get("effect_inserted_rows", []):
             self.deleted_ids.discard(int(i))
             self.merge_updated.pop(int(i), None)
             # Golden/stream reinserts already occur in the independent baseline ledger.
             if int(i) >= OP_BASE:
-                self.merge_inserted = [r for r in self.merge_inserted if r[0] != int(i)]
-                self.merge_inserted.append((int(i), int(k), part))
+                self._inserted_index[int(i)] = (int(i), int(k), part)
+        self.merge_inserted = list(self._inserted_index.values())
         self.merge_updated.update(int(i) for i in jr.get("effect_updated_ids", []))
 
 
