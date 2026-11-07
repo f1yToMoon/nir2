@@ -1,0 +1,26 @@
+{
+  "data": [
+    {
+      "cwd": "/home/an/nir",
+      "skills": [
+        {
+          "name": "review",
+          "description": "Организовать независимое ревью этапа НИР CAPL отдельным субагентом stage-reviewer по зафиксированному коммиту; сохранить новый раунд без правки существующих ревью.",
+          "path": "/home/an/nir/.agents/skills/review/SKILL.md",
+          "scope": "repo",
+          "enabled": true,
+          "pluginId": null
+        },
+        {
+          "name": "stage",
+          "description": "Выполнить или продолжить порученный этап НИР CAPL полным циклом реализации, проверок и независимого ревью до приёмки или предусмотренной остановки.",
+          "path": "/home/an/nir/.agents/skills/stage/SKILL.md",
+          "scope": "repo",
+          "enabled": true,
+          "pluginId": null
+        }
+      ],
+      "errors": []
+    }
+  ]
+}

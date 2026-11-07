@@ -1,0 +1,28 @@
+Native role dispatch used the explicit selector `agent_type="stage-reviewer"`. Exactly one child completed.
+
+Exact spawn arguments:
+```json
+{
+  "task_name": "native_dispatch_smoke",
+  "agent_type": "stage-reviewer",
+  "fork_turns": "none",
+  "message": "Smoke test only, NOT a stage review. Do not write any files, do not perform a full review, do not read any files (including agent TOML or repository instructions). In /home/an/nir execute only git rev-parse HEAD. Return the actual SHA and quote/report the role restrictions already injected by the runtime in your initial context. Explicitly identify whether runtime supplied role instructions before any file reads. Distinguish runtime-injected instructions from this task message; do not claim role provenance based on self-description. Expected parent HEAD is 2dd2c96007e2cbe911476efcf43de7a49e470be8. No model override, configuration changes, experiments, commits or review files."
+}
+```
+
+The API uses `fork_turns="none"` for fresh context; it has no `fork_context` field.
+
+Spawn returned:
+```json
+{"task_name":"/root/native_dispatch_smoke"}
+```
+
+**Child THREAD UUID: unavailable.** Neither spawn nor `list_agents` exposed a UUID, only the task name. Therefore the requested UUID evidence cannot be supplied.
+
+Child result:
+
+- Actual HEAD: `2dd2c96007e2cbe911476efcf43de7a49e470be8`.
+- Reported runtime instructions present before file reads: independent CAPL reviewer; no implementation/configuration/review/acceptance/author-decision changes; no commits, tags, or publishing; smoke mode writes no files.
+- Reported executing only `git rev-parse HEAD`, with no file reads or writes.
+
+The explicit selector establishes native dispatch; the injected-instruction contents are child-reported evidence. No model override or configuration change was used.

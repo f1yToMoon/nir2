@@ -1,0 +1,20 @@
+{
+  "date": "2026-11-08",
+  "installed_commit": "2dd2c96007e2cbe911476efcf43de7a49e470be8",
+  "codex_version": "0.167.0",
+  "skills_loaded": ["stage", "review"],
+  "native_role_smoke": "passed with runtime metadata and injected developer instructions",
+  "main_hooks": "two project hooks enabled and trusted",
+  "new_fixture": "/tmp/capl-codex-hooks-jdd6o3nl",
+  "fixture_source_matches": 6,
+  "pre_trust_verifier_exit": 3,
+  "runtime_cases_passed": null,
+  "runtime_cases_status": "not started: awaiting user workspace and hook trust via /hooks",
+  "transfer_complete": false,
+  "unit_tests_passed": 285,
+  "mypy_files": 14,
+  "validated_configurations": 21,
+  "new_stage3_experiments": 0,
+  "stage3_formal_review_rounds": 0,
+  "trust_bypass_used": false
+}
