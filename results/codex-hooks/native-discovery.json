@@ -1,0 +1,53 @@
+{
+  "codex_version": "codex-cli 0.167.0",
+  "data": [
+    {
+      "cwd": "/home/an/nir",
+      "hooks": [
+        {
+          "key": "/home/an/nir/.codex/hooks.json:pre_tool_use:0:0",
+          "eventName": "preToolUse",
+          "handlerType": "command",
+          "command": "python3 \"$(git rev-parse --show-toplevel)/scripts/hooks/codex_pretool.py\"",
+          "async": false,
+          "matcher": "^(Bash|apply_patch|Edit|Write|MultiEdit|exec_command|shell_command|shell)$",
+          "timeoutSec": 10,
+          "statusMessage": "Проверка защиты приёмки CAPL",
+          "additionalContextLimit": null,
+          "sourcePath": "/home/an/nir/.codex/hooks.json",
+          "source": "project",
+          "pluginId": null,
+          "environmentId": null,
+          "displayOrder": 12,
+          "enabled": true,
+          "isManaged": false,
+          "currentHash": "sha256:35175006e3d53a4eed05766692e53d254af74cee218712efe82c6d5e8075c46e",
+          "trustStatus": "untrusted"
+        },
+        {
+          "key": "/home/an/nir/.codex/hooks.json:session_start:0:0",
+          "eventName": "sessionStart",
+          "handlerType": "command",
+          "command": "python3 \"$(git rev-parse --show-toplevel)/scripts/hooks/codex_session_start.py\"",
+          "async": false,
+          "matcher": null,
+          "timeoutSec": 10,
+          "statusMessage": "Состояние этапов CAPL и решения автора",
+          "additionalContextLimit": 12000,
+          "sourcePath": "/home/an/nir/.codex/hooks.json",
+          "source": "project",
+          "pluginId": null,
+          "environmentId": null,
+          "displayOrder": 13,
+          "enabled": true,
+          "isManaged": false,
+          "currentHash": "sha256:9829a42c4758e6b1f2a4a3cea4db00255125fe4475283234b6b6dc0a4189a22e",
+          "trustStatus": "untrusted"
+        }
+      ],
+      "errors": [],
+      "warnings": []
+    }
+  ],
+  "runtime_dispatch": "pending user hook trust; no bypass used"
+}

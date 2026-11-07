@@ -1,0 +1,31 @@
+{
+  "description": "CAPL: защита приёмки этапов; перенос разрешён автором 07.11.2026.",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/scripts/hooks/codex_session_start.py\"",
+            "timeout": 10,
+            "additionalContextLimit": 12000,
+            "statusMessage": "Состояние этапов CAPL и решения автора"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "^(Bash|apply_patch|Edit|Write|MultiEdit|exec_command|shell_command|shell)$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/scripts/hooks/codex_pretool.py\"",
+            "timeout": 10,
+            "statusMessage": "Проверка защиты приёмки CAPL"
+          }
+        ]
+      }
+    ]
+  }
+}

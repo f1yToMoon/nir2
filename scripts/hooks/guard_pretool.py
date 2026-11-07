@@ -35,7 +35,7 @@ GATE_FILE_RE = re.compile(r"docs/gate-G\d-report\.md")
 PROTECTED_RE = re.compile(
     r"(^|[\s'\"=/])("
     r"\.claude/settings(\.local)?\.json|\.claude/agents/|\.claude/skills/|"
-    r"scripts/hooks/|docs/REVIEWER\.md"
+    r"scripts/hooks/|\.codex/|docs/REVIEWER\.md"
     r")"
 )
 WRITE_CMD_RE = re.compile(
@@ -44,7 +44,7 @@ WRITE_CMD_RE = re.compile(
 )
 COMMIT_RE = re.compile(r"\bgit\s+commit\b")
 PROTECTED_PATH_RE = re.compile(
-    r"^(\.claude/settings(\.local)?\.json|\.claude/agents/|\.claude/skills/|scripts/hooks/|docs/REVIEWER\.md)"
+    r"^(\.claude/settings(\.local)?\.json|\.claude/agents/|\.claude/skills/|scripts/hooks/|\.codex/|docs/REVIEWER\.md)"
 )
 COMMIT_MSG = (
     "Коммит запрещён: в нём изменены файлы механизма приёмки ({files}). Их меняет только автор вручную. "
@@ -54,7 +54,7 @@ COMMIT_MSG = (
 )
 PROTECTED_MSG = (
     "Запрещено: файлы механизма приёмки (.claude/settings*.json, .claude/agents/, .claude/skills/, "
-    "scripts/hooks/, docs/REVIEWER.md) меняет только автор вручную. Если правило мешает, "
+    "scripts/hooks/, .codex/, docs/REVIEWER.md) меняет только автор вручную. Если правило мешает, "
     "опиши проблему в отчёте этапа и остановись."
 )
 
@@ -94,6 +94,10 @@ def check_tag(stage: int) -> None:
 def check_commit(cmd: str) -> None:
     staged = git(ROOT, "diff", "--cached", "--name-only").splitlines()
     files = set(staged)
+    # Pathspec/--only/--include commits can include unstaged protected files. Be conservative:
+    # any dirty acceptance mechanism requires the author to handle it outside the agent.
+    files |= set(git(ROOT, "diff", "--name-only").splitlines())
+    files |= set(git(ROOT, "ls-files", "--others", "--exclude-standard").splitlines())
     if re.search(r"\bgit\s+commit\b[^;&|]*\s(-a|--all|-[a-zA-Z]*a[a-zA-Z]*)\b", cmd):
         files |= set(git(ROOT, "diff", "--name-only").splitlines())
     if re.search(r"\bgit\s+add\b", cmd):

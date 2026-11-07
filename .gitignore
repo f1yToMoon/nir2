@@ -3,6 +3,7 @@ data/
 models/*
 !models/.gitkeep
 results/*
+!results/codex-hooks/
 # stage-1: результаты итераций коммитятся (ревью S1-R1-10); пилоты, прототипы — нет
 !results/stage-1/
 results/stage-1/*

@@ -1,0 +1,9 @@
+{
+  ".codex/hooks.json": "82770a8037ec20831baedce9f119c3406d9004ad3a0414a16062e47128a7738d",
+  "scripts/hooks/review_lib.py": "958e33d5d6293f176d24e075396904cbdf03d0f186f364a2c0428757ba5fe22a",
+  "scripts/hooks/session_status.py": "a4e28012718dc1303f2888595d448702171cd0db680e8c489681941a32083a45",
+  "scripts/hooks/verify_codex_runtime.py": "cb0f669767e59f176321d0c4b075d819d472642a0d3df16de1fb954bd42f5465",
+  "scripts/hooks/guard_pretool.py": "5aefc2d589dd2dd9f9f7d0057f8c366acac9b1d134e23314b8defb629f2be33d",
+  "scripts/hooks/codex_session_start.py": "14b21cffb1ec170bbf3142c97f1eca74145e3d6d0acb3da63aa9da21d6c74f4d",
+  "scripts/hooks/codex_pretool.py": "77a74bab94581c83ae8746b5fc813b93e8b52b50c9fc8fb337f9cb7b72f15242"
+}

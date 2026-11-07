@@ -1,12 +1,21 @@
 """Общие функции хуков: поиск ревью этапа и решения автора на контрольной точке."""
 from __future__ import annotations
 
+import os
 import re
 import subprocess
 from pathlib import Path
 
 GATE_BY_STAGE = {1: "G1", 4: "G2"}
 ACCEPTING = {"PASS", "PASS_WITH_NOTES"}
+
+
+def repository_root(cwd: str | None = None) -> Path:
+    """Codex supplies cwd; Claude supplies CLAUDE_PROJECT_DIR. Never assume repo cwd."""
+    start = Path(cwd or os.environ.get("CLAUDE_PROJECT_DIR") or Path.cwd()).resolve()
+    result = subprocess.run(["git", "-C", str(start), "rev-parse", "--show-toplevel"],
+                            capture_output=True, text=True, check=True)
+    return Path(result.stdout.strip()).resolve()
 
 _DECISION_SECTION = re.compile(r"решение\s+автора", re.IGNORECASE)
 _CHECKED = re.compile(r"\[\s*[xXхХ]\s*\][`*\s]*(GO|CORRECT|PIVOT)", re.IGNORECASE)
@@ -45,6 +54,10 @@ def review_covers_head(root: Path, reviewed: str) -> tuple[bool, str]:
     full = git(root, "rev-parse", "--verify", "--quiet", reviewed + "^{commit}")
     if not full:
         return False, f"коммит {reviewed} из ревью не найден"
+    ancestor = subprocess.run(["git", "-C", str(root), "merge-base", "--is-ancestor", full, head],
+                              capture_output=True, check=False)
+    if ancestor.returncode != 0:
+        return False, "проверенный коммит не является предком HEAD"
     if full == head:
         return True, ""
     changed = [f for f in git(root, "diff", "--name-only", f"{full}..{head}").splitlines() if f]
