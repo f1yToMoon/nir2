@@ -103,8 +103,11 @@ def compute_summary(db: Any, run_id: str, extra: dict[str, Any] | None = None) -
         "commit_lat_p99_ms": _pct(lat, 99), "delay_p95_s": _pct(delays, 95), "sla_violations": sla,
         "debt_mean": float(np.mean(debt)) if debt else None, "debt_max": max(debt) if debt else None,
         "orphan_bytes": int(orph[0]["orphan_bytes"]) if orph else None,
-        "stream_freshness_p95_s": None,
-        "detail": {"outcomes": by_outcome, "per_op": per_type,
+        "stream_freshness_p95_s": ((extra or {}).get("stream_freshness", {}).get("p95_s")
+                                   if (extra or {}).get("stream_freshness", {}).get("complete")
+                                   else None),
+        "detail": {"stream_freshness": (extra or {}).get("stream_freshness"),
+                   "outcomes": by_outcome, "per_op": per_type,
                    "background_expire": {"n": len(bg), "d_exec_max_s": max(bg_d) if bg_d else None,
                                          "d_exec_p50_s": _pct(bg_d, 50),
                                          "late_max_s": max(bg_late) if bg_late else None,

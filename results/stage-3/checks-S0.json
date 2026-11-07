@@ -1,0 +1,207 @@
+{
+ "runs": {
+  "stage3-S0-P0-mid-s1": {
+   "scenario": "S0_baseline",
+   "status": "finished",
+   "invariants_ok": true,
+   "git_sha": "3d9f0742c37e365e63805044e8c403ee8191e9a7",
+   "n_ops": 11,
+   "k2": 0,
+   "k1_fail": 0,
+   "k1_with_409": 1,
+   "outcomes": {
+    "committed": 11
+   },
+   "background_expire": {
+    "n": 28,
+    "cpu_s": 53.392,
+    "outcomes": {
+     "committed": 28
+    },
+    "late_max_s": 2.9,
+    "d_exec_max_s": 2.312802,
+    "d_exec_p50_s": 1.1211639999999998
+   },
+   "commit_rate_per_s": 0.08815470160470353,
+   "R_s": 600.0,
+   "I_s": 60.0
+  },
+  "stage3-S0-P0-mid-s1-rep": {
+   "scenario": "S0_baseline",
+   "status": "finished",
+   "invariants_ok": true,
+   "git_sha": "3d9f0742c37e365e63805044e8c403ee8191e9a7",
+   "n_ops": 11,
+   "k2": 0,
+   "k1_fail": 0,
+   "k1_with_409": 0,
+   "outcomes": {
+    "committed": 11
+   },
+   "background_expire": {
+    "n": 28,
+    "cpu_s": 53.791,
+    "outcomes": {
+     "committed": 28
+    },
+    "late_max_s": 2.9,
+    "d_exec_max_s": 2.297383,
+    "d_exec_p50_s": 1.139968
+   },
+   "commit_rate_per_s": 0.05530844940779578,
+   "R_s": 600.0,
+   "I_s": 60.0
+  }
+ },
+ "checks": {
+  "stage3-S0-P0-mid-s1: finished, invariants_ok": {
+   "ok": true,
+   "invariants": {
+    "ledger_row_counts": true,
+    "no_duplicate_event_ids": true,
+    "committed_ops_in_lineage": true,
+    "aborted_ops_absent": true,
+    "version_monotonic": true,
+    "ok": true
+   }
+  },
+  "stage3-S0-P0-mid-s1: sum cpu_ms <= app cpu": {
+   "ok": true,
+   "ops_cpu_ms": 151214,
+   "app_cpu_ms": 309771,
+   "workers_cgroup_cpu_ms": 749722,
+   "share_of_app": 0.488
+  },
+  "stage3-S0-P0-mid-s1: app cpu <= workers cgroup cpu": {
+   "ok": true,
+   "app_cpu_ms": 309771,
+   "workers_cgroup_cpu_ms": 749722
+  },
+  "stage3-S0-P0-mid-s1: footprint_executed ⊆ requested": {
+   "ok": true,
+   "committed": 11,
+   "with_executed": 11,
+   "violations": []
+  },
+  "stage3-S0-P0-mid-s1: no operation older than R (or counted)": {
+   "ok": true,
+   "R_s": 600.0,
+   "over_r": [],
+   "n_over_r": 0,
+   "base_expired": 0,
+   "history_unresolved": 0,
+   "errors": 0
+  },
+  "stage3-S0-P0-mid-s1: no runner/infrastructure errors": {
+   "ok": true,
+   "errors": []
+  },
+  "stage3-S0-P0-mid-s1: history <= verified point (1452 / 1.51 MB)": {
+   "ok": true,
+   "max_snapshots": 70,
+   "max_metadata_bytes": 85914,
+   "B": [
+    1800,
+    1880000
+   ]
+  },
+  "stage3-S0-P0-mid-s1-rep: finished, invariants_ok": {
+   "ok": true,
+   "invariants": {
+    "ledger_row_counts": true,
+    "no_duplicate_event_ids": true,
+    "committed_ops_in_lineage": true,
+    "aborted_ops_absent": true,
+    "version_monotonic": true,
+    "ok": true
+   }
+  },
+  "stage3-S0-P0-mid-s1-rep: sum cpu_ms <= app cpu": {
+   "ok": true,
+   "ops_cpu_ms": 152466,
+   "app_cpu_ms": 312065,
+   "workers_cgroup_cpu_ms": 753759,
+   "share_of_app": 0.489
+  },
+  "stage3-S0-P0-mid-s1-rep: app cpu <= workers cgroup cpu": {
+   "ok": true,
+   "app_cpu_ms": 312065,
+   "workers_cgroup_cpu_ms": 753759
+  },
+  "stage3-S0-P0-mid-s1-rep: footprint_executed ⊆ requested": {
+   "ok": true,
+   "committed": 11,
+   "with_executed": 11,
+   "violations": []
+  },
+  "stage3-S0-P0-mid-s1-rep: no operation older than R (or counted)": {
+   "ok": true,
+   "R_s": 600.0,
+   "over_r": [],
+   "n_over_r": 0,
+   "base_expired": 0,
+   "history_unresolved": 0,
+   "errors": 0
+  },
+  "stage3-S0-P0-mid-s1-rep: no runner/infrastructure errors": {
+   "ok": true,
+   "errors": []
+  },
+  "stage3-S0-P0-mid-s1-rep: history <= verified point (1452 / 1.51 MB)": {
+   "ok": true,
+   "max_snapshots": 71,
+   "max_metadata_bytes": 86918,
+   "B": [
+    1800,
+    1880000
+   ]
+  },
+  "determinism: identical intents": {
+   "ok": true,
+   "n_a": 11,
+   "n_b": 11,
+   "resolved_footprint_jaccard_mean": 0.282,
+   "resolved_identical": 11,
+   "resolved_n": 39
+  },
+  "retention: D_max <= 349 s (else author decision)": {
+   "ok": true,
+   "d_max_s": 19.0
+  }
+ },
+ "retention": {
+  "d_max_s": 19.0,
+  "d_max_op": "stage3-S0-P0-mid-s1-rep-dml_cold-0000",
+  "d_max_run": "stage3-S0-P0-mid-s1-rep",
+  "top5": [
+   [
+    19.0,
+    "stage3-S0-P0-mid-s1-rep-dml_cold-0000"
+   ],
+   [
+    14.2,
+    "stage3-S0-P0-mid-s1-dml_cold-0000"
+   ],
+   [
+    13.4,
+    "stage3-S0-P0-mid-s1-rep-dml_cold-0001"
+   ],
+   [
+    11.8,
+    "stage3-S0-P0-mid-s1-dml_cold-0004"
+   ],
+   [
+    11.0,
+    "stage3-S0-P0-mid-s1-dml_cold-0002"
+   ]
+  ],
+  "num_retries": 4,
+  "R_low_s (2·D_max + (n+1)·hold)": 338.1,
+  "R_low_single_hold_s": 98.1,
+  "S1_commit_rate_per_s": null,
+  "R_high_verified_point_s": null,
+  "R_high_B_s": null,
+  "author_stop (D_max > 349 s)": false
+ },
+ "failed": []
+}

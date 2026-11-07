@@ -133,3 +133,19 @@ class DB:
         rows = self.query("SELECT snapshot_id FROM {s}.commit_events WHERE table_name = %s"
                           " AND parent_snapshot_id = %s", [table, snapshot_id])
         return [int(r["snapshot_id"]) for r in rows]
+
+    def validation_path(self, table: str, ancestor: int, base: int) -> list[int]:
+        """Journal path from the reported last known ancestor to the validation base.
+
+        Empty means the relation is not established; another branch's child is not evidence.
+        """
+        rows = self.query("SELECT snapshot_id, parent_snapshot_id FROM {s}.commit_events "
+                          "WHERE table_name = %s", [table])
+        parents = {int(r["snapshot_id"]): r["parent_snapshot_id"] for r in rows}
+        path: list[int] = []
+        cur: int | None = ancestor
+        while cur is not None and cur != base and cur not in path:
+            path.append(cur)
+            parent = parents.get(cur)
+            cur = int(parent) if parent is not None else None
+        return path if cur == base else []

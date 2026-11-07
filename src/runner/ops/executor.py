@@ -258,6 +258,68 @@ class OpExecutor:
                 f"WHEN MATCHED THEN UPDATE SET amount = s.amount, status = s.status, "
                 f"version = t.version + 1 WHEN NOT MATCHED THEN INSERT *")
 
+    def record_effects(self, op: ControlledOp, row: dict[str, Any], jr: dict[str, Any]) -> None:
+        """Record exact logical effects against the successful snapshot's parent.
+
+        Call after commit telemetry has provided snapshot_id. These diagnostic reads use an
+        admin job tag, outside the operation cost scope. Failure invalidates the run; it must
+        never silently fall back to key-wide exclusions or planning-time UPDATE predicates.
+        """
+        if row.get("outcome") != "committed" or op.type not in ROW_LEVEL:
+            return
+        ctx = self.ctx
+        sid = int(row["snapshot_id"])
+        st = load_table_state(ctx.env, ctx.table)
+        snap = st.snapshots[sid]
+        parent = snap["parent"]
+        if parent is None:
+            raise ValueError(f"operation snapshot {sid} has no predecessor")
+        nb = ctx.sc.table.n_buckets
+        part = (f"concat('dt=', CAST(dt AS STRING), '/key_bucket=', "
+                f"CAST(system.bucket({nb}, key) AS STRING))")
+        table = f"lake.{ctx.table} VERSION AS OF {int(parent)}"
+        statement = op.params.get("statement")
+        with job_scope(ctx.spark, f"effects-{row['op_id']}", "exact effects", "admin"):
+            if statement in ("delete_by_keys", "update_status"):
+                pred = fp_predicate(row["footprint_requested"], nb)
+                if statement == "delete_by_keys":
+                    keys = ", ".join(str(int(k)) for k in jr["deleted_keys"])
+                    pred += f" AND key IN ({keys})"
+                else:
+                    rule = jr["update_rule"]
+                    pred += f" AND pmod(key, {int(rule['mod'])}) = {int(rule['r'])}"
+                rows = ctx.spark.sql(f"SELECT event_id, key, {part} AS p FROM {table} "
+                                     f"WHERE {pred}").collect()
+                if statement == "delete_by_keys":
+                    jr["deleted_rows"] = [(int(r["event_id"]), int(r["key"]), r["p"]) for r in rows]
+                else:
+                    jr["effect_updated_ids"] = [int(r["event_id"]) for r in rows]
+            elif statement in ("merge_upsert", "merge_update"):
+                source_ids = [int(i) for i in jr.get("updated_ids", [])]
+                planned_inserts = [(int(i), int(k), p) for i, (k, p) in
+                                   zip(jr["inserted_ids"], jr["inserted_rows"], strict=True)]
+                source_ids += [i for i, _k, _p in planned_inserts]
+                ids = ", ".join(map(str, source_ids)) or "NULL"
+                present = {int(r["event_id"]) for r in ctx.spark.sql(
+                    f"SELECT event_id FROM {table} WHERE event_id IN ({ids})").collect()}
+                jr["effect_updated_ids"] = sorted(present)
+                inserted = [r for r in planned_inserts if r[0] not in present]
+                missing = sorted(set(jr.get("updated_ids", [])) - present)
+                if missing:
+                    planning = int(row["planning_snapshot_id"])
+                    missing_sql = ", ".join(map(str, missing))
+                    restored = ctx.spark.sql(
+                        f"SELECT event_id, key, {part} AS p FROM lake.{ctx.table} "
+                        f"VERSION AS OF {planning} WHERE event_id IN ({missing_sql})").collect()
+                    if len(restored) != len(missing):
+                        raise ValueError("MERGE source rows unavailable for exact effect ledger")
+                    inserted += [(int(r["event_id"]), int(r["key"]), r["p"]) for r in restored]
+                jr["effect_inserted_rows"] = inserted
+            else:
+                raise ValueError(f"no exact effect recorder for {statement}")
+        jr["effects_parent_snapshot_id"] = int(parent)
+        jr["effects_recorded"] = True
+
     # ── outcome ──
     def _confirm_expired(self, text: str, t_start: datetime, t_fail: datetime) -> dict[str, Any]:
         """Evidence for base_expired (author decision 2026-11-04, REVIEWER.md P5)."""
@@ -271,7 +333,8 @@ class OpExecutor:
         x = int(m.group(1))
         ev["snapshot"] = x
         # base_snapshot: the base itself; validation_history: the snapshot after the base
-        targets = [x] if cause == "base_snapshot" else self.ctx.db.children_of(self.ctx.table, x)
+        targets = [x] if cause == "base_snapshot" else self.ctx.db.validation_path(
+            self.ctx.table, int(m.group(2)), x)
         ev["removed_target"] = targets
         try:
             stt = load_table_state(self.ctx.env, self.ctx.table)
@@ -281,7 +344,7 @@ class OpExecutor:
             ev["metadata_error"] = repr(exc)
         ev["absent_in_metadata"] = absent
         time.sleep(1.0)                                   # proxy telemetry flush (0.5 s batches)
-        commits = self.ctx.db.expire_commits(self.ctx.table, t_start, t_fail + timedelta(seconds=1))
+        commits = self.ctx.db.expire_commits(self.ctx.table, t_start, t_fail)
         hits = [c for c in commits if set(c["removed_snapshot_ids"] or []) & set(absent)]
         ev["expire_commits"] = [{"op_id": c["op_id"], "responded_at": str(c["responded_at"])}
                                 for c in hits]
@@ -343,9 +406,9 @@ class OpExecutor:
             exc_text = None
             result_rows: list[Any] = []
             try:
-                stmts = self._sql(op_cfg, intent, slot, parts, planning, op_index, jr)
-                jr["sql"] = [s[:4000] for s in stmts]
                 with job_scope(ctx.spark, intent.op_id, f"{intent.op_type}:{intent.op_key}", pool):
+                    stmts = self._sql(op_cfg, intent, slot, parts, planning, op_index, jr)
+                    jr["sql"] = [s[:4000] for s in stmts]
                     for s in stmts:
                         result_rows = [r.asDict() for r in ctx.spark.sql(s).collect()]
             except Exception as exc:              # Py4J / AnalysisException: text has the Java chain
@@ -367,10 +430,12 @@ class OpExecutor:
         self._attempts(row)
         if row["outcome"] == "committed" and ctx.env.routing == "proxy" and not row.get("attempts"):
             row["outcome"] = "noop"               # rewrite / expire with nothing to commit
-        c = ctx.cost.read(intent.op_id)
+        c = ctx.cost.read(intent.op_id, allow_empty=row["outcome"] == "noop")
         row["cpu_ms"], row["run_ms"] = c.cpu_ms, c.run_ms
         row["bytes_written"] = c.output_bytes
         row["cost_detail"] = c.to_json()
+        if row["outcome"] == "committed" and controlled:
+            self.record_effects(op_cfg, row, jr)
         _write_journal(ctx.journal_dir, intent.op_id, jr)
         return OpResult(row, jr)
 

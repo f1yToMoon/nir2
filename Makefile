@@ -115,7 +115,7 @@ test-unit: ## Unit-тесты (без Docker)
 	PYTHONPATH=src $(VENV_BIN)pytest -q tests/unit
 
 test-int: ## Integration-тесты (стенд должен быть поднят)
-	$(RUNNER) pytest -q tests/integration
+	$(RUNNER) pytest -q tests/integration $(if $(K),-k "$(K)")
 
 test-e2e: ## E2E: короткие прогоны всех сценариев
 	$(RUNNER) pytest -q tests/e2e
@@ -123,7 +123,7 @@ test-e2e: ## E2E: короткие прогоны всех сценариев
 lint: ## ruff
 	$(VENV_BIN)ruff check src tests scripts/update_matrix.py scripts/capture_commit_fixtures.py \
 	  scripts/overhead_enricher_ablation.py scripts/overhead_localization_blocks.py \
-	  scripts/overhead_localization_timestamps.py scripts/grafana_check.py scripts/stage3_checks.py
+	  scripts/overhead_localization_timestamps.py scripts/grafana_check.py scripts/stage3_checks.py scripts/stage3_artifacts.py
 
 typecheck: ## mypy
 	$(VENV_BIN)mypy --strict src/capl

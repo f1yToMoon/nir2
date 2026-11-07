@@ -1,0 +1,227 @@
+{
+  "stage3-S0-P0-mid-s1": {
+    "git_sha": "3d9f0742c37e365e63805044e8c403ee8191e9a7",
+    "files": {
+      "runs.json.gz": {
+        "rows": 1,
+        "sha256": "3567a30dce74a2eb1f6769303991f2d06f2c3ab2fbf6c8bc2e842f26fd189e53"
+      },
+      "ops.json.gz": {
+        "rows": 39,
+        "sha256": "42eef0d865cca6128600e473c0ab92a23e1bba43a7ec524bef3655774e363697"
+      },
+      "commit_attempts.json.gz": {
+        "rows": 462,
+        "sha256": "4ba58e78f75ad82c10c31f69d509efe0d38735daaa0f7ee3ae330a9dd10db1ac"
+      },
+      "commit_events.json.gz": {
+        "rows": 398,
+        "sha256": "a8d92583c7b905aaac98ab40467ada41c755ec8c7372baa70f2fefb9611e5b4e"
+      },
+      "commit_partitions.json.gz": {
+        "rows": 3184,
+        "sha256": "a5267f40ec718880b7b4a1f07caa8f04f87e864b29b96b76857160755f4e867a"
+      },
+      "table_health.json.gz": {
+        "rows": 14160,
+        "sha256": "f920eb127b2d17d73db855a344a72322a005ce53e08a5c670219f1bada63c47b"
+      },
+      "table_meta.json.gz": {
+        "rows": 59,
+        "sha256": "f34def08a6b8358929f3180e1d3c3f9df5cd2629909c0f57d818c90b4b3e3ea7"
+      },
+      "orphan_scan.json.gz": {
+        "rows": 1,
+        "sha256": "435884adcb0b269e142e95764e06a4076291e1fd8fbe6cf11cd3ba02492b5dc6"
+      },
+      "run_summary.json.gz": {
+        "rows": 1,
+        "sha256": "8473b6836c8cd50880838e037972e695c62e5547b519c39e31e23a14df951dae"
+      },
+      "intents.json.gz": {
+        "rows": 11,
+        "sha256": "0e3b4c8316d787a341d0b0cb2d2d1ac0a9e6a8ab63db8388903cc55808d05e6a"
+      }
+    }
+  },
+  "stage3-S0-P0-mid-s1-rep": {
+    "git_sha": "3d9f0742c37e365e63805044e8c403ee8191e9a7",
+    "files": {
+      "runs.json.gz": {
+        "rows": 1,
+        "sha256": "b841fa4740b12411c2462423ad368e716383cddb0562adddb03cb6b720ac0f69"
+      },
+      "ops.json.gz": {
+        "rows": 39,
+        "sha256": "7f5846a119deee7c3f7a61d1d3418bc4b620c1ba57884f46c9f0c2a108ad3437"
+      },
+      "commit_attempts.json.gz": {
+        "rows": 211,
+        "sha256": "62a44dd0d4f1f2a36fed96d0d02d1f77039575e8771d3a10e8467720279bc605"
+      },
+      "commit_events.json.gz": {
+        "rows": 183,
+        "sha256": "072fd9f4b09ac14e5188522d06c9d996f42e1c41afa672f79138d13921d04eac"
+      },
+      "commit_partitions.json.gz": {
+        "rows": 1464,
+        "sha256": "a9dd84c033f7c0b0cb7357d9bdd15a2e6d4789b3530ae3453c995710d90967bc"
+      },
+      "table_health.json.gz": {
+        "rows": 14160,
+        "sha256": "3559c3447769de1100677088aa3e47c16f3afb4a347f3e7625e217597d794370"
+      },
+      "table_meta.json.gz": {
+        "rows": 59,
+        "sha256": "80795b50eb97278bcf2fe0e507b7bbbd66c54bb5642ef6dac2dfd31935d3c9d8"
+      },
+      "orphan_scan.json.gz": {
+        "rows": 1,
+        "sha256": "6d71adb5ad06f78cb786c75c564b040f827aaa5cacc8c5f37c11f8838e927ded"
+      },
+      "run_summary.json.gz": {
+        "rows": 1,
+        "sha256": "851d5d63df7a783dee81a194e26e9dc24ec0115919bdb22bfd49b7c7aaf30a49"
+      },
+      "intents.json.gz": {
+        "rows": 11,
+        "sha256": "70cfd8ccb724e5c42d72764ee81a7623f6ddbbcfb7ffd3f5dc4feb2ed176b6ed"
+      }
+    }
+  },
+  "stage3-S1-P0-mid-s11": {
+    "git_sha": "3d9f0742c37e365e63805044e8c403ee8191e9a7",
+    "files": {
+      "runs.json.gz": {
+        "rows": 1,
+        "sha256": "f478eec9b9d11d47d73b9c4daebc4d5d6742498ee3bffd814f5a6e39c58c92f5"
+      },
+      "ops.json.gz": {
+        "rows": 41,
+        "sha256": "b8f614c9239e6948dcb4acf6f32d0d9733c276609c7e625bd320f2fecdd069f7"
+      },
+      "commit_attempts.json.gz": {
+        "rows": 4077,
+        "sha256": "09f508f1708403abc39f8731408f4922f05cd640bb8158e14c3be1c617f2f547"
+      },
+      "commit_events.json.gz": {
+        "rows": 3690,
+        "sha256": "62e890632e07107efbbed520f4257d5c76b74bdf3029204295da3f84c8c6b695"
+      },
+      "commit_partitions.json.gz": {
+        "rows": 80551,
+        "sha256": "ba9b00974a675bc2a54ac91903fc79812911a0f3a7259328cf3128e41df5de9d"
+      },
+      "table_health.json.gz": {
+        "rows": 14160,
+        "sha256": "ed86323e8c2abb6023b0f5463af94071b5adc62995f39c26004d01078efa910d"
+      },
+      "table_meta.json.gz": {
+        "rows": 59,
+        "sha256": "a662af8a94eaaf5a803cba814830bc9e7f197764e25b8b34731ba93e2a6a5a26"
+      },
+      "orphan_scan.json.gz": {
+        "rows": 1,
+        "sha256": "aabe33309375cabaa7a06b09f8ca5301f688a8fbfc79da6a337e5a3ca8060808"
+      },
+      "run_summary.json.gz": {
+        "rows": 1,
+        "sha256": "4cf824489356ce94af9f092322bf79d11d180d236d19cf1541dcca7f607a1dcf"
+      },
+      "intents.json.gz": {
+        "rows": 13,
+        "sha256": "e77350d601361ed50a514eb35b772ffbbf7be0f1860c8ac6d67066971609efff"
+      }
+    }
+  },
+  "stage3-S2-P0-mid-s11": {
+    "git_sha": "c9f6191105ca658144f10ba9e131e349744cbc3a",
+    "files": {
+      "runs.json.gz": {
+        "rows": 1,
+        "sha256": "85e7b1f151920fe70097ef5c3ac9ecae11cd1065bb5fd03c4a8f33855de7848c"
+      },
+      "ops.json.gz": {
+        "rows": 56,
+        "sha256": "4a887f286ac35244fa299b7af5374c60db2ee4f647f9fac90199eb4bc96280e8"
+      },
+      "commit_attempts.json.gz": {
+        "rows": 220,
+        "sha256": "4873648436119489c6e590da1a08cec1e9085f5b32a110d85c36047f9ab35935"
+      },
+      "commit_events.json.gz": {
+        "rows": 191,
+        "sha256": "3cd39c3aeefb51687525a08af2fe48e808125a224f6f23ef0c1592d7094cfeaa"
+      },
+      "commit_partitions.json.gz": {
+        "rows": 4217,
+        "sha256": "e7e30d6155f662c9b5532da3470ff67f3b4ca736306d8385bbbbdf70375ff2a8"
+      },
+      "table_health.json.gz": {
+        "rows": 14160,
+        "sha256": "e33ae2efa3c16a03b981e2c4872005a4375afc03c47c2563a9b881a7f0aa6662"
+      },
+      "table_meta.json.gz": {
+        "rows": 59,
+        "sha256": "892ad16f072a9e055092dc2d35e9f09e97138f677d3c9f658be5a0758094f2a2"
+      },
+      "orphan_scan.json.gz": {
+        "rows": 1,
+        "sha256": "7e0a45b21fc09d3439299bbe59bf7c88b109e2f870b902ed143e07bbe6252548"
+      },
+      "run_summary.json.gz": {
+        "rows": 1,
+        "sha256": "e09bc08da7eab48d36a9279d37f4dbed11089f693a67679db00065d8ca6df6f5"
+      },
+      "intents.json.gz": {
+        "rows": 28,
+        "sha256": "044c328ff0617ac1f3712b1902f3498be431eb6e549f6b96de7589f1c196e14a"
+      }
+    }
+  },
+  "stage3-S3-P0-mid-s11": {
+    "git_sha": "c9f6191105ca658144f10ba9e131e349744cbc3a",
+    "files": {
+      "runs.json.gz": {
+        "rows": 1,
+        "sha256": "24d31e118ce5bba5c60b2ab1295a4a88d5f428d912c13756c55e645b33e6ac81"
+      },
+      "ops.json.gz": {
+        "rows": 78,
+        "sha256": "67ad10211b90c9a24697038c78ff0b92ddd00a3bab577c88aa2597cd5d21a66c"
+      },
+      "commit_attempts.json.gz": {
+        "rows": 239,
+        "sha256": "f5f2ad2c94aa9274316c5ee855238e1407638393652dd1f52c7c685d76d3d15b"
+      },
+      "commit_events.json.gz": {
+        "rows": 210,
+        "sha256": "3febf23bb62a699ed0d8b6d852d7fa470da79b1df7823cbc6ceae8f43c5c0744"
+      },
+      "commit_partitions.json.gz": {
+        "rows": 4294,
+        "sha256": "2c45a87a580e92658d1459262dfbf561b2d83f506a281bb6d5aeea89f560663b"
+      },
+      "table_health.json.gz": {
+        "rows": 14160,
+        "sha256": "0f4f46c9450d726847e0b3ad5a315ac23d71fa6c85a8ae7eee922c5e334b0153"
+      },
+      "table_meta.json.gz": {
+        "rows": 59,
+        "sha256": "a4ee9698c6b83461a6ac56d34cd8659384f5bbdf8e2d0458ffde37126d692810"
+      },
+      "orphan_scan.json.gz": {
+        "rows": 1,
+        "sha256": "b352233494289df6364c7d9dedcf3d2417428e22e88ebe0d04ec0bdf4699c127"
+      },
+      "run_summary.json.gz": {
+        "rows": 1,
+        "sha256": "84965ad331d6a855e014af555c1df335abfb88fe4cc204bf6bd5277f8d8e62ff"
+      },
+      "intents.json.gz": {
+        "rows": 50,
+        "sha256": "e06c9acf09e8b72c9e579389516504b28945adeb8a34cd698a3d09634b4006ba"
+      }
+    }
+  }
+}

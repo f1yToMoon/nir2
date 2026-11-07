@@ -1,0 +1,202 @@
+{
+ "run_id": "stage3-S2-P0-mid-s11",
+ "scenario": "S2_compaction_vs_cdc_merge",
+ "variant": null,
+ "level": "mid",
+ "seed": 11,
+ "policy": "P0",
+ "git_sha": "c9f6191105ca658144f10ba9e131e349744cbc3a",
+ "t0": "2026-11-04T16:35:17.338992+00:00",
+ "t_end": "2026-11-04T17:03:49.874787+00:00",
+ "intents": 28,
+ "overrun_after_cooldown": [],
+ "streams": {
+  "kafka": [
+   {
+    "stream": "ingest",
+    "produced": 3340800,
+    "errors": []
+   }
+  ],
+  "flink": [
+   {
+    "final_lag": 0,
+    "job_id": "ff402bc93cf8e278af15a54f6d06f50f",
+    "checkpoints": {
+     "restored": 0,
+     "total": 171,
+     "in_progress": 0,
+     "completed": 171,
+     "failed": 0
+    }
+   }
+  ],
+  "agents": []
+ },
+ "invariants": {
+  "ledger_row_counts": {
+   "ok": true,
+   "partitions_checked": 296,
+   "mismatches": {},
+   "n_mismatches": 0,
+   "rows_by_origin": {
+    "golden": 30000000,
+    "stream": 3340800,
+    "merge": 130000
+   },
+   "journal_physical_records": 33470800,
+   "snapshot_total_records": 33470800,
+   "table_live_rows": 33470800,
+   "journal_commits": 191
+  },
+  "no_duplicate_event_ids": {
+   "ok": true,
+   "duplicates": 0,
+   "rows": 33470800
+  },
+  "committed_ops_in_lineage": {
+   "ok": true,
+   "lineage_len": 191,
+   "lineage_error": null,
+   "committed_checked": 23,
+   "missing": [],
+   "n_missing": 0
+  },
+  "aborted_ops_absent": {
+   "ok": true,
+   "failed_ops": 5,
+   "snapshots_in_lineage": [],
+   "aborted_rows_checked": 50000,
+   "aborted_rows_present": 0,
+   "lineage_error": null
+  },
+  "version_monotonic": {
+   "ok": true,
+   "rows_checked": 33470800,
+   "rows_expected_updated": 499691,
+   "mismatches": 0
+  },
+  "ok": true
+ },
+ "orphans": {
+  "orphan_files": 0,
+  "orphan_bytes": 0,
+  "old_metadata_json": 108,
+  "listed_since_start": 2881
+ },
+ "spark_app_totals": {
+  "cpu_ms": 508211,
+  "run_ms": 811822,
+  "stages": 627
+ },
+ "health": {
+  "samples": 59,
+  "errors": [],
+  "max_snapshots": 77,
+  "max_metadata_bytes": 93315
+ },
+ "cooldown_s": 120.0,
+ "warmup_s": 180.0,
+ "duration_s": 1500.0,
+ "summary": {
+  "run_id": "stage3-S2-P0-mid-s11",
+  "n_ops": 28,
+  "n_k2": 5,
+  "n_k1_fail": 0,
+  "n_base_expired": 0,
+  "n_history_unresolved": 0,
+  "n_errors": 0,
+  "wasted_cpu_s": 40.751,
+  "useful_cpu_s": 199.55,
+  "wasted_cpu_base_expired_s": 0.0,
+  "wasted_share": 0.1695831478021315,
+  "background_cpu_s": 68.662,
+  "wasted_bytes": 568017150,
+  "goodput_commits_per_min": 0.92,
+  "commit_lat_p50_ms": 22.86,
+  "commit_lat_p95_ms": 32.65339999999999,
+  "commit_lat_p99_ms": 35.48706000000001,
+  "delay_p95_s": 0.10931625,
+  "sla_violations": 0,
+  "debt_mean": 0.9993928514362269,
+  "debt_max": 1.0,
+  "orphan_bytes": 0,
+  "stream_freshness_p95_s": null,
+  "detail": {
+   "outcomes": {
+    "committed": 23,
+    "data_conflict": 5
+   },
+   "per_op": {
+    "cdc_merge": {
+     "op_type": "cow_dml",
+     "n": 18,
+     "outcomes": {
+      "committed": 13,
+      "data_conflict": 5
+     },
+     "d_exec_s": {
+      "n": 18,
+      "max": 7.7,
+      "p50": 4.95,
+      "p95": 7.359999999999999
+     },
+     "d_hist_s": {
+      "n": 18,
+      "max": 17.3,
+      "p50": 9.9,
+      "p95": 14.834999999999996
+     },
+     "cpu_s": {
+      "n": 18,
+      "max": 16.9,
+      "p50": 8.0,
+      "p95": 15.624999999999998
+     },
+     "attempts_max": 1
+    },
+    "compaction": {
+     "op_type": "rewrite_data",
+     "n": 10,
+     "outcomes": {
+      "committed": 10
+     },
+     "d_exec_s": {
+      "n": 10,
+      "max": 4.2,
+      "p50": 2.8499999999999996,
+      "p95": 3.9749999999999996
+     },
+     "d_hist_s": {
+      "n": 10,
+      "max": 12.4,
+      "p50": 11.05,
+      "p95": 12.22
+     },
+     "cpu_s": {
+      "n": 10,
+      "max": 11.3,
+      "p50": 8.6,
+      "p95": 11.03
+     },
+     "attempts_max": 1
+    }
+   },
+   "background_expire": {
+    "n": 28,
+    "d_exec_max_s": 2.283497,
+    "d_exec_p50_s": 1.332047,
+    "late_max_s": 2.8,
+    "outcomes": {
+     "committed": 28
+    },
+    "cpu_s": 68.662
+   },
+   "d_hist_max_s": 17.310719,
+   "max_snapshots": 77,
+   "max_metadata_bytes": 93315,
+   "policy": "P0",
+   "scenario": "S2_compaction_vs_cdc_merge"
+  }
+ }
+}

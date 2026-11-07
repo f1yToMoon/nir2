@@ -11,6 +11,11 @@ results/stage-1/*
 results/stage-1/iter*/**/*.log
 results/stage-1/iter*/v*/matrix_results.json
 # stage-2: результаты интеграционных проверок прокси
+!results/stage-3/
+results/stage-3/**/*.log
+results/stage-3/*.log
+results/stage-3/dbg-*
+results/stage-3/runs/dbg-*
 !results/stage-2/
 results/stage-2/**/matrix_results.json
 results/stage-2/**/spark-commits.log

@@ -1,34 +1,34 @@
 """Correctness invariants of a run (tz/08 §4, NFR-4) and orphan files (FR-RUN-7).
 
-The runner's own ledger (`Ledger`) is built from what the runner knows independently of the
-table: golden partition counts (time travel to the tag `golden`), events produced to Kafka and
-appended by agents, rows inserted by committed MERGE operations, keys removed by committed
-DELETE operations, event ids updated by MERGE and the predicates of UPDATE. Rows whose key was
-deleted by a committed DELETE are excluded on both sides (the stream keeps writing such keys).
+The runner's own ledger (`Ledger`) is built from independent inputs: golden partition counts,
+events produced to Kafka and appended by agents, and exact effects of committed operations.
+Deleted event ids are removed only from the expectation; actual rows are never filtered.
+Updates and reinserts are replayed in successful snapshot lineage order.
 
   ledger_row_counts       per (partition, origin): rows in the table == ledger; plus the proxy
                           journal: golden + Σ(added-records - deleted-records) of the successful
-                          commits == count(*)
+                          commits == current snapshot total-records
   no_duplicate_event_ids  no event_id twice
   committed_ops_in_lineage  main lineage rebuilt from the proxy journal (parent links from the
                           current snapshot back to the golden one) is unbroken; every committed
                           operation's snapshot is in it exactly once
   aborted_ops_absent      no snapshot of a failed operation in the lineage, no row of it in the table
-  version_monotonic       `version` = number of committed updates of the row (MERGE id lists;
-                          UPDATE predicates for golden rows)
+  version_monotonic       `version` = committed updates since the last insertion, for every origin
 """
 from __future__ import annotations
 
 from collections import Counter
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 
 from runner.datagen import AGENT_BASE, OP_BASE, STREAM_BASE
-from runner.db import DB
 from runner.slots import job_scope
+
+if TYPE_CHECKING:
+    from runner.db import DB
 
 FAILED = ("data_conflict", "retry_exhausted", "base_expired", "history_unresolved")
 
@@ -41,9 +41,22 @@ class Ledger:
     excluded_ranges: list[tuple[int, int]] = field(default_factory=list)   # failed agent appends
     merge_inserted: list[tuple[int, int, str]] = field(default_factory=list)  # committed: id, key, part
     aborted_inserted: list[int] = field(default_factory=list)
-    deleted_keys: set[int] = field(default_factory=set)
+    deleted_ids: set[int] = field(default_factory=set)
     merge_updated: Counter[int] = field(default_factory=Counter)
-    update_rules: list[dict[str, Any]] = field(default_factory=list)
+
+    def apply_effects(self, jr: dict[str, Any]) -> None:
+        """Replay one committed operation, in successful snapshot lineage order."""
+        for i, _k, _p in jr.get("deleted_rows", []):
+            self.deleted_ids.add(int(i))
+            self.merge_updated.pop(int(i), None)
+        for i, k, part in jr.get("effect_inserted_rows", []):
+            self.deleted_ids.discard(int(i))
+            self.merge_updated.pop(int(i), None)
+            # Golden/stream reinserts already occur in the independent baseline ledger.
+            if int(i) >= OP_BASE:
+                self.merge_inserted = [r for r in self.merge_inserted if r[0] != int(i)]
+                self.merge_inserted.append((int(i), int(k), part))
+        self.merge_updated.update(int(i) for i in jr.get("effect_updated_ids", []))
 
 
 def origin_expr(col: str = "event_id") -> str:
@@ -77,7 +90,7 @@ class Invariants:
 
     def run(self, led: Ledger, ops: list[dict[str, Any]], checks: list[str]) -> dict[str, Any]:
         out: dict[str, Any] = {}
-        self._keys_view(led.deleted_keys)
+        self._keys_view(led.deleted_ids)
         for name in checks:
             try:
                 out[name] = getattr(self, name)(led, ops)
@@ -99,28 +112,27 @@ class Invariants:
         actual: Counter[tuple[str, str]] = Counter()
         for r in self._sql(
                 f"SELECT {part} AS p, {origin_expr()} AS o, count(*) AS n FROM lake.{self.table} t "
-                f"LEFT ANTI JOIN inv_deleted_keys d ON t.key = d.dkey GROUP BY 1, 2"):
+                f"GROUP BY 1, 2"):
             actual[(r["p"], r["o"])] += int(r["n"])
         expected: Counter[tuple[str, str]] = Counter()
         for r in self._sql(
                 f"SELECT {part} AS p, count(*) AS n FROM lake.{self.table} "
                 f"VERSION AS OF {led.golden_snapshot_id} t "
-                f"LEFT ANTI JOIN inv_deleted_keys d ON t.key = d.dkey GROUP BY 1"):
+                f"LEFT ANTI JOIN inv_deleted_keys d ON t.event_id = d.dkey GROUP BY 1"):
             expected[(r["p"], "golden")] += int(r["n"])
-        dk = np.array(sorted(led.deleted_keys), dtype=np.int64)
+        dk = np.array(sorted(led.deleted_ids), dtype=np.int64)
         for origin, log in led.stream_events:
             ids = np.frombuffer(log.ids, dtype=np.int64)
-            keys = np.frombuffer(log.keys, dtype=np.int64)
             pidx = np.frombuffer(log.part_idx, dtype=np.uint16)
-            keep = ~np.isin(keys, dk)
+            keep = ~np.isin(ids, dk)
             for ex_lo, ex_hi in led.excluded_ranges:
                 keep &= ~((ids >= ex_lo) & (ids < ex_hi))
             counts = np.bincount(pidx[keep], minlength=len(log.labels))
             for i, n in enumerate(counts.tolist()):
                 if n:
                     expected[(log.labels[i], origin)] += int(n)
-        for _i, k, p in led.merge_inserted:
-            if k not in led.deleted_keys:
+        for _i, _k, p in led.merge_inserted:
+            if _i not in led.deleted_ids:
                 expected[(p, "merge")] += 1
         diff = {f"{p}|{o}": {"expected": expected.get((p, o), 0), "actual": actual.get((p, o), 0)}
                 for (p, o) in set(actual) | set(expected)
@@ -217,19 +229,10 @@ class Invariants:
             [(int(i), int(c)) for i, c in led.merge_updated.items()] or [(-1, 0)],
             StructType([StructField("uid", LongType(), False), StructField("cnt", IntegerType())])
         ).createOrReplaceTempView("inv_merge_upd")
-        part = PART_EXPR.format(nb=self.nb)
-        terms = []
-        for rule in led.update_rules:
-            ps = ", ".join(f"'{p}'" for p in rule["partitions"])
-            terms.append(f"CASE WHEN {part} IN ({ps}) AND pmod(key, {rule['mod']}) = {rule['r']} "
-                         f"THEN 1 ELSE 0 END")
-        upd = " + ".join(terms) if terms else "0"
         q = (f"SELECT count(*) AS checked, sum(CASE WHEN version <> exp THEN 1 ELSE 0 END) AS bad, "
              f"sum(CASE WHEN exp > 0 THEN 1 ELSE 0 END) AS updated FROM ("
-             f"SELECT t.version, coalesce(m.cnt, 0) + ({upd}) AS exp, ({upd}) AS ue, t.event_id "
-             f"FROM lake.{self.table} t LEFT JOIN inv_merge_upd m ON t.event_id = m.uid "
-             f"LEFT ANTI JOIN inv_deleted_keys d ON t.key = d.dkey) "
-             f"WHERE event_id < {STREAM_BASE} OR ue = 0")
+             f"SELECT t.version, coalesce(m.cnt, 0) AS exp FROM lake.{self.table} t "
+             f"LEFT JOIN inv_merge_upd m ON t.event_id = m.uid)")
         r = self._sql(q)[0]
         bad = int(r["bad"] or 0)
         return {"ok": bad == 0, "rows_checked": int(r["checked"] or 0),

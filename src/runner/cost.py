@@ -24,6 +24,7 @@ class Cost:
     stages: int = 0
     complete: bool = True
     job_groups: list[str] = field(default_factory=list)
+    stage_attempts: list[dict[str, Any]] = field(default_factory=list)
 
     def to_json(self) -> dict[str, Any]:
         return asdict(self)
@@ -44,18 +45,19 @@ class CostReader:
         r.raise_for_status()
         return r.json()
 
-    def read(self, tag: str, deadline_s: float = 60.0) -> Cost:
+    def read(self, tag: str, deadline_s: float = 60.0, *, allow_empty: bool = False) -> Cost:
         t_end = time.monotonic() + deadline_s
         delay = 0.5
         while True:
             cost = self._read_once(tag)
-            if cost.complete or time.monotonic() > t_end:
+            if (allow_empty and not cost.jobs) or cost.complete or time.monotonic() > t_end:
                 return cost
             time.sleep(delay)
             delay = min(delay * 2, 5.0)
 
     def _read_once(self, tag: str) -> Cost:
         c = Cost(jobs=self.job_ids(tag))
+        c.complete = bool(c.jobs)
         groups: set[str] = set()
         seen_stages: set[int] = set()
         for jid in c.jobs:
@@ -88,6 +90,10 @@ class CostReader:
                         c.complete = False
                     if st == "SKIPPED":
                         continue
+                    c.stage_attempts.append({"stage_id": sid, "attempt_id": a.get("attemptId"),
+                                             "status": st, "cpu_ns": a.get("executorCpuTime", 0),
+                                             "run_ms": a.get("executorRunTime", 0),
+                                             "output_bytes": a.get("outputBytes", 0)})
                     c.stages += 1
                     c.run_ms += int(a.get("executorRunTime", 0) or 0)
                     c.cpu_ms += int(a.get("executorCpuTime", 0) or 0) // 1_000_000

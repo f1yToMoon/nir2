@@ -121,6 +121,21 @@ def test_stage3_invariants_detect_injected_faults(spark: Any) -> None:
         res = run_checks()
         detected[name] = sorted(k for k, v in res.items() if isinstance(v, dict) and not v.get("ok"))
         restore()
+    # Restore a golden row actually removed by DELETE. The factual side must retain it,
+    # while the independent expected ledger excludes its exact event id (not the whole key).
+    deleted_golden = sorted(i for i in led.deleted_ids if i < 1_000_000_000_000)
+    if led.deleted_ids:
+        assert deleted_golden, "DELETE scenario must exercise nonzero golden deletions"
+        deleted_id = deleted_golden[0]
+        try:
+            spark.sql(f"INSERT INTO lake.{table} SELECT * FROM lake.{table} "
+                      f"VERSION AS OF {led.golden_snapshot_id} WHERE event_id = {deleted_id}")
+            res = run_checks()
+            detected["retained_deleted_row"] = sorted(
+                k for k, v in res.items() if isinstance(v, dict) and not v.get("ok"))
+            assert "ledger_row_counts" in detected["retained_deleted_row"], res
+        finally:
+            restore()
     # a row of an aborted operation in the table
     import copy
     led2 = copy.deepcopy(led)

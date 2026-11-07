@@ -88,6 +88,9 @@ def main(argv: list[str] | None = None) -> int:
         check(f"{rid}: finished, invariants_ok", run["status"] == "finished" and run["invariants_ok"] is True,
               invariants={k: v.get("ok") if isinstance(v, dict) else v
                           for k, v in (res.get("invariants") or {}).items()})
+        fresh = res.get("stream_freshness") or {}
+        check(f"{rid}: stream freshness fully observed", fresh.get("complete") is True
+              and fresh.get("n_samples", 0) > 0, freshness=fresh)
         # 3. cost
         s_cpu = sum(int(o["cpu_ms"] or 0) for o in ops)
         app = (res.get("spark_app_totals") or {}).get("cpu_ms")
@@ -99,12 +102,17 @@ def main(argv: list[str] | None = None) -> int:
         if cg_ms is not None:
             check(f"{rid}: app cpu <= workers cgroup cpu", app is not None and app <= cg_ms,
                   app_cpu_ms=app, workers_cgroup_cpu_ms=cg_ms)
+        incomplete = [o["op_id"] for o in ops if o["outcome"] != "noop"
+                      and not (o.get("cost_detail") or {}).get("complete")]
+        check(f"{rid}: complete cost for every executed operation", not incomplete,
+              incomplete=incomplete)
         # 4. footprints
         ctl_commit = [o for o in ops if o["controlled"] and o["outcome"] == "committed"]
         viol = [o["op_id"] for o in ctl_commit
                 if not set(o["footprint_executed"] or []) <= set(o["footprint_requested"] or [])]
         nonempty = sum(1 for o in ctl_commit if o["footprint_executed"])
-        check(f"{rid}: footprint_executed ⊆ requested", not viol and nonempty > 0,
+        check(f"{rid}: footprint_executed ⊆ requested",
+              not viol and nonempty == len(ctl_commit) and nonempty > 0,
               committed=len(ctl_commit), with_executed=nonempty, violations=viol[:10])
         # 5. conflict class
         in_m = [o for o in ops if o["controlled"] and o["in_metrics"]]
@@ -132,7 +140,7 @@ def main(argv: list[str] | None = None) -> int:
                 if exp_on and R and d > R:
                     over_r.append({"op_id": o["op_id"], "d_hist_s": round(d, 1), "outcome": o["outcome"]})
         check(f"{rid}: no operation older than R (or counted)", not over_r or all(
-            x["outcome"] not in ("data_conflict", "retry_exhausted") for x in over_r),
+            x["outcome"] not in ("data_conflict", "retry_exhausted", "history_unresolved") for x in over_r),
             R_s=R, over_r=over_r[:10], n_over_r=len(over_r), base_expired=be, history_unresolved=hu,
             errors=unk)
         errs = [(o["op_id"], o["error_class"]) for o in ops if o["outcome"] in ("error", "commit_unknown")]
@@ -192,6 +200,9 @@ def main(argv: list[str] | None = None) -> int:
             "R_high_B_s": round(r_high_b, 1) if r_high_b else None,
             "author_stop (D_max > 349 s)": d_max > D_MAX_AUTHOR,
         }
+        configured_r = min((r["R_s"] for r in out["runs"].values() if r["R_s"]), default=0)
+        check("retention: measured lower bound <= configured R", r_low <= configured_r,
+              lower_s=round(r_low, 1), configured_R_s=configured_r)
         check("retention: D_max <= 349 s (else author decision)", d_max <= D_MAX_AUTHOR,
               d_max_s=round(d_max, 1))
     out["failed"] = fails

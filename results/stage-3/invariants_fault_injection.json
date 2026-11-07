@@ -1,0 +1,26 @@
+{
+ "run_id": "dbg-S5-a",
+ "clean": true,
+ "detected": {
+  "duplicate_row": [
+   "ledger_row_counts",
+   "no_duplicate_event_ids"
+  ],
+  "lost_row": [
+   "ledger_row_counts"
+  ],
+  "extra_update": [
+   "version_monotonic"
+  ],
+  "aborted_row": [
+   "aborted_ops_absent",
+   "ledger_row_counts"
+  ],
+  "lineage": [
+   "committed_ops_in_lineage",
+   "ledger_row_counts",
+   "version_monotonic"
+  ]
+ },
+ "after_restore": true
+}

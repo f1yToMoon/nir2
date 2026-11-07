@@ -288,7 +288,9 @@ class Run:
         health.sample()
         health.start()
         # 2. uncontrolled writers
+        from runner.freshness import StreamFreshness
         from runner.streaming import FlinkStream, KafkaFeed, SparkAgents
+        freshness = StreamFreshness(env, self.run_id, table)
         feeds: list[KafkaFeed] = []
         flinks: list[FlinkStream] = []
         agents: list[SparkAgents] = []
@@ -298,15 +300,20 @@ class Run:
                 f = KafkaFeed(env, sc, s, i, self.run_id, args.seed, t0m)
                 f.create_topic()
                 fl = FlinkStream(env, sc, s, self.run_id, f)
-                fl.start()
-                f.start()
+                freshness.register(f.events)
                 feeds.append(f)
                 flinks.append(fl)
             else:
                 ag = SparkAgents(spark, sc, s, i, self.run_id, args.seed, t0m, slot_offset=a_off)
                 a_off += s.writers
-                ag.start()
+                freshness.register(ag.events)
                 agents.append(ag)
+        freshness.start()
+        for fl, feed in zip(flinks, feeds, strict=True):
+            fl.start()
+            feed.start()
+        for ag in agents:
+            ag.start()
         log("streams started", flink=len(flinks), agents=sum(len(a.gens) for a in agents))
         # 3. background maintenance (ADR-008)
         stop_bg = threading.Event()
@@ -348,6 +355,7 @@ class Run:
         for f in feeds:
             f.stop()
         flink_out = [fl.drain_and_stop() for fl in flinks]
+        self.results["stream_freshness"] = freshness.stop()
         for f in feeds:
             f.delete_topic()
         stop_bg.set()
@@ -400,7 +408,7 @@ class Run:
         RESULTS_DIR.mkdir(parents=True, exist_ok=True)
         (RESULTS_DIR / f"{self.run_id}.json").write_text(json.dumps(self.results, indent=1, default=str))
         log("run finished", run_id=self.run_id, invariants_ok=inv_res.get("ok"))
-        return 0
+        return 0 if inv_res.get("ok") and self.results["stream_freshness"]["complete"] else 1
 
     def _op(self, ex: OpExecutor, rec: OpRecord, op: scn.ControlledOp, sem: threading.Semaphore,
             idx: int, t0: datetime) -> None:
@@ -502,21 +510,38 @@ class Run:
         for a in agents:
             led.stream_events.append(("agent", a.events))
             led.excluded_ranges += a.failed_ids
+        ledger_db = DB(self.env.pg_dsn, self.env.pg_schema)
+        try:
+            events = ledger_db.query(
+                "SELECT snapshot_id, parent_snapshot_id FROM {s}.commit_events WHERE run_id = %s",
+                [self.run_id])
+        finally:
+            ledger_db.conn.close()
+        parents = {int(e["snapshot_id"]): e["parent_snapshot_id"] for e in events}
+        order = {led.golden_snapshot_id: 0}
+
+        def depth(sid: int) -> int:
+            trail = []
+            while sid not in order:
+                if sid in trail or sid not in parents or parents[sid] is None:
+                    raise ValueError(f"incomplete operation lineage at {sid}")
+                trail.append(sid)
+                sid = int(parents[sid])
+            for child in reversed(trail):
+                order[child] = order[sid] + 1
+                sid = child
+            return order[sid]
+        committed = [rec for rec in self.records if rec.row.get("outcome") == "committed"]
+        committed.sort(key=lambda rec: depth(int(rec.row["snapshot_id"])))
         for rec in self.records:
-            r, jr = rec.row, rec.journal
-            committed = r.get("outcome") == "committed"
-            if committed and "deleted_keys" in jr:
-                led.deleted_keys |= {int(k) for k in jr["deleted_keys"]}
-            if "inserted_ids" in jr:
-                if committed:
-                    for i, (k, p) in zip(jr["inserted_ids"], jr["inserted_rows"], strict=False):
-                        led.merge_inserted.append((int(i), int(k), p))
-                else:
-                    led.aborted_inserted += [int(i) for i in jr["inserted_ids"]]
-            if committed and "updated_ids" in jr:
-                led.merge_updated.update(int(i) for i in jr["updated_ids"])
-            if committed and "update_rule" in jr:
-                led.update_rules.append(jr["update_rule"])
+            if rec.row.get("outcome") != "committed":
+                led.aborted_inserted += [int(i) for i in rec.journal.get("inserted_ids", [])]
+        for rec in committed:
+            jr = rec.journal
+            if not jr.get("effects_recorded") and rec.row.get("op_type") in (
+                    "cow_dml", "mor_delete", "mor_update", "mor_merge"):
+                raise ValueError(f"missing exact effects: {rec.row['op_id']}")
+            led.apply_effects(jr)
         return led
 
 

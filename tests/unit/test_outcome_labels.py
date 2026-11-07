@@ -24,6 +24,10 @@ class FakeDB:
     def children_of(self, table: str, sid: int) -> list[int]:
         return self.children.get(sid, [])
 
+    def validation_path(self, table: str, ancestor: int, base: int) -> list[int]:
+        # Minimal journal chain: ancestor -> each supplied child -> base.
+        return [ancestor, *self.children.get(base, [])] if self.children.get(base) else []
+
     def expire_commits(self, table: str, t0: Any, t1: Any) -> list[dict[str, Any]]:
         return [e for e in self.expires if t0 <= e["responded_at"] <= t1]
 
@@ -93,3 +97,17 @@ def test_other_labels(monkeypatch: pytest.MonkeyPatch) -> None:
     assert e._outcome("org.apache.iceberg.exceptions.CommitStateUnknownException: x", T0, T0)[0] \
         == "commit_unknown"
     assert e._outcome("java.lang.OutOfMemoryError", T0, T0)[0] == "error"
+
+
+def test_expire_after_failure_is_unresolved(monkeypatch: pytest.MonkeyPatch) -> None:
+    db = FakeDB({111: [222]}, [{"op_id": "too-late", "responded_at": T0 + timedelta(seconds=10.5),
+                                "removed_snapshot_ids": [222]}])
+    e = _ex(db, [111, 444], monkeypatch)
+    assert e._outcome(HIST, T0, T0 + timedelta(seconds=10))[0] == "history_unresolved"
+
+
+def test_unrelated_branch_child_is_unresolved(monkeypatch: pytest.MonkeyPatch) -> None:
+    db = FakeDB({}, [{"op_id": "other-branch", "responded_at": T0 + timedelta(seconds=5),
+                      "removed_snapshot_ids": [222]}])
+    e = _ex(db, [111, 333, 444], monkeypatch)
+    assert e._outcome(HIST, T0, T0 + timedelta(seconds=10))[0] == "history_unresolved"

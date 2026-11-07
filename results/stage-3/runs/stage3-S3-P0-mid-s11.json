@@ -1,0 +1,229 @@
+{
+ "run_id": "stage3-S3-P0-mid-s11",
+ "scenario": "S3_compaction_vs_mor_dml",
+ "variant": null,
+ "level": "mid",
+ "seed": 11,
+ "policy": "P0",
+ "git_sha": "c9f6191105ca658144f10ba9e131e349744cbc3a",
+ "t0": "2026-11-04T17:04:41.788731+00:00",
+ "t_end": "2026-11-04T17:33:14.347271+00:00",
+ "intents": 50,
+ "overrun_after_cooldown": [],
+ "streams": {
+  "kafka": [
+   {
+    "stream": "ingest",
+    "produced": 3340400,
+    "errors": []
+   }
+  ],
+  "flink": [
+   {
+    "final_lag": 0,
+    "job_id": "b6a9e69322a26325eb94607e4fdf7963",
+    "checkpoints": {
+     "restored": 0,
+     "total": 171,
+     "in_progress": 0,
+     "completed": 171,
+     "failed": 0
+    }
+   }
+  ],
+  "agents": []
+ },
+ "invariants": {
+  "ledger_row_counts": {
+   "ok": true,
+   "partitions_checked": 264,
+   "mismatches": {},
+   "n_mismatches": 0,
+   "rows_by_origin": {
+    "golden": 30000000,
+    "stream": 3340400
+   },
+   "journal_physical_records": 33394066,
+   "snapshot_total_records": 33394066,
+   "table_live_rows": 33340400,
+   "journal_commits": 210
+  },
+  "no_duplicate_event_ids": {
+   "ok": true,
+   "duplicates": 0,
+   "rows": 33340400
+  },
+  "committed_ops_in_lineage": {
+   "ok": true,
+   "lineage_len": 210,
+   "lineage_error": null,
+   "committed_checked": 42,
+   "missing": [],
+   "n_missing": 0
+  },
+  "aborted_ops_absent": {
+   "ok": true,
+   "failed_ops": 7,
+   "snapshots_in_lineage": [],
+   "aborted_rows_checked": 0,
+   "aborted_rows_present": 0,
+   "lineage_error": null
+  },
+  "version_monotonic": {
+   "ok": true,
+   "rows_checked": 33177017,
+   "rows_expected_updated": 148822,
+   "mismatches": 0
+  },
+  "ok": true
+ },
+ "orphans": {
+  "orphan_files": 0,
+  "orphan_bytes": 0,
+  "old_metadata_json": 127,
+  "listed_since_start": 5179
+ },
+ "spark_app_totals": {
+  "cpu_ms": 841509,
+  "run_ms": 1173282,
+  "stages": 556
+ },
+ "health": {
+  "samples": 59,
+  "errors": [],
+  "max_snapshots": 88,
+  "max_metadata_bytes": 107340
+ },
+ "cooldown_s": 120.0,
+ "warmup_s": 180.0,
+ "duration_s": 1500.0,
+ "summary": {
+  "run_id": "stage3-S3-P0-mid-s11",
+  "n_ops": 50,
+  "n_k2": 7,
+  "n_k1_fail": 0,
+  "n_base_expired": 0,
+  "n_history_unresolved": 0,
+  "n_errors": 0,
+  "wasted_cpu_s": 19.937,
+  "useful_cpu_s": 143.5,
+  "wasted_cpu_base_expired_s": 0.0,
+  "wasted_share": 0.12198584163928608,
+  "background_cpu_s": 58.691,
+  "wasted_bytes": 0,
+  "goodput_commits_per_min": 1.68,
+  "commit_lat_p50_ms": 23.429000000000002,
+  "commit_lat_p95_ms": 35.661049999999975,
+  "commit_lat_p99_ms": 53.87960999999992,
+  "delay_p95_s": 0.09867139999999998,
+  "sla_violations": 0,
+  "debt_mean": 0.9995213603179992,
+  "debt_max": 1.0,
+  "orphan_bytes": 0,
+  "stream_freshness_p95_s": null,
+  "detail": {
+   "outcomes": {
+    "noop": 1,
+    "data_conflict": 7,
+    "committed": 42
+   },
+   "per_op": {
+    "delete_rewrite": {
+     "op_type": "rewrite_deletes",
+     "n": 3,
+     "outcomes": {
+      "noop": 1,
+      "committed": 2
+     },
+     "d_exec_s": {
+      "n": 3,
+      "max": 2.0,
+      "p50": 0.9,
+      "p95": 1.89
+     },
+     "d_hist_s": {
+      "n": 2,
+      "max": 7.8,
+      "p50": 5.65,
+      "p95": 7.585
+     },
+     "cpu_s": {
+      "n": 3,
+      "max": 3.5,
+      "p50": 1.7,
+      "p95": 3.32
+     },
+     "attempts_max": 1
+    },
+    "mor_updates": {
+     "op_type": "mor_update",
+     "n": 37,
+     "outcomes": {
+      "data_conflict": 7,
+      "committed": 30
+     },
+     "d_exec_s": {
+      "n": 37,
+      "max": 4.9,
+      "p50": 1.5,
+      "p95": 3.539999999999999
+     },
+     "d_hist_s": {
+      "n": 37,
+      "max": 12.4,
+      "p50": 5.3,
+      "p95": 10.979999999999999
+     },
+     "cpu_s": {
+      "n": 37,
+      "max": 7.1,
+      "p50": 1.7,
+      "p95": 3.4599999999999924
+     },
+     "attempts_max": 1
+    },
+    "compaction": {
+     "op_type": "rewrite_data",
+     "n": 10,
+     "outcomes": {
+      "committed": 10
+     },
+     "d_exec_s": {
+      "n": 10,
+      "max": 5.2,
+      "p50": 3.8499999999999996,
+      "p95": 5.02
+     },
+     "d_hist_s": {
+      "n": 10,
+      "max": 13.2,
+      "p50": 11.850000000000001,
+      "p95": 13.02
+     },
+     "cpu_s": {
+      "n": 10,
+      "max": 14.5,
+      "p50": 6.9,
+      "p95": 13.149999999999997
+     },
+     "attempts_max": 1
+    }
+   },
+   "background_expire": {
+    "n": 28,
+    "d_exec_max_s": 2.380195,
+    "d_exec_p50_s": 1.314177,
+    "late_max_s": 3.0,
+    "outcomes": {
+     "committed": 28
+    },
+    "cpu_s": 58.691
+   },
+   "d_hist_max_s": 13.175588,
+   "max_snapshots": 88,
+   "max_metadata_bytes": 107340,
+   "policy": "P0",
+   "scenario": "S3_compaction_vs_mor_dml"
+  }
+ }
+}

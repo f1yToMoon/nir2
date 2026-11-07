@@ -39,14 +39,37 @@ class EventLog:
         self.ids = array("q")
         self.keys = array("q")
         self.part_idx = array("H")
+        self.generated_at = array("d")
+        self.committed_at = array("d")
+        self.positions: dict[int, int] = {}
+        self.lock = threading.RLock()
         self.labels: list[str] = []
         self._index: dict[str, int] = {}
 
-    def add(self, event_id: int, key: int, part: str) -> None:
+    def __getstate__(self) -> dict[str, Any]:
+        with self.lock:
+            state = dict(self.__dict__)
+            state.pop("lock")
+            state.pop("positions")
+            return state
+
+    def __setstate__(self, state: dict[str, Any]) -> None:
+        self.__dict__.update(state)
+        self.lock = threading.RLock()
+        self.positions = {event_id: i for i, event_id in enumerate(self.ids)}
+
+    def add(self, event_id: int, key: int, part: str, generated_at: float | None = None) -> None:
+        with self.lock:
+            self._add(event_id, key, part, generated_at)
+
+    def _add(self, event_id: int, key: int, part: str, generated_at: float | None) -> None:
         i = self._index.get(part)
         if i is None:
             i = self._index[part] = len(self.labels)
             self.labels.append(part)
+        self.positions[event_id] = len(self.ids)
+        self.generated_at.append(time.time() if generated_at is None else generated_at)
+        self.committed_at.append(float("nan"))
         self.ids.append(event_id)
         self.keys.append(key)
         self.part_idx.append(i)
@@ -110,6 +133,7 @@ class KafkaFeed:
             owed -= k
             if k:
                 for ev in self.gen.batch(k):
+                    generated_at = time.time()
                     while True:
                         try:
                             p.produce(self.topic, json.dumps(ev).encode(),
@@ -120,7 +144,7 @@ class KafkaFeed:
                     d, b = partition_of(ev, nb)
                     part = partition_str(date.fromisoformat(d), b)
                     self.produced[part] += 1
-                    self.events.add(ev["event_id"], ev["key"], part)
+                    self.events.add(ev["event_id"], ev["key"], part, generated_at)
                     self.n += 1
             p.poll(0)
             nxt += tick
@@ -331,6 +355,7 @@ class SparkAgents:
             rate = self.stream.rate_events_per_s / len(self.gens) * drift_factor(
                 self.sc, t - self.t0, "streams")
             n = max(1, round(rate * period))
+            generated_at = time.time()
             evs = g.batch(n)
             lo, hi = evs[0]["event_id"], evs[-1]["event_id"] + 1
             rows = [(e["event_id"], e["key"], date.fromisoformat(e["dt"]),
@@ -348,7 +373,7 @@ class SparkAgents:
                         d, b = partition_of(e, nb)
                         part = partition_str(date.fromisoformat(d), b)
                         self.committed[part] += 1
-                        self.events.add(e["event_id"], e["key"], part)
+                        self.events.add(e["event_id"], e["key"], part, generated_at)
             except Exception as exc:
                 with self._lock:
                     self.n_fail += 1

@@ -1,0 +1,181 @@
+{
+ "run_id": "stage3-S1-P0-mid-s11",
+ "scenario": "S1_compaction_vs_stream_append",
+ "variant": null,
+ "level": "mid",
+ "seed": 11,
+ "policy": "P0",
+ "git_sha": "3d9f0742c37e365e63805044e8c403ee8191e9a7",
+ "t0": "2026-11-04T16:05:09.974720+00:00",
+ "t_end": "2026-11-04T16:33:33.772469+00:00",
+ "intents": 13,
+ "overrun_after_cooldown": [],
+ "streams": {
+  "kafka": [
+   {
+    "stream": "ingest_flink",
+    "produced": 5014200,
+    "errors": []
+   }
+  ],
+  "flink": [
+   {
+    "final_lag": 0,
+    "job_id": "8defe6752b23c9753ff83b7e3d7513c4",
+    "checkpoints": {
+     "restored": 1,
+     "total": 339,
+     "in_progress": 0,
+     "completed": 339,
+     "failed": 0
+    }
+   }
+  ],
+  "agents": [
+   {
+    "stream": "agents",
+    "ok": 3342,
+    "failed": 0,
+    "errors": []
+   }
+  ]
+ },
+ "invariants": {
+  "ledger_row_counts": {
+   "ok": true,
+   "partitions_checked": 296,
+   "mismatches": {},
+   "n_mismatches": 0,
+   "rows_by_origin": {
+    "agent": 334200,
+    "golden": 30000000,
+    "stream": 5014200
+   },
+   "journal_physical_records": 35348400,
+   "snapshot_total_records": 35348400,
+   "table_live_rows": 35348400,
+   "journal_commits": 3690
+  },
+  "no_duplicate_event_ids": {
+   "ok": true,
+   "duplicates": 0,
+   "rows": 35348400
+  },
+  "committed_ops_in_lineage": {
+   "ok": true,
+   "lineage_len": 3690,
+   "lineage_error": null,
+   "committed_checked": 13,
+   "missing": [],
+   "n_missing": 0
+  },
+  "aborted_ops_absent": {
+   "ok": true,
+   "failed_ops": 0,
+   "snapshots_in_lineage": [],
+   "aborted_rows_checked": 0,
+   "aborted_rows_present": 0,
+   "lineage_error": null
+  },
+  "version_monotonic": {
+   "ok": true,
+   "rows_checked": 35348400,
+   "rows_expected_updated": 0,
+   "mismatches": 0
+  },
+  "ok": true
+ },
+ "orphans": {
+  "orphan_files": 24,
+  "orphan_bytes": 865144,
+  "old_metadata_json": 3651,
+  "listed_since_start": 39773
+ },
+ "spark_app_totals": {
+  "cpu_ms": 1340925,
+  "run_ms": 4988021,
+  "stages": 7214
+ },
+ "health": {
+  "samples": 59,
+  "errors": [],
+  "max_snapshots": 1405,
+  "max_metadata_bytes": 1372788
+ },
+ "cooldown_s": 120.0,
+ "warmup_s": 180.0,
+ "duration_s": 1500.0,
+ "summary": {
+  "run_id": "stage3-S1-P0-mid-s11",
+  "n_ops": 13,
+  "n_k2": 0,
+  "n_k1_fail": 0,
+  "n_base_expired": 0,
+  "n_history_unresolved": 0,
+  "n_errors": 0,
+  "wasted_cpu_s": 0.0,
+  "useful_cpu_s": 296.994,
+  "wasted_cpu_base_expired_s": 0.0,
+  "wasted_share": 0.0,
+  "background_cpu_s": 344.667,
+  "wasted_bytes": 0,
+  "goodput_commits_per_min": 0.52,
+  "commit_lat_p50_ms": 313.37100000000004,
+  "commit_lat_p95_ms": 798.3843999999985,
+  "commit_lat_p99_ms": 1305.9704799999988,
+  "delay_p95_s": 0.1668752,
+  "sla_violations": 0,
+  "debt_mean": 0.9995887748695124,
+  "debt_max": 1.0,
+  "orphan_bytes": 865144,
+  "stream_freshness_p95_s": null,
+  "detail": {
+   "outcomes": {
+    "committed": 13
+   },
+   "per_op": {
+    "compaction_hot": {
+     "op_type": "rewrite_data",
+     "n": 13,
+     "outcomes": {
+      "committed": 13
+     },
+     "d_exec_s": {
+      "n": 13,
+      "max": 16.8,
+      "p50": 10.5,
+      "p95": 14.219999999999994
+     },
+     "d_hist_s": {
+      "n": 13,
+      "max": 16.8,
+      "p50": 10.5,
+      "p95": 14.459999999999996
+     },
+     "cpu_s": {
+      "n": 13,
+      "max": 34.2,
+      "p50": 23.3,
+      "p95": 32.64
+     },
+     "attempts_max": 4
+    }
+   },
+   "background_expire": {
+    "n": 28,
+    "d_exec_max_s": 12.38593,
+    "d_exec_p50_s": 9.9947815,
+    "late_max_s": 12.8,
+    "outcomes": {
+     "committed": 28
+    },
+    "cpu_s": 344.667
+   },
+   "d_hist_max_s": 16.81619,
+   "max_snapshots": 1405,
+   "max_metadata_bytes": 1372788,
+   "policy": "P0",
+   "scenario": "S1_compaction_vs_stream_append"
+  }
+ }
+}
