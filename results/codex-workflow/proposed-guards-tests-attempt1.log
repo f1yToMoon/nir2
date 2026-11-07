@@ -1,0 +1,25 @@
+.....................................................F                   [100%]
+=================================== FAILURES ===================================
+______________ test_runtime_probe_writes_one_json_record_per_line ______________
+
+    def test_runtime_probe_writes_one_json_record_per_line() -> None:
+        verifier = runpy.run_path(str(ROOT / "scripts/hooks/verify_codex_runtime.py"))
+        fixture = verifier["prepare"]()
+        try:
+            payload = json.dumps({"cwd": str(fixture), "hook_event_name": "SessionStart"})
+            for _ in range(2):
+                result = subprocess.run(
+                    ["python3", str(fixture / "scripts/hooks/runtime_probe.py"), "session"],
+                    input=payload, text=True, capture_output=True, cwd=fixture, check=False,
+                )
+                assert result.returncode == 0, result.stderr
+            records = [json.loads(line) for line in
+                       (fixture / ".runtime-hook-events.jsonl").read_text().splitlines()]
+>           assert len(records) == 2
+E           assert 0 == 2
+E            +  where 0 = len([])
+
+tests/unit/test_codex_hooks.py:232: AssertionError
+=========================== short test summary info ============================
+FAILED tests/unit/test_codex_hooks.py::test_runtime_probe_writes_one_json_record_per_line
+1 failed, 53 passed in 2.77s

@@ -1,0 +1,13 @@
+.venv/bin/ruff check src tests scripts/update_matrix.py scripts/capture_commit_fixtures.py \
+  scripts/overhead_enricher_ablation.py scripts/overhead_localization_blocks.py \
+  scripts/overhead_localization_timestamps.py scripts/grafana_check.py scripts/stage3_checks.py scripts/stage3_artifacts.py
+All checks passed!
+.venv/bin/mypy --strict src/capl
+Success: no issues found in 14 source files
+PYTHONPATH=src .venv/bin/pytest -q tests/unit
+........................................................................ [ 33%]
+........................................................................ [ 67%]
+....................................................................     [100%]
+212 passed in 9.86s
+PYTHONPATH=src .venv/bin/python -m runner.scenario --validate config/workloads config/experiments/matrix.yaml
+validated 21 configurations, 0 errors

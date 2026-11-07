@@ -1,0 +1,10 @@
+{
+  "docs/codex-workflow-migration.patch": {
+    "sha256": "5774a8508a91e32e632bbf3cfa9e1e03f1a43fdcc6bfa7785290c1da0dc1cc61",
+    "bytes": 15762
+  },
+  "docs/codex-guards-migration.patch": {
+    "sha256": "9aaf58306101d52d98d2ed4e01bc52e771c1c25a93def1dd61493ab9f4b6c74c",
+    "bytes": 13111
+  }
+}

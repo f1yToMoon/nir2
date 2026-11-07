@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 2026-11-08 — подготовка полного переноса Claude → Codex; этап 3 не принят
+
+- Полная таблица покрытия: 5 файлов `.claude` (включая ignored local без публикации его копии), 4 внешних скрипта; `docs/codex-workflow.md`.
+- Два проверяемых, **не применённых** патча: нативный `stage-reviewer`, навыки `stage`/`review`; защита `.agents`, локальные запреты команд обоих адаптеров, исправление JSONL регистратора runtime-проверки и регрессии. Установка роли заблокирована действующим PreToolUse; обход не использован.
+- Во временной копии проверены предложенные изменения; журналы и очищенные доказательства — `results/codex-workflow/`. Текущий код: 212 unit-тестов, mypy 14 файлов, 21 конфигурация без ошибок.
+- Основные хуки trusted; SessionStart выполнился в рабочем контексте, PreToolUse фактически блокирует защищённую запись при включённом Caveman. Шесть runtime-кейсов и запуск нативной роли ещё не подтверждены. Старый временный проект исчез после перезапуска машины; после ручной установки нужен новый fixture и пользовательское доверие.
+- Ядро и профили среды запущены через `docker compose ... start`, тома сохранены. Новые опыты этапа 3 не запускались; после подключения требуется новая полная серия по ADR-010, а не перенос прежних стоимостей S0–S3.
+
 ## 2026-11-04 — этап 3 (runner и телеметрия), в работе
 
 - Runner: `runner.scenario` (pydantic, `extends`, варианты с патчем операций по `id`, уровни, `make validate-config`), `runner.intents` (план операций по зерну, bucket Iceberg — murmur3, сверен с PyIceberg на 20 000 ключей), `runner.datagen` + `make seed` (30 млн строк, 40 файлов на партицию, тег `golden`), `runner.slots` (каталоги слотов, привязка слот → op_id в прокси, job group + job tag), `runner.ops.executor` (все `statement`, rewrite, expire, исходы), `runner.cost` (Spark REST по job tag), `runner.streaming` (Kafka → Flink через SQL Gateway, Spark-агенты), `runner.health` (`table_health`, `table_meta`), `runner.invariants` (5 инвариантов, orphan-файлы), `runner.main`/`batch`/`export`/`gc`, `analysis.metrics` (`run_summary`).

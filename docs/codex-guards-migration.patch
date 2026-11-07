@@ -1,0 +1,265 @@
+diff --git a/scripts/hooks/codex_pretool.py b/scripts/hooks/codex_pretool.py
+index 378d2b1..05bcd19 100644
+--- a/scripts/hooks/codex_pretool.py
++++ b/scripts/hooks/codex_pretool.py
+@@ -32,7 +32,7 @@ def relative_names(path: str, root: Path, cwd: Path) -> list[str]:
+ def check_path(path: str, text: str, root: Path, cwd: Path) -> None:
+     for rel in relative_names(path, root, cwd):
+         if legacy.PROTECTED_PATH_RE.match(rel) or rel in (
+-                ".codex", ".claude", ".claude/agents", ".claude/skills", "scripts", "scripts/hooks",
++                ".codex", ".agents", ".agents/skills", ".claude", ".claude/agents", ".claude/skills", "scripts", "scripts/hooks",
+                 "docs", "docs/author-decisions.md"):
+             legacy.block(legacy.PROTECTED_MSG)
+         target = root / rel
+@@ -90,7 +90,7 @@ def check_shell(command: str, root: Path, cwd: Path) -> None:
+     lexer.whitespace_split = True
+     lexer.whitespace = " \t\r"
+     words = list(lexer)
+-    separators = {";", "&&", "||", "|", "(", ")", "\n"}
++    separators = {word for word in words if word and not word.strip(";&|()\n")}
+     contexts: dict[int, list[Path]] = {}
+     candidates = [cwd]
+     start = 0
+diff --git a/scripts/hooks/guard_pretool.py b/scripts/hooks/guard_pretool.py
+index efc60ec..d0ee742 100755
+--- a/scripts/hooks/guard_pretool.py
++++ b/scripts/hooks/guard_pretool.py
+@@ -15,6 +15,7 @@ from __future__ import annotations
+ import json
+ import os
+ import re
++import shlex
+ import sys
+ from pathlib import Path
+ 
+@@ -35,7 +36,7 @@ GATE_FILE_RE = re.compile(r"docs/gate-G\d-report\.md")
+ PROTECTED_RE = re.compile(
+     r"(^|[\s'\"=/])("
+     r"\.claude/settings(\.local)?\.json|\.claude/agents/|\.claude/skills/|"
+-    r"scripts/hooks/|\.codex/|docs/REVIEWER\.md"
++    r"scripts/hooks/|\.codex(?:/|\b)|\.agents(?:/|\b)|docs/REVIEWER\.md"
+     r")"
+ )
+ WRITE_CMD_RE = re.compile(
+@@ -44,7 +45,7 @@ WRITE_CMD_RE = re.compile(
+ )
+ COMMIT_RE = re.compile(r"\bgit\s+commit\b")
+ PROTECTED_PATH_RE = re.compile(
+-    r"^(\.claude/settings(\.local)?\.json|\.claude/agents/|\.claude/skills/|scripts/hooks/|\.codex/|docs/REVIEWER\.md)"
++    r"^(\.claude/settings(\.local)?\.json|\.claude/agents/|\.claude/skills/|scripts/hooks/|\.codex/|\.agents/|docs/REVIEWER\.md)"
+ )
+ COMMIT_MSG = (
+     "Коммит запрещён: в нём изменены файлы механизма приёмки ({files}). Их меняет только автор вручную. "
+@@ -54,7 +55,7 @@ COMMIT_MSG = (
+ )
+ PROTECTED_MSG = (
+     "Запрещено: файлы механизма приёмки (.claude/settings*.json, .claude/agents/, .claude/skills/, "
+-    "scripts/hooks/, .codex/, docs/REVIEWER.md) меняет только автор вручную. Если правило мешает, "
++    "scripts/hooks/, .codex/, .agents/, docs/REVIEWER.md) меняет только автор вручную. Если правило мешает, "
+     "опиши проблему в отчёте этапа и остановись."
+ )
+ 
+@@ -109,6 +110,71 @@ def check_commit(cmd: str) -> None:
+         block(COMMIT_MSG.format(files=", ".join(bad)))
+ 
+ 
++
++def check_local_permissions(command: str) -> None:
++    """Carry the repository's local Claude command denies into both hook adapters.
++
++    This checks explicit shell commands, not code inside scripts or an arbitrary interpreter.
++    """
++    try:
++        lexer = shlex.shlex(command, posix=True, punctuation_chars=";&|()\n")
++        lexer.whitespace_split = True
++        lexer.whitespace = " \t\r"
++        words = list(lexer)
++    except ValueError:
++        block("Не удалось разобрать команду для локальных запретов.")
++    segments: list[list[str]] = [[]]
++    for word in words:
++        if word and not word.strip(";&|()\n"):
++            segments.append([])
++        else:
++            segments[-1].append(word)
++    for segment in segments:
++        while segment and (re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*=.*", segment[0])
++                           or segment[0] in {"env", "command", "exec"}):
++            segment = segment[1:]
++        if not segment:
++            continue
++        executable, *args = segment
++        executable = Path(executable).name
++        forbidden = executable == "sudo"
++        if executable == "rm":
++            options = [arg for arg in args if arg.startswith("-")]
++            recursive = "--recursive" in options or any(
++                "r" in opt[1:] or "R" in opt[1:] for opt in options if not opt.startswith("--"))
++            force = "--force" in options or any(
++                "f" in opt[1:] for opt in options if not opt.startswith("--"))
++            forbidden |= recursive and force and any(
++                arg.startswith(("/", "~", "$HOME", "${HOME}")) for arg in args)
++        if executable == "git":
++            subcommand = None
++            i = 0
++            while i < len(args):
++                arg = args[i]
++                if arg in {"-C", "-c", "--git-dir", "--work-tree"}:
++                    i += 2
++                elif arg.startswith("-"):
++                    i += 1
++                else:
++                    subcommand = arg
++                    args = args[i + 1:]
++                    break
++            forbidden |= (subcommand == "push" and any(
++                arg.startswith("--force") or arg == "-f" for arg in args))
++            forbidden |= subcommand == "reset" and "--hard" in args
++        if executable in {"docker", "docker-compose"}:
++            pairs = set(zip(args, args[1:]))
++            forbidden |= executable == "docker" and bool(
++                pairs & {("system", "prune"), ("volume", "rm")})
++            compose = executable == "docker-compose" or "compose" in args
++            forbidden |= compose and "down" in args and any(
++                arg in {"-v", "--volumes"} for arg in args)
++        forbidden |= executable in {"make", "gmake"} and "clean" in args
++        if forbidden:
++            block("Команда запрещена локальной политикой CAPL: sudo, опасное удаление, "
++                  "force push/reset --hard или удаление Docker-данных.")
++
++
+ def main() -> None:
+     try:
+         data = json.load(sys.stdin)
+@@ -119,6 +185,7 @@ def main() -> None:
+ 
+     if tool == "Bash":
+         cmd = tin.get("command", "") or ""
++        check_local_permissions(cmd)
+         for m in TAG_RE.finditer(cmd):
+             check_tag(int(m.group(1)))
+         if COMMIT_RE.search(cmd):
+diff --git a/scripts/hooks/verify_codex_runtime.py b/scripts/hooks/verify_codex_runtime.py
+index 6301096..1f698a2 100644
+--- a/scripts/hooks/verify_codex_runtime.py
++++ b/scripts/hooks/verify_codex_runtime.py
+@@ -79,8 +79,8 @@ script="codex_session_start.py" if sys.argv[1]=="session" else "codex_pretool.py
+ r=subprocess.run([sys.executable,str(root/"scripts/hooks"/script)],input=payload,text=True,capture_output=True)
+ data=json.loads(payload)
+ with (root/".runtime-hook-events.jsonl").open("a") as f:
+- f.write(json.dumps({"event":data.get("hook_event_name"),"tool":data.get("tool_name"),
+- "exit":r.returncode,"input_sha256":hashlib.sha256(payload.encode()).hexdigest()})+"\\n")
++ print(json.dumps({"event":data.get("hook_event_name"),"tool":data.get("tool_name"),
++ "exit":r.returncode,"input_sha256":hashlib.sha256(payload.encode()).hexdigest()}), file=f)
+ sys.stdout.write(r.stdout);sys.stderr.write(r.stderr);sys.exit(r.returncode)
+ ''')
+     config = json.loads((SOURCE / ".codex/hooks.json").read_text())
+diff --git a/tests/unit/test_codex_hooks.py b/tests/unit/test_codex_hooks.py
+index 504c133..edf3489 100644
+--- a/tests/unit/test_codex_hooks.py
++++ b/tests/unit/test_codex_hooks.py
+@@ -4,6 +4,8 @@ from __future__ import annotations
+ 
+ import json
+ import os
++import runpy
++import shutil
+ import subprocess
+ from pathlib import Path
+ 
+@@ -62,7 +64,8 @@ def test_allowed_shell(repo: Path, command: str) -> None:
+ 
+ 
+ @pytest.mark.parametrize("path", [".codex/hooks.json", ".codex/config.toml", ".claude/settings.json",
+-                                  "scripts/hooks/policy.py", "docs/REVIEWER.md"])
++                                  "scripts/hooks/policy.py", "docs/REVIEWER.md",
++                                  ".agents/skills/stage/SKILL.md", ".codex/agents/stage-reviewer.toml"])
+ @pytest.mark.parametrize("action", ["Add", "Update", "Delete"])
+ def test_every_patch_file_is_protected(repo: Path, path: str, action: str) -> None:
+     patch = ("*** Begin Patch\n*** Update File: ordinary.txt\n@@\n-before\n+after\n"
+@@ -163,7 +166,7 @@ def test_unstaged_protected_pathspec_cannot_be_committed(repo: Path, command: st
+         assert hook(repo, command, adapter=adapter).returncode == 2
+ 
+ 
+-@pytest.mark.parametrize("separator", [" && ", "; ", "\n"])
++@pytest.mark.parametrize("separator", [" && ", "; ", "\n", ";\n", "\n\n"])
+ def test_shell_cd_does_not_hide_existing_review(repo: Path, separator: str) -> None:
+     review(repo)
+     assert hook(repo, f"cd docs/reviews{separator}rm stage-3-r1.md").returncode == 2
+@@ -175,7 +178,8 @@ def test_readonly_cd_and_clear_workdir_are_allowed(repo: Path) -> None:
+ 
+ 
+ def test_shell_protected_paths_and_embedded_patch(repo: Path) -> None:
+-    for command in ("rm -rf .codex", "rm -rf scripts", "sed -i s/x/y/ scripts/hooks/policy.py",
++    for command in ("rm -rf .codex", "rm -rf .agents", "rm -rf scripts",
++                    "sed -i s/x/y/ scripts/hooks/policy.py",
+                     "apply_patch <<'PATCH'\n*** Begin Patch\n*** Delete File: .codex/hooks.json\n"
+                     "*** End Patch\nPATCH"):
+         assert hook(repo, command).returncode == 2
+@@ -202,3 +206,66 @@ def test_malformed_payload_denies(repo: Path) -> None:
+     result = subprocess.run(["python3", str(ADAPTER)], input="broken", capture_output=True,
+                             text=True, cwd=repo)
+     assert result.returncode == 2
++
++
++@pytest.mark.parametrize("adapter", [ADAPTER, ROOT / "scripts/hooks/guard_pretool.py"])
++def test_new_codex_skills_cannot_be_committed(repo: Path, adapter: Path) -> None:
++    path = repo / ".agents/skills/stage/SKILL.md"
++    path.parent.mkdir(parents=True)
++    path.write_text("fixture\n")
++    git(repo, "add", str(path))
++    assert hook(repo, "git commit -m changed", adapter=adapter).returncode == 2
++
++
++def test_runtime_probe_writes_one_json_record_per_line() -> None:
++    verifier = runpy.run_path(str(ROOT / "scripts/hooks/verify_codex_runtime.py"))
++    fixture = verifier["prepare"]()
++    try:
++        payload = json.dumps({"cwd": str(fixture), "hook_event_name": "SessionStart"})
++        for _ in range(2):
++            result = subprocess.run(
++                ["python3", str(fixture / "scripts/hooks/runtime_probe.py"), "session"],
++                input=payload, text=True, capture_output=True, cwd=fixture, check=False,
++            )
++            assert result.returncode == 0, result.stderr
++        records = [json.loads(line) for line in
++                   (fixture / ".runtime-hook-events.jsonl").read_text().splitlines()]
++        assert len(records) == 2
++        assert all(row["event"] == "SessionStart" and row["exit"] == 0 for row in records)
++    finally:
++        shutil.rmtree(fixture)
++
++
++@pytest.mark.parametrize("adapter", [ADAPTER, ROOT / "scripts/hooks/guard_pretool.py"])
++@pytest.mark.parametrize("command", [
++    "sudo whoami", "rm -rf /*", "rm -rf ~/data", "git push --force origin main",
++    "git push -f origin main", "git reset --hard HEAD", "docker system prune -a",
++    "docker volume rm test-volume", "docker compose down -v", "make clean",
++    "git -C /tmp push --force-with-lease origin main",
++    "docker compose --profile streaming down --volumes",
++    "docker-compose down -v", "make -C infra clean",
++    "printf ok && git reset --hard", "printf ok\ngit reset --hard",
++    "printf ok\nsudo whoami", "printf ok\ngit push --force origin main",
++    "printf ok\ndocker volume rm data", "printf ok\ndocker compose down -v",
++    "printf ok\nmake clean", "printf ok\n\ngit reset --hard",
++    "printf ok;\ngit reset --hard",
++])
++def test_local_dangerous_command_denies(repo: Path, adapter: Path, command: str) -> None:
++    assert hook(repo, command, adapter=adapter).returncode == 2
++
++
++@pytest.mark.parametrize("adapter", [ADAPTER, ROOT / "scripts/hooks/guard_pretool.py"])
++@pytest.mark.parametrize("command", [
++    "git push origin main", "git reset --soft HEAD", "docker compose down",
++    "docker volume ls", "make lint", "rm ordinary.txt",
++])
++def test_local_permission_controls_allow_safe_commands(
++    repo: Path, adapter: Path, command: str,
++) -> None:
++    assert hook(repo, command, adapter=adapter).returncode == 0
++
++
++@pytest.mark.parametrize("adapter", [ADAPTER, ROOT / "scripts/hooks/guard_pretool.py"])
++@pytest.mark.parametrize("directory", [".agents", ".codex"])
++def test_acceptance_directories_cannot_be_removed(repo: Path, adapter: Path, directory: str) -> None:
++    assert hook(repo, f"rm -rf {directory}", adapter=adapter).returncode == 2

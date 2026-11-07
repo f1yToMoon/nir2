@@ -1,0 +1,52 @@
+{
+  "advisor": {
+    "http": 200
+  },
+  "catalog": {
+    "http": 200
+  },
+  "proxy": {
+    "http": 200
+  },
+  "flink": {
+    "http": 200,
+    "taskmanagers": 1,
+    "slots-total": 4,
+    "slots-available": 4,
+    "flink-version": "1.20.3"
+  },
+  "flink_jobs": {
+    "http": 200,
+    "jobs": []
+  },
+  "slots": {
+    "http": 200,
+    "slots": {}
+  },
+  "holds": {
+    "http": 200,
+    "body": {
+      "holds": []
+    }
+  },
+  "containers": [
+    "/nir-runner-1 nir/spark:dev sha256:e08a8356e5b7502461ffea19cc309cd35a3718a66ca08aa6fe8f520257d7f7ef running oom=false",
+    "/nir-s3-1 chrislusf/seaweedfs:4.48 sha256:7b5ca1f11aa4c91593612d2d4a9e253ec9152a4bd13a19e551290a042a4c52f5 running oom=false",
+    "/nir-capl-1 nir/capl:dev sha256:6bece1df8509c01f87eea4a7e6b646bd17bce9bffc8ca0788abaf2b1a2a38b28 running oom=false",
+    "/nir-flink-taskmanager-1 nir/flink:dev sha256:1a65d2a8311eae563b497299917f3a5d604a692320adcbe8506407e01a37591b running oom=false",
+    "/nir-flink-sql-gateway-1 nir/flink:dev sha256:1a65d2a8311eae563b497299917f3a5d604a692320adcbe8506407e01a37591b running oom=false",
+    "/nir-flink-jobmanager-1 nir/flink:dev sha256:1a65d2a8311eae563b497299917f3a5d604a692320adcbe8506407e01a37591b running oom=false",
+    "/nir-spark-worker-1-1 nir/spark:dev sha256:f422855ebca1512590f228130a38b0e278cef724dd91eaab8cc329987d6bf0c3 running oom=false",
+    "/nir-spark-worker-2-1 nir/spark:dev sha256:f422855ebca1512590f228130a38b0e278cef724dd91eaab8cc329987d6bf0c3 running oom=false",
+    "/nir-spark-master-1 nir/spark:dev sha256:f422855ebca1512590f228130a38b0e278cef724dd91eaab8cc329987d6bf0c3 running oom=false",
+    "/nir-catalog-1 apache/iceberg-rest-fixture:latest@sha256:db8de90b5b7693d4ac334c336f91d9bbe320d7b19f4f514d26de84cdfbcbfe8d sha256:7ea2ad86a944938e5508721416e7c3f2b9b0b1bdfd63392d475bdaacba9a3cee running oom=false",
+    "/nir-catalog-init-1 alpine:3.20 sha256:bf8527eb54c3680e728d5b4b383a8ba730d72dae7236fbc8dff97ed6b224a731 exited oom=false",
+    "/nir-flink-init-1 alpine:3.20 sha256:bf8527eb54c3680e728d5b4b383a8ba730d72dae7236fbc8dff97ed6b224a731 exited oom=false",
+    "/nir-s3-init-1 amazon/aws-cli:2.27.0 sha256:425c27e3bedaff84957ad98ac2993f6c55fc3c3b6370dd654ae6bbdc1f541c3c exited oom=false",
+    "/nir-toxiproxy-1 ghcr.io/shopify/toxiproxy:2.12.0 sha256:3edf5d14625b9aa8ad71d5dd084da1f8a0eb46ee749457549ae91d29d96546aa running oom=false",
+    "/nir-grafana-1 grafana/grafana:12.1.0 sha256:75006c93b887a310c7d4b21b557de093cb67caa4e1e4d812cbc08edd7580b7e9 running oom=false",
+    "/nir-prometheus-1 prom/prometheus:v3.5.0 sha256:a3bc50fcb50fb1409287c32773d8fe799f6cad5511c4ba3e2e851784e7a05026 running oom=false",
+    "/nir-kafka-1 apache/kafka:3.9.1 sha256:44a48f9d78af26959fa4d61accb9be35f939a79bfdae05cad6df4baca8e22eeb running oom=false",
+    "/nir-postgres-1 postgres:16 sha256:066167ff39c2a612402ce99b734ea1cff92a9d1f2ac52f697a5f0384f0d88d6b running oom=false"
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "date": "2026-11-08",
+  "codex_version": "0.167.0",
+  "head": "54c863005dfa02b9e40bb9438b7f81e2550a78a3",
+  "operation": "native apply_patch Add File .codex/agents/stage-reviewer.toml",
+  "result": "blocked_before_write",
+  "source": "project PreToolUse hook scripts/hooks/codex_pretool.py reusing guard_pretool.py",
+  "reason": "Запрещено: файлы механизма приёмки (.claude/settings*.json, .claude/agents/, .claude/skills/, scripts/hooks/, .codex/, docs/REVIEWER.md) меняет только автор вручную. Если правило мешает, опиши проблему в отчёте этапа и остановись.",
+  "authorization": "User explicitly authorized the workflow migration; the unconditional project hook does not implement an authorization exception.",
+  "bypass_attempted": false,
+  "role_created": false,
+  "role_runtime_smoke": "not_run: role installation blocked",
+  "reviewable_proposal": "docs/codex-workflow-migration.patch"
+}

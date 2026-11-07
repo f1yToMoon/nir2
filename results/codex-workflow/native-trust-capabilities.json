@@ -1,0 +1,11 @@
+{
+  "codex_version": "0.167.0",
+  "source": "codex app-server generate-json-schema --experimental",
+  "matching_client_methods": [
+    "hooks/list"
+  ],
+  "user_consent": "Explicit trust in new hooks provided in this conversation on 2026-11-08",
+  "hook_trust_write_api_found": false,
+  "documented_ui": "/hooks",
+  "bypass_used": false
+}

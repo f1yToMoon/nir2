@@ -1,0 +1,22 @@
+[
+  {
+    "path": ".codex/agents/stage-reviewer.toml",
+    "syntax_valid": true,
+    "installed": false
+  },
+  {
+    "path": ".agents/skills/stage/SKILL.md",
+    "syntax_valid": true,
+    "installed": false
+  },
+  {
+    "path": ".agents/skills/stage/agents/openai.yaml",
+    "syntax_valid": true,
+    "installed": false
+  },
+  {
+    "path": ".agents/skills/review/SKILL.md",
+    "syntax_valid": true,
+    "installed": false
+  }
+]

@@ -1,0 +1,22 @@
+{
+  "date": "2026-11-08",
+  "base_commit": "54c863005dfa02b9e40bb9438b7f81e2550a78a3",
+  "codex_version": "0.167.0",
+  "main_project_hooks": {"count": 2, "enabled": true, "trusted": true},
+  "session_start": "observed in resumed working session context",
+  "pre_tool_use": "protected native apply_patch denied before writing, Caveman enabled",
+  "old_fixture": "/tmp/capl-codex-hooks-sz5alpxk",
+  "old_fixture_exists": false,
+  "six_runtime_cases": "not verified: results absent after reboot",
+  "role_installed": false,
+  "native_role_smoke": "not run: project hook denied installation",
+  "required_user_action": "Review and manually apply/commit both prepared patches, prepare a new fixture and trust its two hooks via /hooks",
+  "trust_bypass_used": false,
+  "user_trust_consent": "explicitly provided in this conversation; do not ask again",
+  "native_hook_trust_write_api_found": false,
+  "acceptance_guard_changed_in_working_repository": false,
+  "stage3_new_experiments": 0,
+  "stage3_formal_review_rounds": 0,
+  "proposed_patch_tests": {"unit_passed": 285, "hook_tests_passed": 118, "mypy_files": 14, "validated_configurations": 21},
+  "working_code_tests": {"unit_passed": 212, "mypy_files": 14, "validated_configurations": 21}
+}
