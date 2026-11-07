@@ -1,0 +1,4 @@
+Reading additional input from stdin...
+2026-11-07T22:07:28.782384Z ERROR codex_core::tools::router: error=Command blocked by PreToolUse hook: Запрещено изменять существующее ревью; новый раунд — новый файл.. Command: *** Begin Patch
+*** Delete File: docs/reviews/stage-2-r1.md
+*** End Patch

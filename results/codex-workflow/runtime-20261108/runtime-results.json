@@ -1,0 +1,116 @@
+[
+  {
+    "case": "shell-allow",
+    "ok": true,
+    "events": [
+      {
+        "event": "SessionStart",
+        "tool": null,
+        "exit": 0,
+        "input_sha256": "cbec6cdfdb272e629c169c82794c0b1747f3bca3127165faa4f51876a66c8a9a"
+      },
+      {
+        "event": "PreToolUse",
+        "tool": "Bash",
+        "exit": 0,
+        "input_sha256": "d8cfe47d2b18a2ec8dd8f78af75080d1e9fcdc8e6c59a932c05ee72f9e083694"
+      }
+    ],
+    "codex_exit": 0
+  },
+  {
+    "case": "patch-allow",
+    "ok": true,
+    "events": [
+      {
+        "event": "SessionStart",
+        "tool": null,
+        "exit": 0,
+        "input_sha256": "268e3f2d3e1794aff2d0e32ebf82bc0fc00ed577a4cfe70f1a4e954186d3956f"
+      },
+      {
+        "event": "PreToolUse",
+        "tool": "apply_patch",
+        "exit": 0,
+        "input_sha256": "ffc9086e77003d3a1d5c73584a8d67a1a5896565e1a560f5a4d0019a2f12b579"
+      }
+    ],
+    "codex_exit": 0
+  },
+  {
+    "case": "tag-deny",
+    "ok": true,
+    "events": [
+      {
+        "event": "SessionStart",
+        "tool": null,
+        "exit": 0,
+        "input_sha256": "521e14efced385e33190e9e2f75a363ca418a1a98de46b879c7b026852380a72"
+      },
+      {
+        "event": "PreToolUse",
+        "tool": "Bash",
+        "exit": 2,
+        "input_sha256": "f2ee1d1579b709fd7d5a83a4a14b05393568be4e58d52fbec7ca524f8295d6fa"
+      }
+    ],
+    "codex_exit": 0
+  },
+  {
+    "case": "patch-deny",
+    "ok": true,
+    "events": [
+      {
+        "event": "SessionStart",
+        "tool": null,
+        "exit": 0,
+        "input_sha256": "99c82dccdbbd8fbf7868a870e15b45a8ae70de7fc5d2403ad45d70d02f38beea"
+      },
+      {
+        "event": "PreToolUse",
+        "tool": "apply_patch",
+        "exit": 2,
+        "input_sha256": "22137e27d95bc943a67c91befe22b4760f544c568991e236117b79486ff6eb3f"
+      }
+    ],
+    "codex_exit": 0
+  },
+  {
+    "case": "review-deny",
+    "ok": true,
+    "events": [
+      {
+        "event": "SessionStart",
+        "tool": null,
+        "exit": 0,
+        "input_sha256": "2a3dfb24d443b5a0671c0c69f82519c99c6f5d8e1820b476e80ed7c09d7eee19"
+      },
+      {
+        "event": "PreToolUse",
+        "tool": "apply_patch",
+        "exit": 2,
+        "input_sha256": "b41ed3f21132d9f4d3c0ca7335769dd5c72911bf87094c9efd94c40ac4fbb3f8"
+      }
+    ],
+    "codex_exit": 0
+  },
+  {
+    "case": "decision-deny",
+    "ok": true,
+    "events": [
+      {
+        "event": "SessionStart",
+        "tool": null,
+        "exit": 0,
+        "input_sha256": "06bbeefe5949916fb25d61035bc686a9489831c97ea9d4446b911c3d6ccd37db"
+      },
+      {
+        "event": "PreToolUse",
+        "tool": "apply_patch",
+        "exit": 2,
+        "input_sha256": "5c61518e1fd20986453f02180f575d2f21ce55a6c0fdb37a3253e90c56299887"
+      }
+    ],
+    "codex_exit": 0
+  }
+]

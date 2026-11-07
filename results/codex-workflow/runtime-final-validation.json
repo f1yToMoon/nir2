@@ -1,0 +1,10 @@
+{
+  "manifest_files_verified": 19,
+  "json_and_jsonl_valid": true,
+  "runtime_cases_passed": 6,
+  "runtime_events": 12,
+  "trusted_project_hooks": 2,
+  "caveman_active": true,
+  "role_and_skills_evidence_valid": true,
+  "stage3_continued": false
+}

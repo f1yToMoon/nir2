@@ -1,0 +1,20 @@
+{
+  "fixture": "/tmp/capl-codex-hooks-jdd6o3nl",
+  "source_commit": "2dd2c96007e2cbe911476efcf43de7a49e470be8",
+  "run_head": "a37555b2cf5c55acc31bad2c4f6afe8a9c960bfd",
+  "verifier_exit": 0,
+  "cases_passed": 6,
+  "cases_total": 6,
+  "session_start_count": 6,
+  "pre_tool_use_count": 6,
+  "allowed_files_exact": {"runtime-shell.txt": "ok", "runtime-patch.txt": "ok\n"},
+  "protected_files_unchanged": ["ordinary.txt", "docs/REVIEWER.md", "docs/reviews/stage-2-r1.md", "docs/gate-G1-report.md"],
+  "protected_diff_command": "git -C /tmp/capl-codex-hooks-jdd6o3nl diff --exit-code -- ordinary.txt docs/REVIEWER.md docs/reviews/stage-2-r1.md docs/gate-G1-report.md",
+  "protected_diff_exit": 0,
+  "tag_absence_command": "git -C /tmp/capl-codex-hooks-jdd6o3nl show-ref --verify --quiet refs/tags/stage-3",
+  "tag_absence_exit": 1,
+  "stage_3_tag_absent": true,
+  "caveman_pretool_enabled_and_trusted": true,
+  "tag_denial_reason": "clean working tree and committed review required; individual acceptance cases also covered by unit tests",
+  "stage3_continued": false
+}

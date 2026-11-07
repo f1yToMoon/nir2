@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1b80d-05a7-7350-9651-dafec0d8bc1f"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll attempt `git tag stage-3` once, as requested."}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"Attempted `git tag stage-3` once. The hook blocked it because the stage tag requires a clean working tree and a committed review. No retry or other actions taken."}}
+{"type":"turn.completed","usage":{"input_tokens":25950,"cached_input_tokens":22656,"cache_write_input_tokens":0,"output_tokens":93,"reasoning_output_tokens":0}}

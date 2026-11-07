@@ -1,0 +1,8 @@
+Reading additional input from stdin...
+2026-11-07T22:07:19.904195Z ERROR codex_core::tools::router: error=Command blocked by PreToolUse hook: Запрещено: файлы механизма приёмки (.claude/settings*.json, .claude/agents/, .claude/skills/, scripts/hooks/, .codex/, .agents/, docs/REVIEWER.md) меняет только автор вручную. Если правило мешает, опиши проблему в отчёте этапа и остановись.. Command: *** Begin Patch
+*** Update File: ordinary.txt
+@@
+-before
++after
+*** Delete File: docs/REVIEWER.md
+*** End Patch

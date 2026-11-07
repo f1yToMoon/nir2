@@ -1,0 +1,80 @@
+{
+  "files": {
+    "README.md": {
+      "bytes": 3785,
+      "sha256": "110ed23ff5d24c630800acfb656086027b9b3e4f75a6c21e1a5ecebaa56c280f"
+    },
+    "decision-deny.stderr.txt": {
+      "bytes": 369,
+      "sha256": "410578c87b8447365803ef9fe137a05ba32fbbc8849183d862e31cc2db2dcd2b"
+    },
+    "decision-deny.stdout.jsonl": {
+      "bytes": 615,
+      "sha256": "2186a66608444421d705fa3a17956e2417bc82ee5c1f23a04792c87eaa95af20"
+    },
+    "hook-events.jsonl": {
+      "bytes": 1648,
+      "sha256": "889847dfb49fe52589f1b101414bde45a99f7a2d32ac71b604293a60175bd208"
+    },
+    "patch-allow.stderr.txt": {
+      "bytes": 39,
+      "sha256": "1aa26269eb1cc57f86b235a03cda53c004edb5b1e9fc99d4da4f00843293d721"
+    },
+    "patch-allow.stdout.jsonl": {
+      "bytes": 885,
+      "sha256": "0f968572162b576c423f828394c9bd8b37e8e5c4c917d118f8390b4572cc3784"
+    },
+    "patch-deny.stderr.txt": {
+      "bytes": 612,
+      "sha256": "a6f22db98e461be13aa8d06a295328de20c498455e85ad77360ff29875f10a40"
+    },
+    "patch-deny.stdout.jsonl": {
+      "bytes": 667,
+      "sha256": "aced2bf4868bcee46f6563cbe3f3cd96fb9e2dc2103d7de2e8cd0ed6dba20352"
+    },
+    "project-hook-discovery.json": {
+      "bytes": 2067,
+      "sha256": "d3e128679df4a10a4e75ae434998b2ad381456c2d0bd15deeaea2cf14490fd1a"
+    },
+    "review-deny.stderr.txt": {
+      "bytes": 346,
+      "sha256": "2dd092d78f04a22549634f196a8dc50ce55e5f2324552b64ff2ee68603990804"
+    },
+    "review-deny.stdout.jsonl": {
+      "bytes": 474,
+      "sha256": "5796436f2bfa6ad1793df6c2270230a5c849622c997e410b52e3ad55819d12cb"
+    },
+    "runtime-patch.txt": {
+      "bytes": 3,
+      "sha256": "dc51b8c96c2d745df3bd5590d990230a482fd247123599548e0632fdbf97fc22"
+    },
+    "runtime-results.json": {
+      "bytes": 2776,
+      "sha256": "7fff4df82a4c2a03009d45ce9faa688b855b85058535c2d7bd9252ae66c4d3ec"
+    },
+    "runtime-shell.txt": {
+      "bytes": 2,
+      "sha256": "2689367b205c16ce32ed4200942b8b8b1e262dfc70d9bc9fbc77c49699a4f1df"
+    },
+    "shell-allow.stderr.txt": {
+      "bytes": 39,
+      "sha256": "1aa26269eb1cc57f86b235a03cda53c004edb5b1e9fc99d4da4f00843293d721"
+    },
+    "shell-allow.stdout.jsonl": {
+      "bytes": 920,
+      "sha256": "59a71675a71f83d88f7941cce32c619117c552c5b77a2c73850547ed2085a68e"
+    },
+    "state-validation.json": {
+      "bytes": 1066,
+      "sha256": "06dfe3cbaa4c99a9d76a04ee8c9355a9da07078f9a3fce3706e16df3566f16a1"
+    },
+    "tag-deny.stderr.txt": {
+      "bytes": 289,
+      "sha256": "0fbda180b093c024b4b3fd897c668a42742e91cedbabbc133d4f06fef4413765"
+    },
+    "tag-deny.stdout.jsonl": {
+      "bytes": 640,
+      "sha256": "936d7a5fbfdc6cabf5c8230f4d277a033510f432a2b8f354675f32e3580c2397"
+    }
+  }
+}
