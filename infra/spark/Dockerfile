@@ -32,3 +32,7 @@ ENV SPARK_HOME=/opt/spark \
     PATH=/opt/spark/bin:$PATH \
     PYSPARK_PYTHON=python3 \
     PYSPARK_PIN_THREAD=true
+
+# Stage 3: exact stream freshness reads Avro manifests on the runner.
+RUN pip3 install --no-cache-dir --break-system-packages "fastavro==1.12.2" || \
+    pip3 install --no-cache-dir "fastavro==1.12.2"
