@@ -32,7 +32,7 @@ def relative_names(path: str, root: Path, cwd: Path) -> list[str]:
 def check_path(path: str, text: str, root: Path, cwd: Path) -> None:
     for rel in relative_names(path, root, cwd):
         if legacy.PROTECTED_PATH_RE.match(rel) or rel in (
-                ".codex", ".claude", ".claude/agents", ".claude/skills", "scripts", "scripts/hooks",
+                ".codex", ".agents", ".agents/skills", ".claude", ".claude/agents", ".claude/skills", "scripts", "scripts/hooks",
                 "docs", "docs/author-decisions.md"):
             legacy.block(legacy.PROTECTED_MSG)
         target = root / rel
@@ -90,7 +90,7 @@ def check_shell(command: str, root: Path, cwd: Path) -> None:
     lexer.whitespace_split = True
     lexer.whitespace = " \t\r"
     words = list(lexer)
-    separators = {";", "&&", "||", "|", "(", ")", "\n"}
+    separators = {word for word in words if word and not word.strip(";&|()\n")}
     contexts: dict[int, list[Path]] = {}
     candidates = [cwd]
     start = 0

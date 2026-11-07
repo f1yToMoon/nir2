@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import json
 import os
+import runpy
+import shutil
 import subprocess
 from pathlib import Path
 
@@ -62,7 +64,8 @@ def test_allowed_shell(repo: Path, command: str) -> None:
 
 
 @pytest.mark.parametrize("path", [".codex/hooks.json", ".codex/config.toml", ".claude/settings.json",
-                                  "scripts/hooks/policy.py", "docs/REVIEWER.md"])
+                                  "scripts/hooks/policy.py", "docs/REVIEWER.md",
+                                  ".agents/skills/stage/SKILL.md", ".codex/agents/stage-reviewer.toml"])
 @pytest.mark.parametrize("action", ["Add", "Update", "Delete"])
 def test_every_patch_file_is_protected(repo: Path, path: str, action: str) -> None:
     patch = ("*** Begin Patch\n*** Update File: ordinary.txt\n@@\n-before\n+after\n"
@@ -163,7 +166,7 @@ def test_unstaged_protected_pathspec_cannot_be_committed(repo: Path, command: st
         assert hook(repo, command, adapter=adapter).returncode == 2
 
 
-@pytest.mark.parametrize("separator", [" && ", "; ", "\n"])
+@pytest.mark.parametrize("separator", [" && ", "; ", "\n", ";\n", "\n\n"])
 def test_shell_cd_does_not_hide_existing_review(repo: Path, separator: str) -> None:
     review(repo)
     assert hook(repo, f"cd docs/reviews{separator}rm stage-3-r1.md").returncode == 2
@@ -175,7 +178,8 @@ def test_readonly_cd_and_clear_workdir_are_allowed(repo: Path) -> None:
 
 
 def test_shell_protected_paths_and_embedded_patch(repo: Path) -> None:
-    for command in ("rm -rf .codex", "rm -rf scripts", "sed -i s/x/y/ scripts/hooks/policy.py",
+    for command in ("rm -rf .codex", "rm -rf .agents", "rm -rf scripts",
+                    "sed -i s/x/y/ scripts/hooks/policy.py",
                     "apply_patch <<'PATCH'\n*** Begin Patch\n*** Delete File: .codex/hooks.json\n"
                     "*** End Patch\nPATCH"):
         assert hook(repo, command).returncode == 2
@@ -202,3 +206,66 @@ def test_malformed_payload_denies(repo: Path) -> None:
     result = subprocess.run(["python3", str(ADAPTER)], input="broken", capture_output=True,
                             text=True, cwd=repo)
     assert result.returncode == 2
+
+
+@pytest.mark.parametrize("adapter", [ADAPTER, ROOT / "scripts/hooks/guard_pretool.py"])
+def test_new_codex_skills_cannot_be_committed(repo: Path, adapter: Path) -> None:
+    path = repo / ".agents/skills/stage/SKILL.md"
+    path.parent.mkdir(parents=True)
+    path.write_text("fixture\n")
+    git(repo, "add", str(path))
+    assert hook(repo, "git commit -m changed", adapter=adapter).returncode == 2
+
+
+def test_runtime_probe_writes_one_json_record_per_line() -> None:
+    verifier = runpy.run_path(str(ROOT / "scripts/hooks/verify_codex_runtime.py"))
+    fixture = verifier["prepare"]()
+    try:
+        payload = json.dumps({"cwd": str(fixture), "hook_event_name": "SessionStart"})
+        for _ in range(2):
+            result = subprocess.run(
+                ["python3", str(fixture / "scripts/hooks/runtime_probe.py"), "session"],
+                input=payload, text=True, capture_output=True, cwd=fixture, check=False,
+            )
+            assert result.returncode == 0, result.stderr
+        records = [json.loads(line) for line in
+                   (fixture / ".runtime-hook-events.jsonl").read_text().splitlines()]
+        assert len(records) == 2
+        assert all(row["event"] == "SessionStart" and row["exit"] == 0 for row in records)
+    finally:
+        shutil.rmtree(fixture)
+
+
+@pytest.mark.parametrize("adapter", [ADAPTER, ROOT / "scripts/hooks/guard_pretool.py"])
+@pytest.mark.parametrize("command", [
+    "sudo whoami", "rm -rf /*", "rm -rf ~/data", "git push --force origin main",
+    "git push -f origin main", "git reset --hard HEAD", "docker system prune -a",
+    "docker volume rm test-volume", "docker compose down -v", "make clean",
+    "git -C /tmp push --force-with-lease origin main",
+    "docker compose --profile streaming down --volumes",
+    "docker-compose down -v", "make -C infra clean",
+    "printf ok && git reset --hard", "printf ok\ngit reset --hard",
+    "printf ok\nsudo whoami", "printf ok\ngit push --force origin main",
+    "printf ok\ndocker volume rm data", "printf ok\ndocker compose down -v",
+    "printf ok\nmake clean", "printf ok\n\ngit reset --hard",
+    "printf ok;\ngit reset --hard",
+])
+def test_local_dangerous_command_denies(repo: Path, adapter: Path, command: str) -> None:
+    assert hook(repo, command, adapter=adapter).returncode == 2
+
+
+@pytest.mark.parametrize("adapter", [ADAPTER, ROOT / "scripts/hooks/guard_pretool.py"])
+@pytest.mark.parametrize("command", [
+    "git push origin main", "git reset --soft HEAD", "docker compose down",
+    "docker volume ls", "make lint", "rm ordinary.txt",
+])
+def test_local_permission_controls_allow_safe_commands(
+    repo: Path, adapter: Path, command: str,
+) -> None:
+    assert hook(repo, command, adapter=adapter).returncode == 0
+
+
+@pytest.mark.parametrize("adapter", [ADAPTER, ROOT / "scripts/hooks/guard_pretool.py"])
+@pytest.mark.parametrize("directory", [".agents", ".codex"])
+def test_acceptance_directories_cannot_be_removed(repo: Path, adapter: Path, directory: str) -> None:
+    assert hook(repo, f"rm -rf {directory}", adapter=adapter).returncode == 2

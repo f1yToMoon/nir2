@@ -15,6 +15,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import shlex
 import sys
 from pathlib import Path
 
@@ -35,7 +36,7 @@ GATE_FILE_RE = re.compile(r"docs/gate-G\d-report\.md")
 PROTECTED_RE = re.compile(
     r"(^|[\s'\"=/])("
     r"\.claude/settings(\.local)?\.json|\.claude/agents/|\.claude/skills/|"
-    r"scripts/hooks/|\.codex/|docs/REVIEWER\.md"
+    r"scripts/hooks/|\.codex(?:/|\b)|\.agents(?:/|\b)|docs/REVIEWER\.md"
     r")"
 )
 WRITE_CMD_RE = re.compile(
@@ -44,7 +45,7 @@ WRITE_CMD_RE = re.compile(
 )
 COMMIT_RE = re.compile(r"\bgit\s+commit\b")
 PROTECTED_PATH_RE = re.compile(
-    r"^(\.claude/settings(\.local)?\.json|\.claude/agents/|\.claude/skills/|scripts/hooks/|\.codex/|docs/REVIEWER\.md)"
+    r"^(\.claude/settings(\.local)?\.json|\.claude/agents/|\.claude/skills/|scripts/hooks/|\.codex/|\.agents/|docs/REVIEWER\.md)"
 )
 COMMIT_MSG = (
     "Коммит запрещён: в нём изменены файлы механизма приёмки ({files}). Их меняет только автор вручную. "
@@ -54,7 +55,7 @@ COMMIT_MSG = (
 )
 PROTECTED_MSG = (
     "Запрещено: файлы механизма приёмки (.claude/settings*.json, .claude/agents/, .claude/skills/, "
-    "scripts/hooks/, .codex/, docs/REVIEWER.md) меняет только автор вручную. Если правило мешает, "
+    "scripts/hooks/, .codex/, .agents/, docs/REVIEWER.md) меняет только автор вручную. Если правило мешает, "
     "опиши проблему в отчёте этапа и остановись."
 )
 
@@ -109,6 +110,71 @@ def check_commit(cmd: str) -> None:
         block(COMMIT_MSG.format(files=", ".join(bad)))
 
 
+
+def check_local_permissions(command: str) -> None:
+    """Carry the repository's local Claude command denies into both hook adapters.
+
+    This checks explicit shell commands, not code inside scripts or an arbitrary interpreter.
+    """
+    try:
+        lexer = shlex.shlex(command, posix=True, punctuation_chars=";&|()\n")
+        lexer.whitespace_split = True
+        lexer.whitespace = " \t\r"
+        words = list(lexer)
+    except ValueError:
+        block("Не удалось разобрать команду для локальных запретов.")
+    segments: list[list[str]] = [[]]
+    for word in words:
+        if word and not word.strip(";&|()\n"):
+            segments.append([])
+        else:
+            segments[-1].append(word)
+    for segment in segments:
+        while segment and (re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*=.*", segment[0])
+                           or segment[0] in {"env", "command", "exec"}):
+            segment = segment[1:]
+        if not segment:
+            continue
+        executable, *args = segment
+        executable = Path(executable).name
+        forbidden = executable == "sudo"
+        if executable == "rm":
+            options = [arg for arg in args if arg.startswith("-")]
+            recursive = "--recursive" in options or any(
+                "r" in opt[1:] or "R" in opt[1:] for opt in options if not opt.startswith("--"))
+            force = "--force" in options or any(
+                "f" in opt[1:] for opt in options if not opt.startswith("--"))
+            forbidden |= recursive and force and any(
+                arg.startswith(("/", "~", "$HOME", "${HOME}")) for arg in args)
+        if executable == "git":
+            subcommand = None
+            i = 0
+            while i < len(args):
+                arg = args[i]
+                if arg in {"-C", "-c", "--git-dir", "--work-tree"}:
+                    i += 2
+                elif arg.startswith("-"):
+                    i += 1
+                else:
+                    subcommand = arg
+                    args = args[i + 1:]
+                    break
+            forbidden |= (subcommand == "push" and any(
+                arg.startswith("--force") or arg == "-f" for arg in args))
+            forbidden |= subcommand == "reset" and "--hard" in args
+        if executable in {"docker", "docker-compose"}:
+            pairs = set(zip(args, args[1:]))
+            forbidden |= executable == "docker" and bool(
+                pairs & {("system", "prune"), ("volume", "rm")})
+            compose = executable == "docker-compose" or "compose" in args
+            forbidden |= compose and "down" in args and any(
+                arg in {"-v", "--volumes"} for arg in args)
+        forbidden |= executable in {"make", "gmake"} and "clean" in args
+        if forbidden:
+            block("Команда запрещена локальной политикой CAPL: sudo, опасное удаление, "
+                  "force push/reset --hard или удаление Docker-данных.")
+
+
 def main() -> None:
     try:
         data = json.load(sys.stdin)
@@ -119,6 +185,7 @@ def main() -> None:
 
     if tool == "Bash":
         cmd = tin.get("command", "") or ""
+        check_local_permissions(cmd)
         for m in TAG_RE.finditer(cmd):
             check_tag(int(m.group(1)))
         if COMMIT_RE.search(cmd):

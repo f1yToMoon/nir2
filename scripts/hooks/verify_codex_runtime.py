@@ -79,8 +79,8 @@ script="codex_session_start.py" if sys.argv[1]=="session" else "codex_pretool.py
 r=subprocess.run([sys.executable,str(root/"scripts/hooks"/script)],input=payload,text=True,capture_output=True)
 data=json.loads(payload)
 with (root/".runtime-hook-events.jsonl").open("a") as f:
- f.write(json.dumps({"event":data.get("hook_event_name"),"tool":data.get("tool_name"),
- "exit":r.returncode,"input_sha256":hashlib.sha256(payload.encode()).hexdigest()})+"\\n")
+ print(json.dumps({"event":data.get("hook_event_name"),"tool":data.get("tool_name"),
+ "exit":r.returncode,"input_sha256":hashlib.sha256(payload.encode()).hexdigest()}), file=f)
 sys.stdout.write(r.stdout);sys.stderr.write(r.stderr);sys.exit(r.returncode)
 ''')
     config = json.loads((SOURCE / ".codex/hooks.json").read_text())
