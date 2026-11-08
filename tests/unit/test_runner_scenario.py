@@ -26,7 +26,7 @@ def test_extends_merges_and_overrides() -> None:
     sc = scn.load("S3_compaction_vs_mor_dml")
     assert sc.table.properties["write.update.mode"] == "merge-on-read"      # from S3
     assert sc.table.properties["commit.retry.num-retries"] == "4"            # from _base
-    assert sc.expire is not None and sc.expire.older_than_s == 600
+    assert sc.expire is not None and sc.expire.older_than_s == 540  # ADR-012: measured retention window
 
 
 def test_variant_patches_ops_by_id_and_v3_drops_rewrite_deletes() -> None:
