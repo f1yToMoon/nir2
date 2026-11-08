@@ -28,7 +28,7 @@ PY
     return
   fi
   bash scripts/run_measured.sh "$1" make run GIT_SHA="$RUN_SHA" SCENARIO="$2" SEED="$3" CONC=mid \
-    RUNFLAGS="--run-id $1 --force" > "results/stage-3/$1.log" 2>&1
+    RUNFLAGS="--run-id $1" > "results/stage-3/$1.log" 2>&1
   echo "$1 exit=0"
 }
 run stage3-S0-P0-mid-s1 S0_baseline 1

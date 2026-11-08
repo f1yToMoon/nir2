@@ -174,3 +174,4 @@ def test_series_uses_actual_head_for_every_run(tmp_path: Path) -> None:
     args = (tmp_path / "results/arguments.txt").read_text().splitlines()
     assert args.count(f"GIT_SHA={sha}") == 2
     assert "GIT_SHA=untrusted" not in args
+    assert not any("--force" in arg for arg in args)

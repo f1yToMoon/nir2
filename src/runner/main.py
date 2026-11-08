@@ -235,8 +235,11 @@ class Run:
         db = DB(env.pg_dsn, env.pg_schema)
         db.migrate()
         prev = db.query("SELECT status FROM {s}.runs WHERE run_id = %s", [self.run_id])
-        if prev and prev[0]["status"] == "finished" and not args.force:
+        if prev and not args.force:
             try:
+                if prev[0]["status"] != "finished":
+                    raise ValueError(f"Cannot resume {self.run_id}: existing status={prev[0]['status']}; "
+                                     "preserve measurements and use a new run_id.")
                 require_valid_result(RESULTS_DIR / f"{self.run_id}.json")
             finally:
                 db.close()

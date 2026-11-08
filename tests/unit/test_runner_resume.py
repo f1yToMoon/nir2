@@ -14,12 +14,13 @@ class FinishedDB:
         self.run_id = run_id
         self.closed = False
         self.deleted = False
+        self.status = "finished"
 
     def migrate(self) -> None:
         pass
 
     def query(self, *_args: Any) -> list[dict[str, str]]:
-        return [{"status": "finished", "run_id": self.run_id}]
+        return [{"status": self.status, "run_id": self.run_id}]
 
     def delete_run(self, _run_id: str) -> None:
         self.deleted = True
@@ -70,6 +71,25 @@ def test_main_skips_valid_result_and_closes_db(monkeypatch: Any, tmp_path: Path)
     assert run.execute() == 0
     assert not db.deleted and db.closed
     assert path.read_bytes() == b'{"validation":{"ok":true}}'
+
+
+@pytest.mark.parametrize("status", ["failed", "running"])
+def test_main_preserves_existing_unfinished_run(monkeypatch: Any, tmp_path: Path, status: str) -> None:
+    from runner import main
+    run_id = "existing"
+    path = prepare(tmp_path, run_id, b"partial measurements")
+    db = FinishedDB(run_id)
+    db.status = status
+    monkeypatch.setattr(main, "DB", lambda *_args: db)
+    monkeypatch.setattr(main, "RESULTS_DIR", tmp_path)
+    run = main.Run.__new__(main.Run)
+    run.env = SimpleNamespace(pg_dsn="unused", pg_schema="test")
+    run.sc, run.args, run.run_id = SimpleNamespace(), SimpleNamespace(force=False), run_id
+    run._golden = lambda: ({}, {})
+    with pytest.raises((ValueError, SystemExit), match="Cannot resume"):
+        run.execute()
+    assert not db.deleted and db.closed
+    assert path.read_bytes() == b"partial measurements"
 
 
 @pytest.mark.parametrize("payload", [*INVALID, b'{"validation":{"ok":true}}'])
