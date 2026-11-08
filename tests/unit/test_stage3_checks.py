@@ -118,8 +118,12 @@ def init_series_repo(tmp_path: Path) -> Path:
     scripts.mkdir()
     script = scripts / "stage3_runs.sh"
     script.write_bytes((ROOT / "scripts/stage3_runs.sh").read_bytes())
+    package = tmp_path / "src/runner"
+    package.mkdir(parents=True)
+    for name in ("__init__.py", "env.py", "resume.py"):
+        (package / name).write_bytes((ROOT / "src/runner" / name).read_bytes())
     subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
-    subprocess.run(["git", "-C", str(tmp_path), "add", "scripts"], check=True)
+    subprocess.run(["git", "-C", str(tmp_path), "add", "scripts", "src"], check=True)
     subprocess.run(["git", "-C", str(tmp_path), "-c", "user.name=Test", "-c",
                     "user.email=test@example.test", "commit", "-qm", "fixture"], check=True)
     return script
@@ -147,7 +151,7 @@ def test_resume_preserves_existing_results(tmp_path: Path, validation: Any, code
 def test_series_rejects_uncommitted_sources(tmp_path: Path, path: str) -> None:
     script = init_series_repo(tmp_path)
     changed = tmp_path / path
-    changed.parent.mkdir(parents=True)
+    changed.parent.mkdir(parents=True, exist_ok=True)
     changed.write_text("uncommitted")
     completed = subprocess.run(["bash", str(script)], capture_output=True, text=True)
     assert completed.returncode == 1

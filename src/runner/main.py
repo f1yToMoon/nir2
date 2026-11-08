@@ -37,12 +37,12 @@ from runner.health import HealthSampler, _aws
 from runner.intents import Intent, generate
 from runner.invariants import Invariants, Ledger, orphan_scan
 from runner.ops.executor import OpExecutor, RunCtx, load_table_state, now
+from runner.resume import RESULTS_DIR, require_valid_result
 from runner.slots import SlotPool, build_session, job_scope
 
 UTC = timezone.utc  # noqa: UP017 — runner image is Python 3.10
 GOLDEN_DIR = REPO / "data" / "golden"
 RUNS_DIR = REPO / "data" / "runs"
-RESULTS_DIR = REPO / "results" / "stage-3" / "runs"
 
 
 def log(msg: str, **kw: Any) -> None:
@@ -236,6 +236,10 @@ class Run:
         db.migrate()
         prev = db.query("SELECT status FROM {s}.runs WHERE run_id = %s", [self.run_id])
         if prev and prev[0]["status"] == "finished" and not args.force:
+            try:
+                require_valid_result(RESULTS_DIR / f"{self.run_id}.json")
+            finally:
+                db.close()
             log("already finished", run_id=self.run_id)
             return 0
         db.delete_run(self.run_id)

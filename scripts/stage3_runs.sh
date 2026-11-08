@@ -16,19 +16,13 @@ run() {  # run_id scenario seed
   local rid="$1${STAGE3_SUFFIX:-}"
   set -- "$rid" "$2" "$3"
   if [ -f "results/stage-3/runs/$1.json" ]; then
-    python3 - "$1" <<'PY'
-import json
+    PYTHONPATH=src python3 - "$1" <<'PY'
 import sys
 from pathlib import Path
 
-rid = sys.argv[1]
-try:
-    result = json.loads(Path(f"results/stage-3/runs/{rid}.json").read_text())
-    valid = (result.get("validation") or {}).get("ok") is True
-except (OSError, ValueError, AttributeError) as exc:
-    sys.exit(f"Cannot resume {rid}: unreadable result ({exc}); preserve it and use a new run_id (STAGE3_SUFFIX).")
-if not valid:
-    sys.exit(f"Cannot resume {rid}: validation.ok is not true; preserve it and use a new run_id (STAGE3_SUFFIX).")
+from runner.resume import require_valid_result
+
+require_valid_result(Path(f"results/stage-3/runs/{sys.argv[1]}.json"))
 PY
     echo "skip $1 (validation.ok=true)"
     return

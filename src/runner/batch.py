@@ -3,7 +3,8 @@
     python3 -m runner.batch --matrix config/experiments/matrix.yaml --series E3_main [--dry-run]
 
 Each run is a separate process (`runner.main run`): one Spark application and one run id per run
-(the run id is a static header of the slot catalogs). Runs with runs.status = 'finished' are skipped.
+(the run id is a static header of the slot catalogs). Finished runs are skipped only after
+validation of the saved result; an invalid finished result stops resumption without overwriting it.
 """
 from __future__ import annotations
 
@@ -15,6 +16,8 @@ from pathlib import Path
 from typing import Any
 
 import yaml
+
+from runner.resume import RESULTS_DIR, require_valid_result
 
 
 def expand(matrix: dict[str, Any], series: str) -> list[dict[str, Any]]:
@@ -48,10 +51,14 @@ def main(argv: list[str] | None = None) -> int:
     from runner.env import Env
     env = Env()
     db = DB(env.pg_dsn, env.pg_schema)
-    done = {r["run_id"] for r in db.query("SELECT run_id FROM {s}.runs WHERE status = 'finished'")}
+    try:
+        done = {r["run_id"] for r in db.query("SELECT run_id FROM {s}.runs WHERE status = 'finished'")}
+    finally:
+        db.close()
     rc = 0
     for r in runs:
         if r["run_id"] in done:
+            require_valid_result(RESULTS_DIR / f"{r['run_id']}.json")
             print("skip finished", r["run_id"], flush=True)
             continue
         cmd = [sys.executable, "-m", "runner.main", "run", "--scenario", r["scenario"], "--policy",
