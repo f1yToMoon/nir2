@@ -41,10 +41,16 @@ def _last_ledger() -> tuple[str, dict[str, Any]] | None:
 
 
 @pytest.fixture(scope="module")
-def spark() -> Any:
-    found = _last_ledger()
-    run_id = found[0] if found else f"stage3-it-{int(time.time())}"
-    s = build_session(Env(), run_id, "stage3-it", n_slots=0)
+def results_dir() -> Path:
+    path = REPO / "results" / "stage-3" / "integration" / f"stage3-it-{time.time_ns()}"
+    path.mkdir(parents=True)
+    return path
+
+
+@pytest.fixture(scope="module")
+def spark(results_dir: Path) -> Any:
+    # Fault-injection commits must never contaminate the measured run's telemetry.
+    s = build_session(Env(), results_dir.name, "stage3-it", n_slots=0)
     yield s
     s.stop()
 
@@ -81,7 +87,7 @@ def test_stage3_insert_overwrite_dynamic_with(spark: Any) -> None:
     spark.sql(f"DROP TABLE IF EXISTS {t} PURGE")
 
 
-def test_stage3_history_labels_have_data_evidence(spark: Any) -> None:
+def test_stage3_history_labels_have_data_evidence(spark: Any, results_dir: Path) -> None:
     """The real history ValidationException needs a removed ancestor and a causal expire."""
     from types import SimpleNamespace
 
@@ -124,7 +130,7 @@ def test_stage3_history_labels_have_data_evidence(spark: Any) -> None:
         assert child in detail["expire_evidence"]["absent_in_metadata"]
         # Same real exception, with no causal expire in the operation interval.
         assert executor._outcome(text, failed, failed)[0] == "history_unresolved"
-        out = REPO / "results" / "stage-3" / "history_labels.json"
+        out = results_dir / "history_labels.json"
         import json
         out.write_text(json.dumps({"base": base, "expired_child": child, "outcome": outcome,
                                    "without_causal_expire": "history_unresolved", "detail": detail},
@@ -134,7 +140,7 @@ def test_stage3_history_labels_have_data_evidence(spark: Any) -> None:
         spark.sql(f"DROP TABLE IF EXISTS {table} PURGE")
 
 
-def test_stage3_invariants_detect_injected_faults(spark: Any) -> None:
+def test_stage3_invariants_detect_injected_faults(spark: Any, results_dir: Path) -> None:
     found = _last_ledger()
     if found is None:
         pytest.skip("no finished run with data/runs/*/ledger.pkl")
@@ -164,16 +170,20 @@ def test_stage3_invariants_detect_injected_faults(spark: Any) -> None:
     stream_id = int(spark.sql(f"SELECT max(event_id) AS e FROM lake.{table} WHERE event_id >= "
                               f"1000000000000 AND event_id < 9000000000000").collect()[0]["e"])
     detected: dict[str, list[str]] = {}
+    details: dict[str, Any] = {}
     faults = {
         "duplicate_row": f"INSERT INTO lake.{table} SELECT * FROM lake.{table} WHERE event_id = {golden_id}",
         "lost_row": f"DELETE FROM lake.{table} WHERE event_id = {stream_id}",
         "extra_update": f"UPDATE lake.{table} SET version = version + 1 WHERE event_id = {golden_id}",
     }
     for name, sql in faults.items():
-        spark.sql(sql)
-        res = run_checks()
-        detected[name] = sorted(k for k, v in res.items() if isinstance(v, dict) and not v.get("ok"))
-        restore()
+        try:
+            spark.sql(sql)
+            res = run_checks()
+            details[name] = res
+            detected[name] = sorted(k for k, v in res.items() if isinstance(v, dict) and not v.get("ok"))
+        finally:
+            restore()
     # Restore a golden row actually removed by DELETE. The factual side must retain it,
     # while the independent expected ledger excludes its exact event id (not the whole key).
     deleted_golden = sorted(i for i in led.deleted_ids if i < 1_000_000_000_000)
@@ -184,20 +194,27 @@ def test_stage3_invariants_detect_injected_faults(spark: Any) -> None:
             spark.sql(f"INSERT INTO lake.{table} SELECT * FROM lake.{table} "
                       f"VERSION AS OF {led.golden_snapshot_id} WHERE event_id = {deleted_id}")
             res = run_checks()
+            details["retained_deleted_row"] = res
             detected["retained_deleted_row"] = sorted(
                 k for k, v in res.items() if isinstance(v, dict) and not v.get("ok"))
             assert "ledger_row_counts" in detected["retained_deleted_row"], res
+            assert res["ledger_row_counts"]["n_mismatches"] == 1, res
+            assert sum(v["actual"] - v["expected"] for v in
+                       res["ledger_row_counts"]["mismatches"].values()) == 1, res
         finally:
             restore()
     # a row of an aborted operation in the table
     import copy
     led2 = copy.deepcopy(led)
     led2.aborted_inserted = [*led.aborted_inserted, 8_999_999_999_999]
-    spark.sql(f"INSERT INTO lake.{table} SELECT 8999999999999, key, dt, event_ts, amount, status, "
-              f"version, payload FROM lake.{table} WHERE event_id = {golden_id}")
-    res = run_checks(led2)
-    detected["aborted_row"] = sorted(k for k, v in res.items() if isinstance(v, dict) and not v.get("ok"))
-    restore()
+    try:
+        spark.sql(f"INSERT INTO lake.{table} SELECT 8999999999999, key, dt, event_ts, amount, status, "
+                  f"version, payload FROM lake.{table} WHERE event_id = {golden_id}")
+        res = run_checks(led2)
+        details["aborted_row"] = res
+        detected["aborted_row"] = sorted(k for k, v in res.items() if isinstance(v, dict) and not v.get("ok"))
+    finally:
+        restore()
     # a committed operation's snapshot leaves the lineage
     committed = [o for o in ops if o.get("outcome") == "committed" and o.get("controlled")
                  and o.get("snapshot_id")]
@@ -205,21 +222,34 @@ def test_stage3_invariants_detect_injected_faults(spark: Any) -> None:
         last = max(committed, key=lambda o: o["finished_at"])
         parent = st.snapshots.get(int(last["snapshot_id"]), {}).get("parent")
         if parent is not None:
-            spark.sql(f"CALL lake.system.set_current_snapshot(table => '{table}', snapshot_id => {parent})")
-            res = run_checks()
-            detected["lineage"] = sorted(k for k, v in res.items()
-                                         if isinstance(v, dict) and not v.get("ok"))
-            restore()
+            try:
+                spark.sql(f"CALL lake.system.set_current_snapshot(table => '{table}', "
+                          f"snapshot_id => {parent})")
+                res = run_checks()
+                details["lineage"] = res
+                detected["lineage"] = sorted(k for k, v in res.items()
+                                             if isinstance(v, dict) and not v.get("ok"))
+            finally:
+                restore()
     after = run_checks()
-    out = Path(REPO / "results" / "stage-3" / "invariants_fault_injection.json")
+    out = results_dir / "invariants_fault_injection.json"
     import json
-    out.write_text(json.dumps({"run_id": run_id, "clean": clean["ok"], "detected": detected,
-                               "after_restore": after["ok"]}, indent=1))
+    out.write_text(json.dumps({"run_id": run_id, "telemetry_run_id": results_dir.name,
+                               "clean": clean, "detected": detected, "details": details,
+                               "after_restore": after}, indent=1))
     assert "no_duplicate_event_ids" in detected["duplicate_row"]
     assert "ledger_row_counts" in detected["duplicate_row"]
     assert "ledger_row_counts" in detected["lost_row"]
+    assert details["duplicate_row"]["no_duplicate_event_ids"]["duplicates"] == 1
+    for name, delta in (("duplicate_row", 1), ("lost_row", -1)):
+        counts = details[name]["ledger_row_counts"]
+        assert counts["n_mismatches"] == 1, counts
+        assert sum(v["actual"] - v["expected"] for v in counts["mismatches"].values()) == delta, counts
     assert "version_monotonic" in detected["extra_update"]
+    assert details["extra_update"]["version_monotonic"]["mismatches"] == 1
     assert "aborted_ops_absent" in detected["aborted_row"]
+    assert details["aborted_row"]["aborted_ops_absent"]["aborted_rows_present"] == 1
     if "lineage" in detected:
         assert "committed_ops_in_lineage" in detected["lineage"]
+        assert details["lineage"]["committed_ops_in_lineage"]["n_missing"] > 0
     assert after["ok"], after
