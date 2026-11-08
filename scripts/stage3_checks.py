@@ -31,6 +31,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from runner.db import DB
 from runner.env import REPO, Env
+from runner.history import history_bounds
 
 RES = REPO / "results" / "stage-3"
 VERIFIED_SNAPSHOTS = 1452
@@ -166,6 +167,20 @@ def main(argv: list[str] | None = None) -> int:
         check(f"{rid}: history <= verified point (1452 / 1.51 MB)",
               ms is not None and ms <= VERIFIED_SNAPSHOTS and mb <= VERIFIED_METADATA_BYTES,
               max_snapshots=ms, max_metadata_bytes=mb, B=(B_SNAPSHOTS, B_BYTES))
+        try:
+            initial = db.query("SELECT snapshots,current_snapshot_id FROM {s}.table_meta "
+                               "WHERE run_id=%s ORDER BY at LIMIT 1", [rid])[0]
+            if initial["snapshots"] != 1:
+                raise ValueError("expected the single retained golden snapshot before writers start")
+            mutations = db.query("SELECT forwarded_at,responded_at,new_snapshot_id,removed_snapshot_ids "
+                                 "FROM {s}.commit_attempts WHERE run_id=%s AND table_name=%s "
+                                 "AND http_status BETWEEN 200 AND 299",
+                                 [rid, run["params"]["scenario"]["table"]["name"]])
+            bounds = history_bounds(int(initial["current_snapshot_id"]), mutations)
+            check(f"{rid}: dense history upper bound <= 1452",
+                  bounds["upper"]["peak_snapshots"] <= VERIFIED_SNAPSHOTS, **bounds)
+        except (ValueError, IndexError, KeyError, TypeError) as exc:
+            check(f"{rid}: dense history upper bound <= 1452", False, error=str(exc))
         # commit rate of the table (all successful commits / run time)
         rr = db.query("SELECT count(*) AS n, extract(epoch FROM max(responded_at) - min(responded_at)) AS s"
                       " FROM {s}.commit_attempts WHERE run_id = %s AND http_status BETWEEN 200 AND 299"
@@ -218,6 +233,9 @@ def main(argv: list[str] | None = None) -> int:
         configured_r = min((r["R_s"] for r in out["runs"].values() if r["R_s"]), default=0)
         check("retention: measured lower bound <= configured R", r_low <= configured_r,
               lower_s=round(r_low, 1), configured_R_s=configured_r)
+        if r_high_verified is not None:
+            check("retention: configured R <= measured upper bound", configured_r <= r_high_verified,
+                  configured_R_s=configured_r, upper_s=round(r_high_verified, 1))
         check("retention: D_max <= 349 s (else author decision)", d_max <= D_MAX_AUTHOR,
               d_max_s=round(d_max, 1))
     out["failed"] = fails

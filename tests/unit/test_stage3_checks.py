@@ -31,13 +31,19 @@ def measured(monkeypatch: Any, tmp_path: Path) -> tuple[dict[str, Any], list[dic
             pass
 
         def query(self, sql: str, _args: Any) -> Any:
+            if sql.startswith("SELECT snapshots,current_snapshot_id"):
+                return [{"snapshots": 1, "current_snapshot_id": 100}]
+            if sql.startswith("SELECT forwarded_at,responded_at"):
+                return [{"forwarded_at": t, "responded_at": t, "new_snapshot_id": 101,
+                         "removed_snapshot_ids": None}]
             if "run_summary" in sql:
                 return [{"detail": {"max_snapshots": 1, "max_metadata_bytes": 100}}]
             if "commit_attempts" in sql:
                 return [{"n": 1, "s": 1}]
             if ".runs " in sql:
                 return [{"scenario": "S0_baseline", "status": "finished", "invariants_ok": True,
-                         "git_sha": "sha", "params": {"scenario": {"maintenance": {
+                         "git_sha": "sha", "params": {"scenario": {"table": {"name": "bench.events"},
+                         "maintenance": {
                              "expire_snapshots": {"enabled": True, "older_than_s": 1000}}}}}]
             return ops
 
