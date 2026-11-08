@@ -1,0 +1,121 @@
+{
+  "mode": "merge-on-read",
+  "statement": "update_status",
+  "isolation": "snapshot",
+  "base_snapshot_id": 6041899078370032079,
+  "append_snapshot_id": 1180866269504490870,
+  "physical_plan": "CommandResult <empty>\n   +- WriteDelta\n      +- AdaptiveSparkPlan isFinalPlan=true\n         +- == Final Plan ==\n            ResultQueryStage 1\n            +- AQEShuffleRead coalesced\n               +- ShuffleQueryStage 0\n                  +- Exchange hashpartitioning(_spec_id#380, _partition#381, dt#376, static_invoke(org.apache.iceberg.spark.functions.BucketFunction$BucketLong.invoke(1, key#375L)), 32), REBALANCE_PARTITIONS_BY_COL, 402653184, [plan_id=514]\n                     +- *(1) Expand [[1, null, null, null, null, _file#365, _pos#366L, _spec_id#363, _partition#364], [4, event_id#359L, key#360L, dt#361, (version#362 + 1), null, null, null, null]], [__row_operation#373, event_id#374L, key#375L, dt#376, version#377, _file#378, _pos#379L, _spec_id#380, _partition#381]\n                        +- *(1) Filter (key#360L = 97)\n                           +- *(1) ColumnarToRow\n                              +- BatchScan s0.stage3_it.effects_merge_on_read_update_status_snapshot[event_id#359L, key#360L, dt#361, version#362, _file#365, _pos#366L, _spec_id#363, _partition#364] s0.stage3_it.effects_merge_on_read_update_status_snapshot (branch=null) [filters=key IS NOT NULL, key = 97, groupedBy=] RuntimeFilters: []\n         +- == Initial Plan ==\n            Exchange hashpartitioning(_spec_id#380, _partition#381, dt#376, static_invoke(org.apache.iceberg.spark.functions.BucketFunction$BucketLong.invoke(1, key#375L)), 32), REBALANCE_PARTITIONS_BY_COL, 402653184, [plan_id=495]\n            +- Expand [[1, null, null, null, null, _file#365, _pos#366L, _spec_id#363, _partition#364], [4, event_id#359L, key#360L, dt#361, (version#362 + 1), null, null, null, null]], [__row_operation#373, event_id#374L, key#375L, dt#376, version#377, _file#378, _pos#379L, _spec_id#380, _partition#381]\n               +- Filter (key#360L = 97)\n                  +- BatchScan s0.stage3_it.effects_merge_on_read_update_status_snapshot[event_id#359L, key#360L, dt#361, version#362, _file#365, _pos#366L, _spec_id#363, _partition#364] s0.stage3_it.effects_merge_on_read_update_status_snapshot (branch=null) [filters=key IS NOT NULL, key = 97, groupedBy=] RuntimeFilters: []\n",
+  "outcome": "success",
+  "actual_versions": {
+    "3": 0,
+    "2": 0,
+    "1": 1
+  },
+  "committed_snapshot_id": 6561375620505874780,
+  "snapshots": [
+    {
+      "sequence-number": 1,
+      "snapshot-id": 6041899078370032079,
+      "timestamp-ms": 1794135181554,
+      "summary": {
+        "operation": "append",
+        "spark.app.id": "app-20261108105244-0000",
+        "manifests-created": "1",
+        "manifests-kept": "0",
+        "manifests-replaced": "0",
+        "added-data-files": "1",
+        "added-records": "2",
+        "added-files-size": "1241",
+        "changed-partition-count": "1",
+        "total-records": "2",
+        "total-files-size": "1241",
+        "total-data-files": "1",
+        "total-delete-files": "0",
+        "total-position-deletes": "0",
+        "total-equality-deletes": "0",
+        "engine-version": "4.0.1",
+        "app-id": "app-20261108105244-0000",
+        "engine-name": "spark",
+        "iceberg-version": "Apache Iceberg 1.12.0 (commit 212aa894e919ff9fdf89160da4aadcbe6858ac01)",
+        "app-name": "stage3-effects-micro"
+      },
+      "manifest-list": "s3://warehouse/stage3_it/effects_merge_on_read_update_status_snapshot/metadata/snap-6041899078370032079-1-5e3fa56e-2cf1-4768-ba6b-af1975bf773d.avro",
+      "schema-id": 0
+    },
+    {
+      "sequence-number": 2,
+      "snapshot-id": 1180866269504490870,
+      "parent-snapshot-id": 6041899078370032079,
+      "timestamp-ms": 1794135182148,
+      "summary": {
+        "operation": "append",
+        "spark.app.id": "app-20261108105244-0000",
+        "manifests-created": "1",
+        "manifests-kept": "1",
+        "manifests-replaced": "0",
+        "added-data-files": "1",
+        "added-records": "1",
+        "added-files-size": "1137",
+        "changed-partition-count": "1",
+        "total-records": "3",
+        "total-files-size": "2378",
+        "total-data-files": "2",
+        "total-delete-files": "0",
+        "total-position-deletes": "0",
+        "total-equality-deletes": "0",
+        "engine-version": "4.0.1",
+        "app-id": "app-20261108105244-0000",
+        "engine-name": "spark",
+        "iceberg-version": "Apache Iceberg 1.12.0 (commit 212aa894e919ff9fdf89160da4aadcbe6858ac01)",
+        "app-name": "stage3-effects-micro"
+      },
+      "manifest-list": "s3://warehouse/stage3_it/effects_merge_on_read_update_status_snapshot/metadata/snap-1180866269504490870-1-d190171a-b63b-4a07-a104-ae362e32ab50.avro",
+      "schema-id": 0
+    },
+    {
+      "sequence-number": 3,
+      "snapshot-id": 6561375620505874780,
+      "parent-snapshot-id": 1180866269504490870,
+      "timestamp-ms": 1794135182362,
+      "summary": {
+        "operation": "overwrite",
+        "spark.app.id": "app-20261108105244-0000",
+        "manifests-created": "2",
+        "manifests-kept": "2",
+        "manifests-replaced": "0",
+        "added-data-files": "1",
+        "added-position-delete-files": "1",
+        "added-delete-files": "1",
+        "added-records": "1",
+        "added-files-size": "2916",
+        "added-position-deletes": "1",
+        "changed-partition-count": "1",
+        "total-records": "4",
+        "total-files-size": "5294",
+        "total-data-files": "3",
+        "total-delete-files": "1",
+        "total-position-deletes": "1",
+        "total-equality-deletes": "0",
+        "engine-version": "4.0.1",
+        "app-id": "app-20261108105244-0000",
+        "engine-name": "spark",
+        "iceberg-version": "Apache Iceberg 1.12.0 (commit 212aa894e919ff9fdf89160da4aadcbe6858ac01)",
+        "app-name": "stage3-effects-micro"
+      },
+      "manifest-list": "s3://warehouse/stage3_it/effects_merge_on_read_update_status_snapshot/metadata/snap-6561375620505874780-2-ddcbca23-82b0-44af-afb9-a09284a18afb.avro",
+      "schema-id": 0
+    }
+  ],
+  "journal": {
+    "update_rule": {
+      "mod": 97,
+      "r": 0
+    },
+    "effect_updated_ids": [
+      1,
+      3
+    ],
+    "effects_parent_snapshot_id": 1180866269504490870,
+    "effects_recorded": true
+  }
+}

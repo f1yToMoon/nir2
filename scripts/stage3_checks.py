@@ -88,6 +88,8 @@ def main(argv: list[str] | None = None) -> int:
         check(f"{rid}: finished, invariants_ok", run["status"] == "finished" and run["invariants_ok"] is True,
               invariants={k: v.get("ok") if isinstance(v, dict) else v
                           for k, v in (res.get("invariants") or {}).items()})
+        validation = res.get("validation") or {}
+        check(f"{rid}: validation.ok", validation.get("ok") is True, validation=validation)
         fresh = res.get("stream_freshness") or {}
         check(f"{rid}: stream freshness fully observed", fresh.get("complete") is True
               and fresh.get("n_samples", 0) > 0, freshness=fresh)
@@ -132,18 +134,30 @@ def main(argv: list[str] | None = None) -> int:
         hu = sum(1 for o in in_m if o["outcome"] == "history_unresolved")
         unk = sum(1 for o in ops if o["outcome"] in ("error", "commit_unknown"))
         over_r = []
-        for o in [x for x in ops if x["controlled"]]:
+        history_ops = [x for x in ops if x["controlled"]
+                       and (x["outcome"] != "noop" or x["footprint_requested"])]
+        missing_timing = []
+        for o in history_ops:
             end = o["last_attempt_at"] or o["finished_at"]
             if o["planning_snapshot_at"] and end:
                 d = (end - o["planning_snapshot_at"]).total_seconds()
+                if d < 0:
+                    missing_timing.append(o["op_id"])
+                    continue
                 d_hist_all.append((d, rid, o["op_id"]))
                 if exp_on and R and d > R:
                     over_r.append({"op_id": o["op_id"], "d_hist_s": round(d, 1), "outcome": o["outcome"]})
+            else:
+                missing_timing.append(o["op_id"])
+        check(f"{rid}: complete history timing coverage", bool(history_ops) and not missing_timing,
+              expected=len(history_ops), observed=len(history_ops) - len(missing_timing),
+              missing_or_invalid=missing_timing[:10])
         check(f"{rid}: no operation older than R (or counted)", not over_r or all(
             x["outcome"] not in ("data_conflict", "retry_exhausted", "history_unresolved") for x in over_r),
             R_s=R, over_r=over_r[:10], n_over_r=len(over_r), base_expired=be, history_unresolved=hu,
             errors=unk)
-        errs = [(o["op_id"], o["error_class"]) for o in ops if o["outcome"] in ("error", "commit_unknown")]
+        errs = [(o["op_id"], o["error_class"]) for o in ops
+                if o["outcome"] in ("error", "commit_unknown", "history_unresolved")]
         check(f"{rid}: no runner/infrastructure errors", not errs, errors=errs[:10])
         bgx = detail.get("background_expire") or {}
         info["background_expire"] = bgx
@@ -183,6 +197,7 @@ def main(argv: list[str] | None = None) -> int:
               resolved_identical=sum(1 for x in jac if x == 1.0), resolved_n=len(jac))
     # 8. retention re-check
     d_hist_all.sort(reverse=True)
+    check("retention: nonempty timing coverage", bool(d_hist_all), n_observed=len(d_hist_all))
     if d_hist_all:
         d_max, rid_max, op_max = d_hist_all[0]
         rate = rates.get("S1")

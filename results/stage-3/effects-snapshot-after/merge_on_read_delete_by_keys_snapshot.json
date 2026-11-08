@@ -1,0 +1,122 @@
+{
+  "mode": "merge-on-read",
+  "statement": "delete_by_keys",
+  "isolation": "snapshot",
+  "base_snapshot_id": 1177047509306645889,
+  "append_snapshot_id": 3892163587484298056,
+  "physical_plan": "CommandResult <empty>\n   +- WriteDelta\n      +- AdaptiveSparkPlan isFinalPlan=true\n         +- == Final Plan ==\n            ResultQueryStage 1\n            +- AQEShuffleRead coalesced\n               +- ShuffleQueryStage 0\n                  +- Exchange hashpartitioning(_spec_id#1045, _partition#1046, 32), REBALANCE_PARTITIONS_BY_COL, 100663296, [plan_id=1371]\n                     +- *(1) Project [1 AS __row_operation#1050, _file#1047, _pos#1048L, _spec_id#1045, _partition#1046]\n                        +- *(1) Filter (key#1042L = 97)\n                           +- *(1) ColumnarToRow\n                              +- BatchScan s0.stage3_it.effects_merge_on_read_delete_by_keys_snapshot[key#1042L, _file#1047, _pos#1048L, _spec_id#1045, _partition#1046] s0.stage3_it.effects_merge_on_read_delete_by_keys_snapshot (branch=null) [filters=key IS NOT NULL, key = 97, groupedBy=] RuntimeFilters: []\n         +- == Initial Plan ==\n            Exchange hashpartitioning(_spec_id#1045, _partition#1046, 32), REBALANCE_PARTITIONS_BY_COL, 100663296, [plan_id=1352]\n            +- Project [1 AS __row_operation#1050, _file#1047, _pos#1048L, _spec_id#1045, _partition#1046]\n               +- Filter (key#1042L = 97)\n                  +- BatchScan s0.stage3_it.effects_merge_on_read_delete_by_keys_snapshot[key#1042L, _file#1047, _pos#1048L, _spec_id#1045, _partition#1046] s0.stage3_it.effects_merge_on_read_delete_by_keys_snapshot (branch=null) [filters=key IS NOT NULL, key = 97, groupedBy=] RuntimeFilters: []\n",
+  "outcome": "success",
+  "actual_versions": {
+    "3": 0,
+    "2": 0
+  },
+  "committed_snapshot_id": 5805808031795851110,
+  "snapshots": [
+    {
+      "sequence-number": 1,
+      "snapshot-id": 1177047509306645889,
+      "timestamp-ms": 1794135287281,
+      "summary": {
+        "operation": "append",
+        "spark.app.id": "app-20261108105426-0001",
+        "manifests-created": "1",
+        "manifests-kept": "0",
+        "manifests-replaced": "0",
+        "added-data-files": "1",
+        "added-records": "2",
+        "added-files-size": "1241",
+        "changed-partition-count": "1",
+        "total-records": "2",
+        "total-files-size": "1241",
+        "total-data-files": "1",
+        "total-delete-files": "0",
+        "total-position-deletes": "0",
+        "total-equality-deletes": "0",
+        "engine-version": "4.0.1",
+        "app-id": "app-20261108105426-0001",
+        "engine-name": "spark",
+        "iceberg-version": "Apache Iceberg 1.12.0 (commit 212aa894e919ff9fdf89160da4aadcbe6858ac01)",
+        "app-name": "stage3-effects-micro"
+      },
+      "manifest-list": "s3://warehouse/stage3_it/effects_merge_on_read_delete_by_keys_snapshot/metadata/snap-1177047509306645889-1-78a2b119-075e-4980-a895-fbf0ee6ca313.avro",
+      "schema-id": 0
+    },
+    {
+      "sequence-number": 2,
+      "snapshot-id": 3892163587484298056,
+      "parent-snapshot-id": 1177047509306645889,
+      "timestamp-ms": 1794135287754,
+      "summary": {
+        "operation": "append",
+        "spark.app.id": "app-20261108105426-0001",
+        "manifests-created": "1",
+        "manifests-kept": "1",
+        "manifests-replaced": "0",
+        "added-data-files": "1",
+        "added-records": "1",
+        "added-files-size": "1137",
+        "changed-partition-count": "1",
+        "total-records": "3",
+        "total-files-size": "2378",
+        "total-data-files": "2",
+        "total-delete-files": "0",
+        "total-position-deletes": "0",
+        "total-equality-deletes": "0",
+        "engine-version": "4.0.1",
+        "app-id": "app-20261108105426-0001",
+        "engine-name": "spark",
+        "iceberg-version": "Apache Iceberg 1.12.0 (commit 212aa894e919ff9fdf89160da4aadcbe6858ac01)",
+        "app-name": "stage3-effects-micro"
+      },
+      "manifest-list": "s3://warehouse/stage3_it/effects_merge_on_read_delete_by_keys_snapshot/metadata/snap-3892163587484298056-1-55de3e91-1301-4e45-9f29-990f2b2fc524.avro",
+      "schema-id": 0
+    },
+    {
+      "sequence-number": 3,
+      "snapshot-id": 5805808031795851110,
+      "parent-snapshot-id": 3892163587484298056,
+      "timestamp-ms": 1794135287952,
+      "summary": {
+        "operation": "delete",
+        "spark.app.id": "app-20261108105426-0001",
+        "manifests-created": "1",
+        "manifests-kept": "2",
+        "manifests-replaced": "0",
+        "added-position-delete-files": "1",
+        "added-delete-files": "1",
+        "added-files-size": "1761",
+        "added-position-deletes": "1",
+        "changed-partition-count": "1",
+        "total-records": "3",
+        "total-files-size": "4139",
+        "total-data-files": "2",
+        "total-delete-files": "1",
+        "total-position-deletes": "1",
+        "total-equality-deletes": "0",
+        "engine-version": "4.0.1",
+        "app-id": "app-20261108105426-0001",
+        "engine-name": "spark",
+        "iceberg-version": "Apache Iceberg 1.12.0 (commit 212aa894e919ff9fdf89160da4aadcbe6858ac01)",
+        "app-name": "stage3-effects-micro"
+      },
+      "manifest-list": "s3://warehouse/stage3_it/effects_merge_on_read_delete_by_keys_snapshot/metadata/snap-5805808031795851110-2-702a7544-9695-4a49-a662-11eba9c463da.avro",
+      "schema-id": 0
+    }
+  ],
+  "journal": {
+    "deleted_keys": [
+      97
+    ],
+    "read_snapshot_id": 1177047509306645889,
+    "deleted_rows": [
+      [
+        1,
+        97,
+        "dt=2026-11-01/key_bucket=0"
+      ]
+    ],
+    "effects_parent_snapshot_id": 3892163587484298056,
+    "effects_read_snapshot_id": 1177047509306645889,
+    "effects_recorded": true
+  }
+}

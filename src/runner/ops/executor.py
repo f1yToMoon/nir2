@@ -259,7 +259,7 @@ class OpExecutor:
                 f"version = t.version + 1 WHEN NOT MATCHED THEN INSERT *")
 
     def record_effects(self, op: ControlledOp, row: dict[str, Any], jr: dict[str, Any]) -> None:
-        """Record exact logical effects against the successful snapshot's parent.
+        """Record logical effects against the actual input snapshot of the DML scan.
 
         Call after commit telemetry has provided snapshot_id. These diagnostic reads use an
         admin job tag, outside the operation cost scope. Failure invalidates the run; it must
@@ -277,7 +277,8 @@ class OpExecutor:
         nb = ctx.sc.table.n_buckets
         part = (f"concat('dt=', CAST(dt AS STRING), '/key_bucket=', "
                 f"CAST(system.bucket({nb}, key) AS STRING))")
-        table = f"lake.{ctx.table} VERSION AS OF {int(parent)}"
+        read_sid = int(jr["read_snapshot_id"])
+        table = f"lake.{ctx.table} VERSION AS OF {read_sid}"
         statement = op.params.get("statement")
         with job_scope(ctx.spark, f"effects-{row['op_id']}", "exact effects", "admin"):
             if statement in ("delete_by_keys", "update_status"):
@@ -318,6 +319,7 @@ class OpExecutor:
             else:
                 raise ValueError(f"no exact effect recorder for {statement}")
         jr["effects_parent_snapshot_id"] = int(parent)
+        jr["effects_read_snapshot_id"] = read_sid
         jr["effects_recorded"] = True
 
     # ── outcome ──
@@ -405,12 +407,14 @@ class OpExecutor:
             row["decision_delay_ms"] = int((t_start - intent_at).total_seconds() * 1000)
             exc_text = None
             result_rows: list[Any] = []
+            frame = None
             try:
                 with job_scope(ctx.spark, intent.op_id, f"{intent.op_type}:{intent.op_key}", pool):
                     stmts = self._sql(op_cfg, intent, slot, parts, planning, op_index, jr)
                     jr["sql"] = [s[:4000] for s in stmts]
                     for s in stmts:
-                        result_rows = [r.asDict() for r in ctx.spark.sql(s).collect()]
+                        frame = ctx.spark.sql(s)
+                        result_rows = [r.asDict() for r in frame.collect()]
             except Exception as exc:              # Py4J / AnalysisException: text has the Java chain
                 exc_text = str(exc) + "\n" + traceback.format_exc()[-2000:]
             t_end = now()
@@ -435,6 +439,9 @@ class OpExecutor:
         row["bytes_written"] = c.output_bytes
         row["cost_detail"] = c.to_json()
         if row["outcome"] == "committed" and controlled:
+            if op_cfg.type in ROW_LEVEL:
+                from runner.read_snapshot import read_snapshot_id
+                jr["read_snapshot_id"] = read_snapshot_id(frame, f"{row['slot']}.{ctx.table}")
             self.record_effects(op_cfg, row, jr)
         _write_journal(ctx.journal_dir, intent.op_id, jr)
         return OpResult(row, jr)
