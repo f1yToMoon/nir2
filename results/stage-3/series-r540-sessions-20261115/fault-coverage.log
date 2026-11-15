@@ -1,0 +1,34 @@
+{
+  "run_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115",
+  "baseline_unchanged": true,
+  "baseline_after": {
+    "commit_attempts": 217,
+    "commit_events": 187,
+    "ops": 53,
+    "current_snapshot_id": 3143129065520675882
+  },
+  "primary_artifact": "/workspace/results/stage-3/integration/stage3-it-1794747953583926282/invariants_fault_injection.json",
+  "primary_fault_types": [
+    "aborted_row",
+    "duplicate_row",
+    "extra_update",
+    "lineage",
+    "lost_row"
+  ],
+  "primary_probe_requests": 24,
+  "standalone_artifact": "/workspace/results/stage-3/retained-deleted-control-20261115/retained_deleted_fixture.json",
+  "standalone_fault_types": [
+    "retained_deleted_row"
+  ],
+  "all_fault_types": [
+    "aborted_row",
+    "duplicate_row",
+    "extra_update",
+    "lineage",
+    "lost_row",
+    "retained_deleted_row"
+  ],
+  "n_fault_types": 6,
+  "primary_successful_deletes": 0,
+  "note": "Five types on measured S5, retained-deleted-row on a deterministic two-row control."
+}

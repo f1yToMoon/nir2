@@ -1,0 +1,6 @@
+stage3-S4-P0-mid-s11-r540-sessions-20261115 exit=0
+stage3-S5-P0-mid-s11-r540-sessions-20261115 exit=0
+before {'commit_attempts': 217, 'commit_events': 187, 'ops': 53, 'current_snapshot_id': 3143129065520675882}
+Traceback (most recent call last):
+  File "<stdin>", line 34, in <module>
+AssertionError
