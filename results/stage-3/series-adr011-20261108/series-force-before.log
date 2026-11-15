@@ -1,0 +1,30 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+__________________ test_series_uses_actual_head_for_every_run __________________
+
+tmp_path = PosixPath('/tmp/pytest-of-an/pytest-13/test_series_uses_actual_head_f0')
+
+    def test_series_uses_actual_head_for_every_run(tmp_path: Path) -> None:
+        script = init_series_repo(tmp_path)
+        measured = tmp_path / "scripts/run_measured.sh"
+        measured.write_text('printf "%s\\n" "$@" >> results/arguments.txt\n')
+        subprocess.run(["git", "-C", str(tmp_path), "add", "scripts"], check=True)
+        subprocess.run(["git", "-C", str(tmp_path), "-c", "user.name=Test", "-c",
+                        "user.email=test@example.test", "commit", "-qm", "measurement fixture"], check=True)
+        sha = subprocess.check_output(["git", "-C", str(tmp_path), "rev-parse", "HEAD"], text=True).strip()
+        (tmp_path / "results/stage-3").mkdir(parents=True)
+        completed = subprocess.run(["bash", str(script)], capture_output=True, text=True,
+                                   env={**os.environ, "GIT_SHA": "untrusted", "STAGE3_FROM": "S4",
+                                        "STAGE3_SUFFIX": ""})
+        assert completed.returncode == 0, completed.stderr
+        args = (tmp_path / "results/arguments.txt").read_text().splitlines()
+        assert args.count(f"GIT_SHA={sha}") == 2
+        assert "GIT_SHA=untrusted" not in args
+>       assert not any("--force" in arg for arg in args)
+E       assert not True
+E        +  where True = any(<generator object test_series_uses_actual_head_for_every_run.<locals>.<genexpr> at 0x7b7fd21bf370>)
+
+tests/unit/test_stage3_checks.py:177: AssertionError
+=========================== short test summary info ============================
+FAILED tests/unit/test_stage3_checks.py::test_series_uses_actual_head_for_every_run
+1 failed, 19 deselected in 0.15s

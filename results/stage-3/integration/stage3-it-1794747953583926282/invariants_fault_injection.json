@@ -1,0 +1,792 @@
+{
+ "run_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115",
+ "telemetry_run_id": "stage3-it-1794747953583926282",
+ "clean": {
+  "ledger_row_counts": {
+   "ok": true,
+   "partitions_checked": 292,
+   "mismatches": {},
+   "n_mismatches": 0,
+   "rows_by_origin": {
+    "stream": 3340600,
+    "golden": 30000000,
+    "merge": 66000
+   },
+   "journal_physical_records": 33406600,
+   "snapshot_total_records": 33406600,
+   "table_live_rows": 33406600,
+   "journal_commits": 187
+  },
+  "no_duplicate_event_ids": {
+   "ok": true,
+   "duplicates": 0,
+   "rows": 33406600
+  },
+  "committed_ops_in_lineage": {
+   "ok": true,
+   "lineage_len": 187,
+   "lineage_error": null,
+   "committed_checked": 19,
+   "missing": [],
+   "n_missing": 0
+  },
+  "aborted_ops_absent": {
+   "ok": true,
+   "failed_ops": 6,
+   "snapshots_in_lineage": [],
+   "aborted_rows_checked": 12000,
+   "aborted_rows_present": 0,
+   "lineage_error": null
+  },
+  "version_monotonic": {
+   "ok": true,
+   "rows_checked": 33406600,
+   "rows_expected_updated": 260626,
+   "mismatches": 0
+  },
+  "ok": true
+ },
+ "detected": {
+  "duplicate_row": [
+   "aborted_ops_absent",
+   "committed_ops_in_lineage",
+   "ledger_row_counts",
+   "no_duplicate_event_ids"
+  ],
+  "lost_row": [
+   "aborted_ops_absent",
+   "committed_ops_in_lineage",
+   "ledger_row_counts"
+  ],
+  "extra_update": [
+   "aborted_ops_absent",
+   "committed_ops_in_lineage",
+   "ledger_row_counts",
+   "version_monotonic"
+  ],
+  "aborted_row": [
+   "aborted_ops_absent",
+   "committed_ops_in_lineage",
+   "ledger_row_counts"
+  ],
+  "lineage": [
+   "committed_ops_in_lineage",
+   "ledger_row_counts",
+   "version_monotonic"
+  ]
+ },
+ "details": {
+  "duplicate_row": {
+   "ledger_row_counts": {
+    "ok": false,
+    "partitions_checked": 292,
+    "mismatches": {
+     "dt=2026-11-02/key_bucket=6|golden": {
+      "expected": 124609,
+      "actual": 124610
+     }
+    },
+    "n_mismatches": 1,
+    "rows_by_origin": {
+     "stream": 3340600,
+     "golden": 30000001,
+     "merge": 66000
+    },
+    "journal_physical_records": 30000000,
+    "snapshot_total_records": 33406601,
+    "table_live_rows": 33406601,
+    "journal_commits": 0
+   },
+   "no_duplicate_event_ids": {
+    "ok": false,
+    "duplicates": 1,
+    "rows": 33406601
+   },
+   "committed_ops_in_lineage": {
+    "ok": false,
+    "lineage_len": 0,
+    "lineage_error": "snapshot 8818363851241496392 not in the proxy journal",
+    "committed_checked": 19,
+    "missing": [
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115-compaction-0000",
+      "snapshot_id": 7757259266124150083
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115-cdc_merge-0001",
+      "snapshot_id": 358856602506664075
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115-compaction-0001",
+      "snapshot_id": 1835714332658085537
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115-cdc_merge-0002",
+      "snapshot_id": 2370376396792885940
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115-compaction-0002",
+      "snapshot_id": 492449789688340521
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115-cdc_merge-0003",
+      "snapshot_id": 5073140628337529845
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115-cdc_merge-0004",
+      "snapshot_id": 3112511269022284193
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115-compaction-0003",
+      "snapshot_id": 4082497864225586595
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115-compaction-0004",
+      "snapshot_id": 3882904312038215079
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115-cdc_merge-0005",
+      "snapshot_id": 2801962576630221129
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115-cdc_merge-0006",
+      "snapshot_id": 7256656387702926892
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115-cdc_merge-0007",
+      "snapshot_id": 3610431163060612257
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115-compaction-0005",
+      "snapshot_id": 3422918444623426247
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115-cdc_merge-0008",
+      "snapshot_id": 1797957875534272548
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115-cdc_merge-0009",
+      "snapshot_id": 3709014271524032547
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115-cdc_merge-0010",
+      "snapshot_id": 8133642927587143740
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115-compaction-0006",
+      "snapshot_id": 3007408765239836768
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115-compaction-0007",
+      "snapshot_id": 3666298796606330808
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115-cdc_merge-0011",
+      "snapshot_id": 7449983048952570545
+     }
+    ],
+    "n_missing": 19
+   },
+   "aborted_ops_absent": {
+    "ok": false,
+    "failed_ops": 6,
+    "snapshots_in_lineage": [],
+    "aborted_rows_checked": 12000,
+    "aborted_rows_present": 0,
+    "lineage_error": "snapshot 8818363851241496392 not in the proxy journal"
+   },
+   "version_monotonic": {
+    "ok": true,
+    "rows_checked": 33406601,
+    "rows_expected_updated": 260626,
+    "mismatches": 0
+   },
+   "ok": false
+  },
+  "lost_row": {
+   "ledger_row_counts": {
+    "ok": false,
+    "partitions_checked": 292,
+    "mismatches": {
+     "dt=2026-11-30/key_bucket=1|stream": {
+      "expected": 395821,
+      "actual": 395820
+     }
+    },
+    "n_mismatches": 1,
+    "rows_by_origin": {
+     "stream": 3340599,
+     "golden": 30000000,
+     "merge": 66000
+    },
+    "journal_physical_records": 30000000,
+    "snapshot_total_records": 33406599,
+    "table_live_rows": 33406599,
+    "journal_commits": 0
+   },
+   "no_duplicate_event_ids": {
+    "ok": true,
+    "duplicates": 0,
+    "rows": 33406599
+   },
+   "committed_ops_in_lineage": {
+    "ok": false,
+    "lineage_len": 0,
+    "lineage_error": "snapshot 2017193352879237627 not in the proxy journal",
+    "committed_checked": 19,
+    "missing": [
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115-compaction-0000",
+      "snapshot_id": 7757259266124150083
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115-cdc_merge-0001",
+      "snapshot_id": 358856602506664075
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115-compaction-0001",
+      "snapshot_id": 1835714332658085537
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115-cdc_merge-0002",
+      "snapshot_id": 2370376396792885940
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115-compaction-0002",
+      "snapshot_id": 492449789688340521
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115-cdc_merge-0003",
+      "snapshot_id": 5073140628337529845
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115-cdc_merge-0004",
+      "snapshot_id": 3112511269022284193
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115-compaction-0003",
+      "snapshot_id": 4082497864225586595
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115-compaction-0004",
+      "snapshot_id": 3882904312038215079
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115-cdc_merge-0005",
+      "snapshot_id": 2801962576630221129
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115-cdc_merge-0006",
+      "snapshot_id": 7256656387702926892
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115-cdc_merge-0007",
+      "snapshot_id": 3610431163060612257
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115-compaction-0005",
+      "snapshot_id": 3422918444623426247
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115-cdc_merge-0008",
+      "snapshot_id": 1797957875534272548
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115-cdc_merge-0009",
+      "snapshot_id": 3709014271524032547
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115-cdc_merge-0010",
+      "snapshot_id": 8133642927587143740
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115-compaction-0006",
+      "snapshot_id": 3007408765239836768
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115-compaction-0007",
+      "snapshot_id": 3666298796606330808
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115-cdc_merge-0011",
+      "snapshot_id": 7449983048952570545
+     }
+    ],
+    "n_missing": 19
+   },
+   "aborted_ops_absent": {
+    "ok": false,
+    "failed_ops": 6,
+    "snapshots_in_lineage": [],
+    "aborted_rows_checked": 12000,
+    "aborted_rows_present": 0,
+    "lineage_error": "snapshot 2017193352879237627 not in the proxy journal"
+   },
+   "version_monotonic": {
+    "ok": true,
+    "rows_checked": 33406599,
+    "rows_expected_updated": 260626,
+    "mismatches": 0
+   },
+   "ok": false
+  },
+  "extra_update": {
+   "ledger_row_counts": {
+    "ok": false,
+    "partitions_checked": 292,
+    "mismatches": {},
+    "n_mismatches": 0,
+    "rows_by_origin": {
+     "stream": 3340600,
+     "golden": 30000000,
+     "merge": 66000
+    },
+    "journal_physical_records": 30000000,
+    "snapshot_total_records": 33406600,
+    "table_live_rows": 33406600,
+    "journal_commits": 0
+   },
+   "no_duplicate_event_ids": {
+    "ok": true,
+    "duplicates": 0,
+    "rows": 33406600
+   },
+   "committed_ops_in_lineage": {
+    "ok": false,
+    "lineage_len": 0,
+    "lineage_error": "snapshot 6854860643878561038 not in the proxy journal",
+    "committed_checked": 19,
+    "missing": [
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115-compaction-0000",
+      "snapshot_id": 7757259266124150083
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115-cdc_merge-0001",
+      "snapshot_id": 358856602506664075
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115-compaction-0001",
+      "snapshot_id": 1835714332658085537
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115-cdc_merge-0002",
+      "snapshot_id": 2370376396792885940
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115-compaction-0002",
+      "snapshot_id": 492449789688340521
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115-cdc_merge-0003",
+      "snapshot_id": 5073140628337529845
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115-cdc_merge-0004",
+      "snapshot_id": 3112511269022284193
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115-compaction-0003",
+      "snapshot_id": 4082497864225586595
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115-compaction-0004",
+      "snapshot_id": 3882904312038215079
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115-cdc_merge-0005",
+      "snapshot_id": 2801962576630221129
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115-cdc_merge-0006",
+      "snapshot_id": 7256656387702926892
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115-cdc_merge-0007",
+      "snapshot_id": 3610431163060612257
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115-compaction-0005",
+      "snapshot_id": 3422918444623426247
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115-cdc_merge-0008",
+      "snapshot_id": 1797957875534272548
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115-cdc_merge-0009",
+      "snapshot_id": 3709014271524032547
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115-cdc_merge-0010",
+      "snapshot_id": 8133642927587143740
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115-compaction-0006",
+      "snapshot_id": 3007408765239836768
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115-compaction-0007",
+      "snapshot_id": 3666298796606330808
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115-cdc_merge-0011",
+      "snapshot_id": 7449983048952570545
+     }
+    ],
+    "n_missing": 19
+   },
+   "aborted_ops_absent": {
+    "ok": false,
+    "failed_ops": 6,
+    "snapshots_in_lineage": [],
+    "aborted_rows_checked": 12000,
+    "aborted_rows_present": 0,
+    "lineage_error": "snapshot 6854860643878561038 not in the proxy journal"
+   },
+   "version_monotonic": {
+    "ok": false,
+    "rows_checked": 33406600,
+    "rows_expected_updated": 260626,
+    "mismatches": 1
+   },
+   "ok": false
+  },
+  "aborted_row": {
+   "ledger_row_counts": {
+    "ok": false,
+    "partitions_checked": 292,
+    "mismatches": {
+     "dt=2026-11-02/key_bucket=6|agent": {
+      "expected": 0,
+      "actual": 1
+     }
+    },
+    "n_mismatches": 1,
+    "rows_by_origin": {
+     "stream": 3340600,
+     "agent": 1,
+     "golden": 30000000,
+     "merge": 66000
+    },
+    "journal_physical_records": 30000000,
+    "snapshot_total_records": 33406601,
+    "table_live_rows": 33406601,
+    "journal_commits": 0
+   },
+   "no_duplicate_event_ids": {
+    "ok": true,
+    "duplicates": 0,
+    "rows": 33406601
+   },
+   "committed_ops_in_lineage": {
+    "ok": false,
+    "lineage_len": 0,
+    "lineage_error": "snapshot 5082130183137953549 not in the proxy journal",
+    "committed_checked": 19,
+    "missing": [
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115-compaction-0000",
+      "snapshot_id": 7757259266124150083
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115-cdc_merge-0001",
+      "snapshot_id": 358856602506664075
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115-compaction-0001",
+      "snapshot_id": 1835714332658085537
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115-cdc_merge-0002",
+      "snapshot_id": 2370376396792885940
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115-compaction-0002",
+      "snapshot_id": 492449789688340521
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115-cdc_merge-0003",
+      "snapshot_id": 5073140628337529845
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115-cdc_merge-0004",
+      "snapshot_id": 3112511269022284193
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115-compaction-0003",
+      "snapshot_id": 4082497864225586595
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115-compaction-0004",
+      "snapshot_id": 3882904312038215079
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115-cdc_merge-0005",
+      "snapshot_id": 2801962576630221129
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115-cdc_merge-0006",
+      "snapshot_id": 7256656387702926892
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115-cdc_merge-0007",
+      "snapshot_id": 3610431163060612257
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115-compaction-0005",
+      "snapshot_id": 3422918444623426247
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115-cdc_merge-0008",
+      "snapshot_id": 1797957875534272548
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115-cdc_merge-0009",
+      "snapshot_id": 3709014271524032547
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115-cdc_merge-0010",
+      "snapshot_id": 8133642927587143740
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115-compaction-0006",
+      "snapshot_id": 3007408765239836768
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115-compaction-0007",
+      "snapshot_id": 3666298796606330808
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115-cdc_merge-0011",
+      "snapshot_id": 7449983048952570545
+     }
+    ],
+    "n_missing": 19
+   },
+   "aborted_ops_absent": {
+    "ok": false,
+    "failed_ops": 6,
+    "snapshots_in_lineage": [],
+    "aborted_rows_checked": 12001,
+    "aborted_rows_present": 1,
+    "lineage_error": "snapshot 5082130183137953549 not in the proxy journal"
+   },
+   "version_monotonic": {
+    "ok": true,
+    "rows_checked": 33406601,
+    "rows_expected_updated": 260626,
+    "mismatches": 0
+   },
+   "ok": false
+  },
+  "lineage": {
+   "ledger_row_counts": {
+    "ok": false,
+    "partitions_checked": 292,
+    "mismatches": {
+     "dt=2026-11-29/key_bucket=4|stream": {
+      "expected": 10340,
+      "actual": 10097
+     },
+     "dt=2026-11-29/key_bucket=1|stream": {
+      "expected": 10485,
+      "actual": 10256
+     },
+     "dt=2026-11-28/key_bucket=3|merge": {
+      "expected": 3500,
+      "actual": 2000
+     },
+     "dt=2026-11-30/key_bucket=7|stream": {
+      "expected": 396406,
+      "actual": 387721
+     },
+     "dt=2026-11-28/key_bucket=4|stream": {
+      "expected": 10170,
+      "actual": 9932
+     },
+     "dt=2026-11-30/key_bucket=6|stream": {
+      "expected": 396994,
+      "actual": 388502
+     },
+     "dt=2026-11-28/key_bucket=5|stream": {
+      "expected": 10478,
+      "actual": 10240
+     },
+     "dt=2026-11-29/key_bucket=3|stream": {
+      "expected": 10392,
+      "actual": 10171
+     },
+     "dt=2026-11-29/key_bucket=2|merge": {
+      "expected": 1500,
+      "actual": 0
+     },
+     "dt=2026-11-28/key_bucket=6|stream": {
+      "expected": 10405,
+      "actual": 10158
+     },
+     "dt=2026-11-29/key_bucket=5|stream": {
+      "expected": 10388,
+      "actual": 10178
+     },
+     "dt=2026-11-28/key_bucket=7|stream": {
+      "expected": 10380,
+      "actual": 10143
+     },
+     "dt=2026-11-30/key_bucket=0|stream": {
+      "expected": 396365,
+      "actual": 388000
+     },
+     "dt=2026-11-29/key_bucket=7|stream": {
+      "expected": 10455,
+      "actual": 10257
+     },
+     "dt=2026-11-28/key_bucket=1|stream": {
+      "expected": 10484,
+      "actual": 10235
+     },
+     "dt=2026-11-29/key_bucket=6|stream": {
+      "expected": 10396,
+      "actual": 10170
+     },
+     "dt=2026-11-28/key_bucket=4|merge": {
+      "expected": 2500,
+      "actual": 1000
+     },
+     "dt=2026-11-30/key_bucket=4|stream": {
+      "expected": 396626,
+      "actual": 387908
+     },
+     "dt=2026-11-30/key_bucket=2|stream": {
+      "expected": 397216,
+      "actual": 388684
+     },
+     "dt=2026-11-28/key_bucket=3|stream": {
+      "expected": 10415,
+      "actual": 10200
+     },
+     "dt=2026-11-30/key_bucket=1|stream": {
+      "expected": 395821,
+      "actual": 387146
+     },
+     "dt=2026-11-30/key_bucket=5|stream": {
+      "expected": 396104,
+      "actual": 387592
+     },
+     "dt=2026-11-28/key_bucket=2|stream": {
+      "expected": 10441,
+      "actual": 10208
+     },
+     "dt=2026-11-29/key_bucket=0|stream": {
+      "expected": 10366,
+      "actual": 10146
+     },
+     "dt=2026-11-29/key_bucket=2|stream": {
+      "expected": 10349,
+      "actual": 10114
+     },
+     "dt=2026-11-28/key_bucket=0|stream": {
+      "expected": 10610,
+      "actual": 10399
+     },
+     "dt=2026-11-28/key_bucket=0|merge": {
+      "expected": 4500,
+      "actual": 3000
+     },
+     "dt=2026-11-30/key_bucket=3|stream": {
+      "expected": 398514,
+      "actual": 389943
+     }
+    },
+    "n_mismatches": 28,
+    "rows_by_origin": {
+     "golden": 30000000,
+     "merge": 60000,
+     "stream": 3268400
+    },
+    "journal_physical_records": 33328400,
+    "snapshot_total_records": 33328400,
+    "table_live_rows": 33328400,
+    "journal_commits": 182
+   },
+   "no_duplicate_event_ids": {
+    "ok": true,
+    "duplicates": 0,
+    "rows": 33328400
+   },
+   "committed_ops_in_lineage": {
+    "ok": false,
+    "lineage_len": 182,
+    "lineage_error": null,
+    "committed_checked": 19,
+    "missing": [
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115-cdc_merge-0011",
+      "snapshot_id": 7449983048952570545
+     }
+    ],
+    "n_missing": 1
+   },
+   "aborted_ops_absent": {
+    "ok": true,
+    "failed_ops": 6,
+    "snapshots_in_lineage": [],
+    "aborted_rows_checked": 12000,
+    "aborted_rows_present": 0,
+    "lineage_error": null
+   },
+   "version_monotonic": {
+    "ok": false,
+    "rows_checked": 33328400,
+    "rows_expected_updated": 260626,
+    "mismatches": 24000
+   },
+   "ok": false
+  }
+ },
+ "after_restore": {
+  "ledger_row_counts": {
+   "ok": true,
+   "partitions_checked": 292,
+   "mismatches": {},
+   "n_mismatches": 0,
+   "rows_by_origin": {
+    "merge": 66000,
+    "golden": 30000000,
+    "stream": 3340600
+   },
+   "journal_physical_records": 33406600,
+   "snapshot_total_records": 33406600,
+   "table_live_rows": 33406600,
+   "journal_commits": 187
+  },
+  "no_duplicate_event_ids": {
+   "ok": true,
+   "duplicates": 0,
+   "rows": 33406600
+  },
+  "committed_ops_in_lineage": {
+   "ok": true,
+   "lineage_len": 187,
+   "lineage_error": null,
+   "committed_checked": 19,
+   "missing": [],
+   "n_missing": 0
+  },
+  "aborted_ops_absent": {
+   "ok": true,
+   "failed_ops": 6,
+   "snapshots_in_lineage": [],
+   "aborted_rows_checked": 12000,
+   "aborted_rows_present": 0,
+   "lineage_error": null
+  },
+  "version_monotonic": {
+   "ok": true,
+   "rows_checked": 33406600,
+   "rows_expected_updated": 260626,
+   "mismatches": 0
+  },
+  "ok": true
+ }
+}

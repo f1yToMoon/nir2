@@ -1,0 +1,7 @@
+stage3-S4-P0-mid-s11-r540-sessions-20261115 {'data_conflict': 23, 'committed': 12} K1 retries 0 dense 48 bytes 63624 D 38.658537 CPU 572.896 5967.882 11744.974 rows 33867600
+stage3-S5-P0-mid-s11-r540-sessions-20261115 {'committed': 19, 'data_conflict': 6} K1 retries 1 dense 71 bytes 84501 D 26.918439 CPU 399.763 1960.516 2739.466 rows 33406600
+stage3-S0-P0-mid-s1-r540-sessions-20261115 {'committed': 11} K1 retries 0 dense 67 bytes 80054 D 17.175213 CPU 150.249 804.334 1343.313 rows 31670300
+stage3-S0-P0-mid-s1-rep-r540-sessions-20261115 {'committed': 11} K1 retries 0 dense 67 bytes 80106 D 13.810682 CPU 150.35 793.196 1313.249 rows 31670600
+stage3-S1-P0-mid-s11-r540-sessions-20261115 {'committed': 13} K1 retries 12 dense 1327 bytes 1270464 D 16.808716 CPU 619.764 1325.03 5520.177 rows 35355700
+stage3-S2-P0-mid-s11-r540-sessions-20261115 {'data_conflict': 10, 'committed': 18} K1 retries 0 dense 70 bytes 84302 D 24.587512 CPU 323.654 2673.563 5419.543 rows 33447400
+stage3-S3-P0-mid-s11-r540-sessions-20261115 {'committed': 45, 'data_conflict': 4, 'noop': 1} K1 retries 1 dense 85 bytes 100093 D 13.082458 CPU 217.53 380.533 906.217 rows 33340400

@@ -1,0 +1,258 @@
+{
+ "run_id": "stage3-S5-P0-mid-s11-adr011-20261108",
+ "stream_freshness": {
+  "complete": true,
+  "n_expected": 3362400,
+  "n_samples": 3362400,
+  "missing": 0,
+  "p95_s": 9.715136766433716,
+  "errors": [],
+  "unresolved_snapshots": {},
+  "n_snapshots": 169,
+  "observer_cpu_s": 9.803803244000012,
+  "clock": "producer UTC time.time \u2192 successful commit_attempts.responded_at"
+ },
+ "scenario": "S5_compliance_delete",
+ "variant": null,
+ "level": "mid",
+ "seed": 11,
+ "policy": "P0",
+ "git_sha": "844d033e984247f9cc67f84e2e76b8e240ca955a",
+ "t0": "2026-11-08T11:45:12.513458+00:00",
+ "t_end": "2026-11-08T12:13:55.992942+00:00",
+ "intents": 25,
+ "overrun_after_cooldown": [],
+ "streams": {
+  "kafka": [
+   {
+    "stream": "ingest",
+    "produced": 3362400,
+    "errors": []
+   }
+  ],
+  "flink": [
+   {
+    "final_lag": 0,
+    "job_id": "fd23357e2c17c0c6e6f65b3ef4fd0d3e",
+    "checkpoints": {
+     "restored": 0,
+     "total": 171,
+     "in_progress": 0,
+     "completed": 171,
+     "failed": 0
+    }
+   }
+  ],
+  "agents": []
+ },
+ "invariants": {
+  "ledger_row_counts": {
+   "ok": true,
+   "partitions_checked": 288,
+   "mismatches": {},
+   "n_mismatches": 0,
+   "rows_by_origin": {
+    "stream": 3362265,
+    "golden": 29997015,
+    "merge": 53998
+   },
+   "journal_physical_records": 33413278,
+   "snapshot_total_records": 33413278,
+   "table_live_rows": 33413278,
+   "journal_commits": 187
+  },
+  "no_duplicate_event_ids": {
+   "ok": true,
+   "duplicates": 0,
+   "rows": 33413278
+  },
+  "committed_ops_in_lineage": {
+   "ok": true,
+   "lineage_len": 187,
+   "lineage_error": null,
+   "committed_checked": 18,
+   "missing": [],
+   "n_missing": 0
+  },
+  "aborted_ops_absent": {
+   "ok": true,
+   "failed_ops": 7,
+   "snapshots_in_lineage": [],
+   "aborted_rows_checked": 24000,
+   "aborted_rows_present": 0,
+   "lineage_error": null
+  },
+  "version_monotonic": {
+   "ok": true,
+   "rows_checked": 33413278,
+   "rows_expected_updated": 213799,
+   "mismatches": 0
+  },
+  "ok": true
+ },
+ "orphans": {
+  "orphan_files": 0,
+  "orphan_bytes": 0,
+  "old_metadata_json": 104,
+  "listed_since_start": 2769
+ },
+ "spark_app_totals": {
+  "cpu_ms": 1591225,
+  "run_ms": 2165649,
+  "stages": 578
+ },
+ "health": {
+  "samples": 61,
+  "errors": [],
+  "max_snapshots": 74,
+  "max_metadata_bytes": 90356
+ },
+ "cooldown_s": 120.0,
+ "warmup_s": 180.0,
+ "duration_s": 1500.0,
+ "validation": {
+  "ok": true,
+  "incomplete_cost": [],
+  "runner_errors": []
+ },
+ "summary": {
+  "run_id": "stage3-S5-P0-mid-s11-adr011-20261108",
+  "n_ops": 25,
+  "n_k2": 7,
+  "n_k1_fail": 0,
+  "n_base_expired": 0,
+  "n_history_unresolved": 0,
+  "n_errors": 0,
+  "wasted_cpu_s": 160.835,
+  "useful_cpu_s": 173.548,
+  "wasted_cpu_base_expired_s": 0.0,
+  "wasted_share": 0.48099036135210227,
+  "background_cpu_s": 53.698,
+  "wasted_bytes": 2610411542,
+  "goodput_commits_per_min": 0.72,
+  "commit_lat_p50_ms": 26.5765,
+  "commit_lat_p95_ms": 125.1132999999999,
+  "commit_lat_p99_ms": 174.0338599999999,
+  "delay_p95_s": 2.889316599999994,
+  "sla_violations": 0,
+  "debt_mean": 0.9995156113524277,
+  "debt_max": 1.0,
+  "orphan_bytes": 0,
+  "stream_freshness_p95_s": 9.715136766433716,
+  "detail": {
+   "stream_freshness": {
+    "complete": true,
+    "n_expected": 3362400,
+    "n_samples": 3362400,
+    "missing": 0,
+    "p95_s": 9.715136766433716,
+    "errors": [],
+    "unresolved_snapshots": {},
+    "n_snapshots": 169,
+    "observer_cpu_s": 9.803803244000012,
+    "clock": "producer UTC time.time \u2192 successful commit_attempts.responded_at"
+   },
+   "outcomes": {
+    "data_conflict": 7,
+    "committed": 18
+   },
+   "per_op": {
+    "cdc_merge": {
+     "op_type": "cow_dml",
+     "n": 13,
+     "outcomes": {
+      "data_conflict": 4,
+      "committed": 9
+     },
+     "d_exec_s": {
+      "n": 13,
+      "max": 7.5,
+      "p50": 3.8,
+      "p95": 5.879999999999996
+     },
+     "d_hist_s": {
+      "n": 13,
+      "max": 14.8,
+      "p50": 9.0,
+      "p95": 14.26
+     },
+     "cpu_s": {
+      "n": 13,
+      "max": 13.2,
+      "p50": 6.5,
+      "p95": 12.119999999999997
+     },
+     "attempts_max": 1
+    },
+    "gdpr_delete": {
+     "op_type": "cow_dml",
+     "n": 4,
+     "outcomes": {
+      "data_conflict": 3,
+      "committed": 1
+     },
+     "d_exec_s": {
+      "n": 4,
+      "max": 14.2,
+      "p50": 11.8,
+      "p95": 13.87
+     },
+     "d_hist_s": {
+      "n": 4,
+      "max": 14.5,
+      "p50": 12.05,
+      "p95": 14.139999999999999
+     },
+     "cpu_s": {
+      "n": 4,
+      "max": 49.5,
+      "p50": 42.6,
+      "p95": 48.54
+     },
+     "attempts_max": 1
+    },
+    "compaction": {
+     "op_type": "rewrite_data",
+     "n": 8,
+     "outcomes": {
+      "committed": 8
+     },
+     "d_exec_s": {
+      "n": 8,
+      "max": 4.4,
+      "p50": 2.8,
+      "p95": 4.155
+     },
+     "d_hist_s": {
+      "n": 8,
+      "max": 6.4,
+      "p50": 4.3,
+      "p95": 5.944999999999999
+     },
+     "cpu_s": {
+      "n": 8,
+      "max": 11.1,
+      "p50": 7.05,
+      "p95": 10.68
+     },
+     "attempts_max": 1
+    }
+   },
+   "background_expire": {
+    "n": 28,
+    "d_exec_max_s": 4.279432,
+    "d_exec_p50_s": 1.2618635,
+    "late_max_s": 4.5,
+    "outcomes": {
+     "committed": 28
+    },
+    "cpu_s": 53.698
+   },
+   "d_hist_max_s": 14.842208,
+   "max_snapshots": 74,
+   "max_metadata_bytes": 90356,
+   "policy": "P0",
+   "scenario": "S5_compliance_delete"
+  }
+ }
+}

@@ -1,0 +1,5 @@
+First discovery used importlib.metadata.version('pyspark') and raised PackageNotFoundError:
+No package metadata was found for pyspark. Spark is provided by the image, without
+Python distribution metadata. The stdout was empty and is preserved separately.
+The corrected discovery reads pyspark.__version__; runtime-versions-final.json.
+This read-only discovery did not create a Spark application or change the measured run.

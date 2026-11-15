@@ -1,0 +1,27 @@
+{
+ "base": 8887189407969985033,
+ "expired_child": 2735957190370800156,
+ "outcome": "base_expired",
+ "without_causal_expire": "history_unresolved",
+ "detail": {
+  "classified": "base_expired",
+  "expire_evidence": {
+   "cause": "validation_history",
+   "snapshot": 8887189407969985033,
+   "removed_target": [
+    6404188156367096213,
+    2735957190370800156
+   ],
+   "absent_in_metadata": [
+    2735957190370800156
+   ],
+   "expire_commits": [
+    {
+     "op_id": null,
+     "responded_at": "2026-11-15 13:06:08.116078+00:00"
+    }
+   ],
+   "confirmed": true
+  }
+ }
+}

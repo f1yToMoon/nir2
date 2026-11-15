@@ -1,0 +1,17 @@
+Loaded 6 cases.
+Cases not matching the current matrix: 0
+
+G1 criterion 1 (K2 in ≥ 3 of 4 groups):
+  - компакция x CoW DML: 
+  - компакция x MoR DML: 
+  - DML x append (serializable): 
+  + DML x DML: cow_dml_x_mor_merge_serializable_v2_ovpartition K2 20/20, cow_dml_x_mor_merge_serializable_v3_ovpartition K2 20/20, cow_dml_x_mor_update_serializable_v2_ovpartition K2 20/20, cow_dml_x_mor_update_serializable_v3_ovpartition K2 20/20
+  confirmed 1/4
+
+G1 criterion 2 (observed = original hypothesis, ≥ 95% of valid trials):
+ original op classes (primary):
+  fd593a5: trials 0/0 = 0.0%; pairs 0/0; no hypothesis 0; not conclusive 0
+  c6e9a4e: trials 0/0 = 0.0%; pairs 0/0; no hypothesis 0; not conclusive 0
+ incl. ops mapped to hypothesis classes:
+  fd593a5: trials 80/80 = 100.0%; pairs 4/4; no hypothesis 0; not conclusive 0
+  c6e9a4e: trials 80/80 = 100.0%; pairs 4/4; no hypothesis 0; not conclusive 0

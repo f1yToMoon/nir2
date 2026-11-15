@@ -1,0 +1,228 @@
+{
+ "run_id": "stage3-S0-P0-mid-s1-rep-r540-sessions-20261115",
+ "stream_freshness": {
+  "complete": true,
+  "n_expected": 1670600,
+  "n_samples": 1670600,
+  "missing": 0,
+  "p95_s": 9.647354197502136,
+  "errors": [],
+  "unresolved_snapshots": {},
+  "n_snapshots": 168,
+  "observer_cpu_s": 6.589579169999985,
+  "clock": "producer UTC time.time \u2192 successful commit_attempts.responded_at"
+ },
+ "scenario": "S0_baseline",
+ "variant": null,
+ "level": "mid",
+ "seed": 1,
+ "policy": "P0",
+ "git_sha": "1f506a610ac9bafa27311f8ae75c86557e94de83",
+ "t0": "2026-11-15T13:45:09.309577+00:00",
+ "t_end": "2026-11-15T14:13:41.921867+00:00",
+ "intents": 11,
+ "overrun_after_cooldown": [],
+ "streams": {
+  "kafka": [
+   {
+    "stream": "ingest",
+    "produced": 1670600,
+    "errors": []
+   }
+  ],
+  "flink": [
+   {
+    "final_lag": 0,
+    "job_id": "4c9e596ccf494b5af8b3685b359c9163",
+    "checkpoints": {
+     "restored": 0,
+     "total": 171,
+     "in_progress": 0,
+     "completed": 171,
+     "failed": 0
+    }
+   }
+  ],
+  "agents": []
+ },
+ "invariants": {
+  "ledger_row_counts": {
+   "ok": true,
+   "partitions_checked": 248,
+   "mismatches": {},
+   "n_mismatches": 0,
+   "rows_by_origin": {
+    "golden": 30000000,
+    "stream": 1670600
+   },
+   "journal_physical_records": 31670600,
+   "snapshot_total_records": 31670600,
+   "table_live_rows": 31670600,
+   "journal_commits": 179
+  },
+  "no_duplicate_event_ids": {
+   "ok": true,
+   "duplicates": 0,
+   "rows": 31670600
+  },
+  "committed_ops_in_lineage": {
+   "ok": true,
+   "lineage_len": 179,
+   "lineage_error": null,
+   "committed_checked": 11,
+   "missing": [],
+   "n_missing": 0
+  },
+  "aborted_ops_absent": {
+   "ok": true,
+   "failed_ops": 0,
+   "snapshots_in_lineage": [],
+   "aborted_rows_checked": 0,
+   "aborted_rows_present": 0,
+   "lineage_error": null
+  },
+  "version_monotonic": {
+   "ok": true,
+   "rows_checked": 31670600,
+   "rows_expected_updated": 120000,
+   "mismatches": 0
+  },
+  "ok": true
+ },
+ "orphans": {
+  "orphan_files": 0,
+  "orphan_bytes": 0,
+  "old_metadata_json": 97,
+  "listed_since_start": 1803
+ },
+ "spark_app_totals": {
+  "cpu_ms": 793196,
+  "run_ms": 1150094,
+  "stages": 428
+ },
+ "health": {
+  "samples": 59,
+  "errors": [],
+  "max_snapshots": 64,
+  "max_metadata_bytes": 80106
+ },
+ "cooldown_s": 120.0,
+ "warmup_s": 180.0,
+ "duration_s": 1500.0,
+ "validation": {
+  "ok": true,
+  "incomplete_cost": [],
+  "runner_errors": []
+ },
+ "summary": {
+  "run_id": "stage3-S0-P0-mid-s1-rep-r540-sessions-20261115",
+  "n_ops": 11,
+  "n_k2": 0,
+  "n_k1_fail": 0,
+  "n_base_expired": 0,
+  "n_history_unresolved": 0,
+  "n_errors": 0,
+  "wasted_cpu_s": 0.0,
+  "useful_cpu_s": 106.887,
+  "wasted_cpu_base_expired_s": 0.0,
+  "wasted_share": 0.0,
+  "background_cpu_s": 43.463,
+  "wasted_bytes": 0,
+  "goodput_commits_per_min": 0.44,
+  "commit_lat_p50_ms": 23.005000000000003,
+  "commit_lat_p95_ms": 45.875,
+  "commit_lat_p99_ms": 56.54540000000001,
+  "delay_p95_s": 0.11038049999999999,
+  "sla_violations": 0,
+  "debt_mean": 1.0,
+  "debt_max": 1.0,
+  "orphan_bytes": 0,
+  "stream_freshness_p95_s": 9.647354197502136,
+  "detail": {
+   "stream_freshness": {
+    "complete": true,
+    "n_expected": 1670600,
+    "n_samples": 1670600,
+    "missing": 0,
+    "p95_s": 9.647354197502136,
+    "errors": [],
+    "unresolved_snapshots": {},
+    "n_snapshots": 168,
+    "observer_cpu_s": 6.589579169999985,
+    "clock": "producer UTC time.time \u2192 successful commit_attempts.responded_at"
+   },
+   "outcomes": {
+    "committed": 11
+   },
+   "per_op": {
+    "compaction_cold": {
+     "op_type": "rewrite_data",
+     "n": 5,
+     "outcomes": {
+      "committed": 5
+     },
+     "d_exec_s": {
+      "n": 5,
+      "max": 2.7,
+      "p50": 1.6,
+      "p95": 2.48
+     },
+     "d_hist_s": {
+      "n": 5,
+      "max": 4.1,
+      "p50": 3.1,
+      "p95": 3.8999999999999995
+     },
+     "cpu_s": {
+      "n": 5,
+      "max": 4.8,
+      "p50": 3.7,
+      "p95": 4.6
+     },
+     "attempts_max": 1
+    },
+    "dml_cold": {
+     "op_type": "cow_dml",
+     "n": 6,
+     "outcomes": {
+      "committed": 6
+     },
+     "d_exec_s": {
+      "n": 6,
+      "max": 11.0,
+      "p50": 4.3,
+      "p95": 9.5
+     },
+     "d_hist_s": {
+      "n": 6,
+      "max": 13.8,
+      "p50": 9.15,
+      "p95": 12.950000000000001
+     },
+     "cpu_s": {
+      "n": 6,
+      "max": 25.9,
+      "p50": 12.6,
+      "p95": 23.025
+     },
+     "attempts_max": 1
+    }
+   },
+   "background_expire": {
+    "n": 28,
+    "d_exec_max_s": 2.232035,
+    "d_exec_p50_s": 1.002552,
+    "late_max_s": 2.8,
+    "outcomes": {
+     "committed": 28
+    },
+    "cpu_s": 43.463
+   },
+   "d_hist_max_s": 13.810682,
+   "max_snapshots": 64,
+   "max_metadata_bytes": 80106,
+   "policy": "P0",
+   "scenario": "S0_baseline"
+  }
+ }
+}

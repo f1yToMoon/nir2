@@ -1,0 +1,312 @@
+{
+ "runs": {
+  "stage3-S0-P0-mid-s1-r540-sessions-20261115": {
+   "scenario": "S0_baseline",
+   "status": "finished",
+   "invariants_ok": true,
+   "git_sha": "1f506a610ac9bafa27311f8ae75c86557e94de83",
+   "n_ops": 11,
+   "k2": 0,
+   "k1_fail": 0,
+   "k1_with_409": 0,
+   "outcomes": {
+    "committed": 11
+   },
+   "background_expire": {
+    "n": 28,
+    "cpu_s": 42.983,
+    "outcomes": {
+     "committed": 28
+    },
+    "late_max_s": 2.8,
+    "d_exec_max_s": 2.198359,
+    "d_exec_p50_s": 1.026685
+   },
+   "commit_rate_per_s": 0.11257630954453456,
+   "R_s": 540.0,
+   "I_s": 60.0
+  },
+  "stage3-S0-P0-mid-s1-rep-r540-sessions-20261115": {
+   "scenario": "S0_baseline",
+   "status": "finished",
+   "invariants_ok": true,
+   "git_sha": "1f506a610ac9bafa27311f8ae75c86557e94de83",
+   "n_ops": 11,
+   "k2": 0,
+   "k1_fail": 0,
+   "k1_with_409": 0,
+   "outcomes": {
+    "committed": 11
+   },
+   "background_expire": {
+    "n": 28,
+    "cpu_s": 43.463,
+    "outcomes": {
+     "committed": 28
+    },
+    "late_max_s": 2.8,
+    "d_exec_max_s": 2.232035,
+    "d_exec_p50_s": 1.002552
+   },
+   "commit_rate_per_s": 0.11257597707033337,
+   "R_s": 540.0,
+   "I_s": 60.0
+  }
+ },
+ "checks": {
+  "stage3-S0-P0-mid-s1-r540-sessions-20261115: finished, invariants_ok": {
+   "ok": true,
+   "invariants": {
+    "ledger_row_counts": true,
+    "no_duplicate_event_ids": true,
+    "committed_ops_in_lineage": true,
+    "aborted_ops_absent": true,
+    "version_monotonic": true,
+    "ok": true
+   }
+  },
+  "stage3-S0-P0-mid-s1-r540-sessions-20261115: validation.ok": {
+   "ok": true,
+   "validation": {
+    "ok": true,
+    "incomplete_cost": [],
+    "runner_errors": []
+   }
+  },
+  "stage3-S0-P0-mid-s1-r540-sessions-20261115: stream freshness fully observed": {
+   "ok": true,
+   "freshness": {
+    "complete": true,
+    "n_expected": 1670300,
+    "n_samples": 1670300,
+    "missing": 0,
+    "p95_s": 9.613282513618469,
+    "errors": [],
+    "unresolved_snapshots": {},
+    "n_snapshots": 168,
+    "observer_cpu_s": 6.336986944,
+    "clock": "producer UTC time.time → successful commit_attempts.responded_at"
+   }
+  },
+  "stage3-S0-P0-mid-s1-r540-sessions-20261115: sum cpu_ms <= app cpu": {
+   "ok": true,
+   "ops_cpu_ms": 150249,
+   "app_cpu_ms": 804334,
+   "workers_cgroup_cpu_ms": 1343313,
+   "share_of_app": 0.187
+  },
+  "stage3-S0-P0-mid-s1-r540-sessions-20261115: app cpu <= workers cgroup cpu": {
+   "ok": true,
+   "app_cpu_ms": 804334,
+   "workers_cgroup_cpu_ms": 1343313
+  },
+  "stage3-S0-P0-mid-s1-r540-sessions-20261115: complete cost for every executed operation": {
+   "ok": true,
+   "incomplete": []
+  },
+  "stage3-S0-P0-mid-s1-r540-sessions-20261115: footprint_executed ⊆ requested": {
+   "ok": true,
+   "committed": 11,
+   "with_executed": 11,
+   "violations": []
+  },
+  "stage3-S0-P0-mid-s1-r540-sessions-20261115: complete history timing coverage": {
+   "ok": true,
+   "expected": 11,
+   "observed": 11,
+   "missing_or_invalid": []
+  },
+  "stage3-S0-P0-mid-s1-r540-sessions-20261115: no operation older than R (or counted)": {
+   "ok": true,
+   "R_s": 540.0,
+   "over_r": [],
+   "n_over_r": 0,
+   "base_expired": 0,
+   "history_unresolved": 0,
+   "errors": 0
+  },
+  "stage3-S0-P0-mid-s1-r540-sessions-20261115: no runner/infrastructure errors": {
+   "ok": true,
+   "errors": []
+  },
+  "stage3-S0-P0-mid-s1-r540-sessions-20261115: history <= verified point (1452 / 1.51 MB)": {
+   "ok": true,
+   "max_snapshots": 64,
+   "max_metadata_bytes": 80054,
+   "B": [
+    1800,
+    1880000
+   ]
+  },
+  "stage3-S0-P0-mid-s1-r540-sessions-20261115: dense history upper bound <= 1452": {
+   "ok": true,
+   "unique_additions": 179,
+   "unique_removals": 121,
+   "lower": {
+    "peak_snapshots": 67,
+    "at": "2026-11-15 13:27:54.171706+00:00",
+    "final_snapshots": 59
+   },
+   "upper": {
+    "peak_snapshots": 67,
+    "at": "2026-11-15 13:27:54.161992+00:00",
+    "final_snapshots": 59
+   }
+  },
+  "stage3-S0-P0-mid-s1-rep-r540-sessions-20261115: finished, invariants_ok": {
+   "ok": true,
+   "invariants": {
+    "ledger_row_counts": true,
+    "no_duplicate_event_ids": true,
+    "committed_ops_in_lineage": true,
+    "aborted_ops_absent": true,
+    "version_monotonic": true,
+    "ok": true
+   }
+  },
+  "stage3-S0-P0-mid-s1-rep-r540-sessions-20261115: validation.ok": {
+   "ok": true,
+   "validation": {
+    "ok": true,
+    "incomplete_cost": [],
+    "runner_errors": []
+   }
+  },
+  "stage3-S0-P0-mid-s1-rep-r540-sessions-20261115: stream freshness fully observed": {
+   "ok": true,
+   "freshness": {
+    "complete": true,
+    "n_expected": 1670600,
+    "n_samples": 1670600,
+    "missing": 0,
+    "p95_s": 9.647354197502136,
+    "errors": [],
+    "unresolved_snapshots": {},
+    "n_snapshots": 168,
+    "observer_cpu_s": 6.589579169999985,
+    "clock": "producer UTC time.time → successful commit_attempts.responded_at"
+   }
+  },
+  "stage3-S0-P0-mid-s1-rep-r540-sessions-20261115: sum cpu_ms <= app cpu": {
+   "ok": true,
+   "ops_cpu_ms": 150350,
+   "app_cpu_ms": 793196,
+   "workers_cgroup_cpu_ms": 1313249,
+   "share_of_app": 0.19
+  },
+  "stage3-S0-P0-mid-s1-rep-r540-sessions-20261115: app cpu <= workers cgroup cpu": {
+   "ok": true,
+   "app_cpu_ms": 793196,
+   "workers_cgroup_cpu_ms": 1313249
+  },
+  "stage3-S0-P0-mid-s1-rep-r540-sessions-20261115: complete cost for every executed operation": {
+   "ok": true,
+   "incomplete": []
+  },
+  "stage3-S0-P0-mid-s1-rep-r540-sessions-20261115: footprint_executed ⊆ requested": {
+   "ok": true,
+   "committed": 11,
+   "with_executed": 11,
+   "violations": []
+  },
+  "stage3-S0-P0-mid-s1-rep-r540-sessions-20261115: complete history timing coverage": {
+   "ok": true,
+   "expected": 11,
+   "observed": 11,
+   "missing_or_invalid": []
+  },
+  "stage3-S0-P0-mid-s1-rep-r540-sessions-20261115: no operation older than R (or counted)": {
+   "ok": true,
+   "R_s": 540.0,
+   "over_r": [],
+   "n_over_r": 0,
+   "base_expired": 0,
+   "history_unresolved": 0,
+   "errors": 0
+  },
+  "stage3-S0-P0-mid-s1-rep-r540-sessions-20261115: no runner/infrastructure errors": {
+   "ok": true,
+   "errors": []
+  },
+  "stage3-S0-P0-mid-s1-rep-r540-sessions-20261115: history <= verified point (1452 / 1.51 MB)": {
+   "ok": true,
+   "max_snapshots": 64,
+   "max_metadata_bytes": 80106,
+   "B": [
+    1800,
+    1880000
+   ]
+  },
+  "stage3-S0-P0-mid-s1-rep-r540-sessions-20261115: dense history upper bound <= 1452": {
+   "ok": true,
+   "unique_additions": 179,
+   "unique_removals": 121,
+   "lower": {
+    "peak_snapshots": 67,
+    "at": "2026-11-15 13:57:08.533994+00:00",
+    "final_snapshots": 59
+   },
+   "upper": {
+    "peak_snapshots": 67,
+    "at": "2026-11-15 13:57:08.523927+00:00",
+    "final_snapshots": 59
+   }
+  },
+  "determinism: identical intents": {
+   "ok": true,
+   "n_a": 11,
+   "n_b": 11,
+   "resolved_footprint_jaccard_mean": 1.0,
+   "resolved_identical": 11,
+   "resolved_n": 11
+  },
+  "retention: nonempty timing coverage": {
+   "ok": true,
+   "n_observed": 22
+  },
+  "retention: measured lower bound <= configured R": {
+   "ok": true,
+   "lower_s": 334.4,
+   "configured_R_s": 540.0
+  },
+  "retention: D_max <= 349 s (else author decision)": {
+   "ok": true,
+   "d_max_s": 17.2
+  }
+ },
+ "retention": {
+  "d_max_s": 17.2,
+  "d_max_op": "stage3-S0-P0-mid-s1-r540-sessions-20261115-dml_cold-0000",
+  "d_max_run": "stage3-S0-P0-mid-s1-r540-sessions-20261115",
+  "top5": [
+   [
+    17.2,
+    "stage3-S0-P0-mid-s1-r540-sessions-20261115-dml_cold-0000"
+   ],
+   [
+    13.8,
+    "stage3-S0-P0-mid-s1-rep-r540-sessions-20261115-dml_cold-0000"
+   ],
+   [
+    13.7,
+    "stage3-S0-P0-mid-s1-r540-sessions-20261115-dml_cold-0004"
+   ],
+   [
+    13.3,
+    "stage3-S0-P0-mid-s1-r540-sessions-20261115-dml_cold-0002"
+   ],
+   [
+    11.7,
+    "stage3-S0-P0-mid-s1-r540-sessions-20261115-dml_cold-0005"
+   ]
+  ],
+  "num_retries": 4,
+  "R_low_s (2·D_max + (n+1)·hold)": 334.4,
+  "R_low_single_hold_s": 94.4,
+  "S1_commit_rate_per_s": null,
+  "R_high_verified_point_s": null,
+  "R_high_B_s": null,
+  "author_stop (D_max > 349 s)": false
+ },
+ "failed": []
+}

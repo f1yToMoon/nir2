@@ -1,0 +1,1 @@
+{"run_id": "stage3-S1-P0-mid-s11-adr011-20261108", "bounds": {"lower": {"peak_snapshots": 1459, "at": "2026-11-08 13:35:54.997267+00:00"}, "upper": {"peak_snapshots": 1459, "at": "2026-11-08 13:35:54.959234+00:00"}}, "evidence": "/workspace/results/stage-3/series-adr011-20261108/history-bounds-stage3-S1-P0-mid-s11-adr011-20261108.json.gz"}

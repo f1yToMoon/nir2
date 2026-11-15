@@ -1,0 +1,80 @@
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+_____________ test_main_preserves_existing_unfinished_run[failed] ______________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x78edd1ab7590>
+tmp_path = PosixPath('/tmp/pytest-of-an/pytest-12/test_main_preserves_existing_u0')
+status = 'failed'
+
+    @pytest.mark.parametrize("status", ["failed", "running"])
+    def test_main_preserves_existing_unfinished_run(monkeypatch: Any, tmp_path: Path, status: str) -> None:
+        from runner import main
+        run_id = "existing"
+        path = prepare(tmp_path, run_id, b"partial measurements")
+        db = FinishedDB(run_id)
+        db.status = status
+        monkeypatch.setattr(main, "DB", lambda *_args: db)
+        monkeypatch.setattr(main, "RESULTS_DIR", tmp_path)
+        run = main.Run.__new__(main.Run)
+        run.env = SimpleNamespace(pg_dsn="unused", pg_schema="test")
+        run.sc, run.args, run.run_id = SimpleNamespace(), SimpleNamespace(force=False), run_id
+        run._golden = lambda: ({}, {})
+        with pytest.raises((ValueError, SystemExit), match="Cannot resume"):
+>           run.execute()
+
+tests/unit/test_runner_resume.py:90: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/runner/main.py:245: in execute
+    db.delete_run(self.run_id)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <tests.unit.test_runner_resume.FinishedDB object at 0x78edcf71ac10>
+_run_id = 'existing'
+
+    def delete_run(self, _run_id: str) -> None:
+        self.deleted = True
+>       pytest.fail("resume must not delete existing measurements")
+E       Failed: resume must not delete existing measurements
+
+tests/unit/test_runner_resume.py:27: Failed
+_____________ test_main_preserves_existing_unfinished_run[running] _____________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x78edd1a8a710>
+tmp_path = PosixPath('/tmp/pytest-of-an/pytest-12/test_main_preserves_existing_u1')
+status = 'running'
+
+    @pytest.mark.parametrize("status", ["failed", "running"])
+    def test_main_preserves_existing_unfinished_run(monkeypatch: Any, tmp_path: Path, status: str) -> None:
+        from runner import main
+        run_id = "existing"
+        path = prepare(tmp_path, run_id, b"partial measurements")
+        db = FinishedDB(run_id)
+        db.status = status
+        monkeypatch.setattr(main, "DB", lambda *_args: db)
+        monkeypatch.setattr(main, "RESULTS_DIR", tmp_path)
+        run = main.Run.__new__(main.Run)
+        run.env = SimpleNamespace(pg_dsn="unused", pg_schema="test")
+        run.sc, run.args, run.run_id = SimpleNamespace(), SimpleNamespace(force=False), run_id
+        run._golden = lambda: ({}, {})
+        with pytest.raises((ValueError, SystemExit), match="Cannot resume"):
+>           run.execute()
+
+tests/unit/test_runner_resume.py:90: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/runner/main.py:245: in execute
+    db.delete_run(self.run_id)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <tests.unit.test_runner_resume.FinishedDB object at 0x78edcffa3890>
+_run_id = 'existing'
+
+    def delete_run(self, _run_id: str) -> None:
+        self.deleted = True
+>       pytest.fail("resume must not delete existing measurements")
+E       Failed: resume must not delete existing measurements
+
+tests/unit/test_runner_resume.py:27: Failed
+=========================== short test summary info ============================
+FAILED tests/unit/test_runner_resume.py::test_main_preserves_existing_unfinished_run[failed]
+FAILED tests/unit/test_runner_resume.py::test_main_preserves_existing_unfinished_run[running]
+2 failed, 10 deselected in 0.20s

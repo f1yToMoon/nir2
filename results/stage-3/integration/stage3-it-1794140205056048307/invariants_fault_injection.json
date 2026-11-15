@@ -1,0 +1,896 @@
+{
+ "run_id": "stage3-S5-P0-mid-s11-adr011-20261108",
+ "telemetry_run_id": "stage3-it-1794140205056048307",
+ "clean": {
+  "ledger_row_counts": {
+   "ok": true,
+   "partitions_checked": 288,
+   "mismatches": {},
+   "n_mismatches": 0,
+   "rows_by_origin": {
+    "stream": 3362265,
+    "golden": 29997015,
+    "merge": 53998
+   },
+   "journal_physical_records": 33413278,
+   "snapshot_total_records": 33413278,
+   "table_live_rows": 33413278,
+   "journal_commits": 187
+  },
+  "no_duplicate_event_ids": {
+   "ok": true,
+   "duplicates": 0,
+   "rows": 33413278
+  },
+  "committed_ops_in_lineage": {
+   "ok": true,
+   "lineage_len": 187,
+   "lineage_error": null,
+   "committed_checked": 18,
+   "missing": [],
+   "n_missing": 0
+  },
+  "aborted_ops_absent": {
+   "ok": true,
+   "failed_ops": 7,
+   "snapshots_in_lineage": [],
+   "aborted_rows_checked": 24000,
+   "aborted_rows_present": 0,
+   "lineage_error": null
+  },
+  "version_monotonic": {
+   "ok": true,
+   "rows_checked": 33413278,
+   "rows_expected_updated": 213799,
+   "mismatches": 0
+  },
+  "ok": true
+ },
+ "detected": {
+  "duplicate_row": [
+   "aborted_ops_absent",
+   "committed_ops_in_lineage",
+   "ledger_row_counts",
+   "no_duplicate_event_ids"
+  ],
+  "lost_row": [
+   "aborted_ops_absent",
+   "committed_ops_in_lineage",
+   "ledger_row_counts"
+  ],
+  "extra_update": [
+   "aborted_ops_absent",
+   "committed_ops_in_lineage",
+   "ledger_row_counts",
+   "version_monotonic"
+  ],
+  "retained_deleted_row": [
+   "aborted_ops_absent",
+   "committed_ops_in_lineage",
+   "ledger_row_counts"
+  ],
+  "aborted_row": [
+   "aborted_ops_absent",
+   "committed_ops_in_lineage",
+   "ledger_row_counts"
+  ],
+  "lineage": [
+   "committed_ops_in_lineage",
+   "ledger_row_counts",
+   "version_monotonic"
+  ]
+ },
+ "details": {
+  "duplicate_row": {
+   "ledger_row_counts": {
+    "ok": false,
+    "partitions_checked": 288,
+    "mismatches": {
+     "dt=2026-11-02/key_bucket=6|golden": {
+      "expected": 124609,
+      "actual": 124610
+     }
+    },
+    "n_mismatches": 1,
+    "rows_by_origin": {
+     "golden": 29997016,
+     "stream": 3362265,
+     "merge": 53998
+    },
+    "journal_physical_records": 30000000,
+    "snapshot_total_records": 33413279,
+    "table_live_rows": 33413279,
+    "journal_commits": 0
+   },
+   "no_duplicate_event_ids": {
+    "ok": false,
+    "duplicates": 1,
+    "rows": 33413279
+   },
+   "committed_ops_in_lineage": {
+    "ok": false,
+    "lineage_len": 0,
+    "lineage_error": "snapshot 2999078248487971656 not in the proxy journal",
+    "committed_checked": 18,
+    "missing": [
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-cdc_merge-0000",
+      "snapshot_id": 232665561136338721
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-compaction-0000",
+      "snapshot_id": 8952233526940251658
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-cdc_merge-0001",
+      "snapshot_id": 3923584795004401846
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-compaction-0001",
+      "snapshot_id": 6814498500518513523
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-cdc_merge-0002",
+      "snapshot_id": 121531508706577708
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-compaction-0002",
+      "snapshot_id": 1206872592044709502
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-gdpr_delete-0001",
+      "snapshot_id": 2783591295276590468
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-compaction-0003",
+      "snapshot_id": 2053439179363275216
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-compaction-0004",
+      "snapshot_id": 4373089823421630333
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-cdc_merge-0006",
+      "snapshot_id": 5518328243033512855
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-cdc_merge-0007",
+      "snapshot_id": 7893473658846395388
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-compaction-0005",
+      "snapshot_id": 6048448950729724558
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-cdc_merge-0008",
+      "snapshot_id": 7543841004963496554
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-cdc_merge-0010",
+      "snapshot_id": 8540076929828953727
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-compaction-0006",
+      "snapshot_id": 2526099780146739810
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-compaction-0007",
+      "snapshot_id": 6798101362168095503
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-cdc_merge-0011",
+      "snapshot_id": 4208007715859855167
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-cdc_merge-0012",
+      "snapshot_id": 6050996646542360965
+     }
+    ],
+    "n_missing": 18
+   },
+   "aborted_ops_absent": {
+    "ok": false,
+    "failed_ops": 7,
+    "snapshots_in_lineage": [],
+    "aborted_rows_checked": 24000,
+    "aborted_rows_present": 0,
+    "lineage_error": "snapshot 2999078248487971656 not in the proxy journal"
+   },
+   "version_monotonic": {
+    "ok": true,
+    "rows_checked": 33413279,
+    "rows_expected_updated": 213799,
+    "mismatches": 0
+   },
+   "ok": false
+  },
+  "lost_row": {
+   "ledger_row_counts": {
+    "ok": false,
+    "partitions_checked": 288,
+    "mismatches": {
+     "dt=2026-11-30/key_bucket=6|stream": {
+      "expected": 399700,
+      "actual": 399699
+     }
+    },
+    "n_mismatches": 1,
+    "rows_by_origin": {
+     "stream": 3362264,
+     "golden": 29997015,
+     "merge": 53998
+    },
+    "journal_physical_records": 30000000,
+    "snapshot_total_records": 33413277,
+    "table_live_rows": 33413277,
+    "journal_commits": 0
+   },
+   "no_duplicate_event_ids": {
+    "ok": true,
+    "duplicates": 0,
+    "rows": 33413277
+   },
+   "committed_ops_in_lineage": {
+    "ok": false,
+    "lineage_len": 0,
+    "lineage_error": "snapshot 432300486319142823 not in the proxy journal",
+    "committed_checked": 18,
+    "missing": [
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-cdc_merge-0000",
+      "snapshot_id": 232665561136338721
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-compaction-0000",
+      "snapshot_id": 8952233526940251658
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-cdc_merge-0001",
+      "snapshot_id": 3923584795004401846
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-compaction-0001",
+      "snapshot_id": 6814498500518513523
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-cdc_merge-0002",
+      "snapshot_id": 121531508706577708
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-compaction-0002",
+      "snapshot_id": 1206872592044709502
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-gdpr_delete-0001",
+      "snapshot_id": 2783591295276590468
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-compaction-0003",
+      "snapshot_id": 2053439179363275216
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-compaction-0004",
+      "snapshot_id": 4373089823421630333
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-cdc_merge-0006",
+      "snapshot_id": 5518328243033512855
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-cdc_merge-0007",
+      "snapshot_id": 7893473658846395388
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-compaction-0005",
+      "snapshot_id": 6048448950729724558
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-cdc_merge-0008",
+      "snapshot_id": 7543841004963496554
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-cdc_merge-0010",
+      "snapshot_id": 8540076929828953727
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-compaction-0006",
+      "snapshot_id": 2526099780146739810
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-compaction-0007",
+      "snapshot_id": 6798101362168095503
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-cdc_merge-0011",
+      "snapshot_id": 4208007715859855167
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-cdc_merge-0012",
+      "snapshot_id": 6050996646542360965
+     }
+    ],
+    "n_missing": 18
+   },
+   "aborted_ops_absent": {
+    "ok": false,
+    "failed_ops": 7,
+    "snapshots_in_lineage": [],
+    "aborted_rows_checked": 24000,
+    "aborted_rows_present": 0,
+    "lineage_error": "snapshot 432300486319142823 not in the proxy journal"
+   },
+   "version_monotonic": {
+    "ok": true,
+    "rows_checked": 33413277,
+    "rows_expected_updated": 213799,
+    "mismatches": 0
+   },
+   "ok": false
+  },
+  "extra_update": {
+   "ledger_row_counts": {
+    "ok": false,
+    "partitions_checked": 288,
+    "mismatches": {},
+    "n_mismatches": 0,
+    "rows_by_origin": {
+     "stream": 3362265,
+     "golden": 29997015,
+     "merge": 53998
+    },
+    "journal_physical_records": 30000000,
+    "snapshot_total_records": 33413278,
+    "table_live_rows": 33413278,
+    "journal_commits": 0
+   },
+   "no_duplicate_event_ids": {
+    "ok": true,
+    "duplicates": 0,
+    "rows": 33413278
+   },
+   "committed_ops_in_lineage": {
+    "ok": false,
+    "lineage_len": 0,
+    "lineage_error": "snapshot 7893138342857436701 not in the proxy journal",
+    "committed_checked": 18,
+    "missing": [
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-cdc_merge-0000",
+      "snapshot_id": 232665561136338721
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-compaction-0000",
+      "snapshot_id": 8952233526940251658
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-cdc_merge-0001",
+      "snapshot_id": 3923584795004401846
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-compaction-0001",
+      "snapshot_id": 6814498500518513523
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-cdc_merge-0002",
+      "snapshot_id": 121531508706577708
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-compaction-0002",
+      "snapshot_id": 1206872592044709502
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-gdpr_delete-0001",
+      "snapshot_id": 2783591295276590468
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-compaction-0003",
+      "snapshot_id": 2053439179363275216
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-compaction-0004",
+      "snapshot_id": 4373089823421630333
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-cdc_merge-0006",
+      "snapshot_id": 5518328243033512855
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-cdc_merge-0007",
+      "snapshot_id": 7893473658846395388
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-compaction-0005",
+      "snapshot_id": 6048448950729724558
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-cdc_merge-0008",
+      "snapshot_id": 7543841004963496554
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-cdc_merge-0010",
+      "snapshot_id": 8540076929828953727
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-compaction-0006",
+      "snapshot_id": 2526099780146739810
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-compaction-0007",
+      "snapshot_id": 6798101362168095503
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-cdc_merge-0011",
+      "snapshot_id": 4208007715859855167
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-cdc_merge-0012",
+      "snapshot_id": 6050996646542360965
+     }
+    ],
+    "n_missing": 18
+   },
+   "aborted_ops_absent": {
+    "ok": false,
+    "failed_ops": 7,
+    "snapshots_in_lineage": [],
+    "aborted_rows_checked": 24000,
+    "aborted_rows_present": 0,
+    "lineage_error": "snapshot 7893138342857436701 not in the proxy journal"
+   },
+   "version_monotonic": {
+    "ok": false,
+    "rows_checked": 33413278,
+    "rows_expected_updated": 213799,
+    "mismatches": 1
+   },
+   "ok": false
+  },
+  "retained_deleted_row": {
+   "ledger_row_counts": {
+    "ok": false,
+    "partitions_checked": 288,
+    "mismatches": {
+     "dt=2026-11-25/key_bucket=0|golden": {
+      "expected": 124598,
+      "actual": 124599
+     }
+    },
+    "n_mismatches": 1,
+    "rows_by_origin": {
+     "stream": 3362265,
+     "golden": 29997016,
+     "merge": 53998
+    },
+    "journal_physical_records": 30000000,
+    "snapshot_total_records": 33413279,
+    "table_live_rows": 33413279,
+    "journal_commits": 0
+   },
+   "no_duplicate_event_ids": {
+    "ok": true,
+    "duplicates": 0,
+    "rows": 33413279
+   },
+   "committed_ops_in_lineage": {
+    "ok": false,
+    "lineage_len": 0,
+    "lineage_error": "snapshot 2214991258720802213 not in the proxy journal",
+    "committed_checked": 18,
+    "missing": [
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-cdc_merge-0000",
+      "snapshot_id": 232665561136338721
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-compaction-0000",
+      "snapshot_id": 8952233526940251658
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-cdc_merge-0001",
+      "snapshot_id": 3923584795004401846
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-compaction-0001",
+      "snapshot_id": 6814498500518513523
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-cdc_merge-0002",
+      "snapshot_id": 121531508706577708
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-compaction-0002",
+      "snapshot_id": 1206872592044709502
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-gdpr_delete-0001",
+      "snapshot_id": 2783591295276590468
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-compaction-0003",
+      "snapshot_id": 2053439179363275216
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-compaction-0004",
+      "snapshot_id": 4373089823421630333
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-cdc_merge-0006",
+      "snapshot_id": 5518328243033512855
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-cdc_merge-0007",
+      "snapshot_id": 7893473658846395388
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-compaction-0005",
+      "snapshot_id": 6048448950729724558
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-cdc_merge-0008",
+      "snapshot_id": 7543841004963496554
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-cdc_merge-0010",
+      "snapshot_id": 8540076929828953727
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-compaction-0006",
+      "snapshot_id": 2526099780146739810
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-compaction-0007",
+      "snapshot_id": 6798101362168095503
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-cdc_merge-0011",
+      "snapshot_id": 4208007715859855167
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-cdc_merge-0012",
+      "snapshot_id": 6050996646542360965
+     }
+    ],
+    "n_missing": 18
+   },
+   "aborted_ops_absent": {
+    "ok": false,
+    "failed_ops": 7,
+    "snapshots_in_lineage": [],
+    "aborted_rows_checked": 24000,
+    "aborted_rows_present": 0,
+    "lineage_error": "snapshot 2214991258720802213 not in the proxy journal"
+   },
+   "version_monotonic": {
+    "ok": true,
+    "rows_checked": 33413279,
+    "rows_expected_updated": 213799,
+    "mismatches": 0
+   },
+   "ok": false
+  },
+  "aborted_row": {
+   "ledger_row_counts": {
+    "ok": false,
+    "partitions_checked": 288,
+    "mismatches": {
+     "dt=2026-11-02/key_bucket=6|agent": {
+      "expected": 0,
+      "actual": 1
+     }
+    },
+    "n_mismatches": 1,
+    "rows_by_origin": {
+     "stream": 3362265,
+     "golden": 29997015,
+     "merge": 53998,
+     "agent": 1
+    },
+    "journal_physical_records": 30000000,
+    "snapshot_total_records": 33413279,
+    "table_live_rows": 33413279,
+    "journal_commits": 0
+   },
+   "no_duplicate_event_ids": {
+    "ok": true,
+    "duplicates": 0,
+    "rows": 33413279
+   },
+   "committed_ops_in_lineage": {
+    "ok": false,
+    "lineage_len": 0,
+    "lineage_error": "snapshot 7873862440007138525 not in the proxy journal",
+    "committed_checked": 18,
+    "missing": [
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-cdc_merge-0000",
+      "snapshot_id": 232665561136338721
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-compaction-0000",
+      "snapshot_id": 8952233526940251658
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-cdc_merge-0001",
+      "snapshot_id": 3923584795004401846
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-compaction-0001",
+      "snapshot_id": 6814498500518513523
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-cdc_merge-0002",
+      "snapshot_id": 121531508706577708
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-compaction-0002",
+      "snapshot_id": 1206872592044709502
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-gdpr_delete-0001",
+      "snapshot_id": 2783591295276590468
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-compaction-0003",
+      "snapshot_id": 2053439179363275216
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-compaction-0004",
+      "snapshot_id": 4373089823421630333
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-cdc_merge-0006",
+      "snapshot_id": 5518328243033512855
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-cdc_merge-0007",
+      "snapshot_id": 7893473658846395388
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-compaction-0005",
+      "snapshot_id": 6048448950729724558
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-cdc_merge-0008",
+      "snapshot_id": 7543841004963496554
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-cdc_merge-0010",
+      "snapshot_id": 8540076929828953727
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-compaction-0006",
+      "snapshot_id": 2526099780146739810
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-compaction-0007",
+      "snapshot_id": 6798101362168095503
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-cdc_merge-0011",
+      "snapshot_id": 4208007715859855167
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-cdc_merge-0012",
+      "snapshot_id": 6050996646542360965
+     }
+    ],
+    "n_missing": 18
+   },
+   "aborted_ops_absent": {
+    "ok": false,
+    "failed_ops": 7,
+    "snapshots_in_lineage": [],
+    "aborted_rows_checked": 24001,
+    "aborted_rows_present": 1,
+    "lineage_error": "snapshot 7873862440007138525 not in the proxy journal"
+   },
+   "version_monotonic": {
+    "ok": true,
+    "rows_checked": 33413279,
+    "rows_expected_updated": 213799,
+    "mismatches": 0
+   },
+   "ok": false
+  },
+  "lineage": {
+   "ledger_row_counts": {
+    "ok": false,
+    "partitions_checked": 288,
+    "mismatches": {
+     "dt=2026-11-29/key_bucket=5|stream": {
+      "expected": 10462,
+      "actual": 10296
+     },
+     "dt=2026-11-28/key_bucket=4|stream": {
+      "expected": 10229,
+      "actual": 10048
+     },
+     "dt=2026-11-30/key_bucket=6|stream": {
+      "expected": 399700,
+      "actual": 393056
+     },
+     "dt=2026-11-30/key_bucket=4|stream": {
+      "expected": 399184,
+      "actual": 392571
+     },
+     "dt=2026-11-28/key_bucket=3|stream": {
+      "expected": 10481,
+      "actual": 10311
+     },
+     "dt=2026-11-28/key_bucket=6|stream": {
+      "expected": 10456,
+      "actual": 10281
+     },
+     "dt=2026-11-30/key_bucket=3|stream": {
+      "expected": 400998,
+      "actual": 394545
+     },
+     "dt=2026-11-30/key_bucket=7|stream": {
+      "expected": 399024,
+      "actual": 392362
+     },
+     "dt=2026-11-28/key_bucket=2|stream": {
+      "expected": 10515,
+      "actual": 10330
+     },
+     "dt=2026-11-29/key_bucket=0|stream": {
+      "expected": 10433,
+      "actual": 10253
+     },
+     "dt=2026-11-29/key_bucket=2|stream": {
+      "expected": 10420,
+      "actual": 10237
+     },
+     "dt=2026-11-29/key_bucket=1|stream": {
+      "expected": 10550,
+      "actual": 10369
+     },
+     "dt=2026-11-27/key_bucket=3|merge": {
+      "expected": 4500,
+      "actual": 1500
+     },
+     "dt=2026-11-30/key_bucket=2|stream": {
+      "expected": 399800,
+      "actual": 393182
+     },
+     "dt=2026-11-29/key_bucket=3|stream": {
+      "expected": 10469,
+      "actual": 10293
+     },
+     "dt=2026-11-30/key_bucket=2|merge": {
+      "expected": 5700,
+      "actual": 2700
+     },
+     "dt=2026-11-30/key_bucket=1|stream": {
+      "expected": 398355,
+      "actual": 391809
+     },
+     "dt=2026-11-28/key_bucket=0|stream": {
+      "expected": 10681,
+      "actual": 10515
+     },
+     "dt=2026-11-30/key_bucket=0|stream": {
+      "expected": 398873,
+      "actual": 392447
+     },
+     "dt=2026-11-29/key_bucket=4|stream": {
+      "expected": 10407,
+      "actual": 10225
+     },
+     "dt=2026-11-28/key_bucket=5|stream": {
+      "expected": 10558,
+      "actual": 10377
+     },
+     "dt=2026-11-28/key_bucket=7|stream": {
+      "expected": 10449,
+      "actual": 10276
+     },
+     "dt=2026-11-30/key_bucket=5|stream": {
+      "expected": 398683,
+      "actual": 392051
+     },
+     "dt=2026-11-29/key_bucket=7|stream": {
+      "expected": 10533,
+      "actual": 10357
+     },
+     "dt=2026-11-29/key_bucket=6|stream": {
+      "expected": 10457,
+      "actual": 10286
+     },
+     "dt=2026-11-28/key_bucket=1|stream": {
+      "expected": 10548,
+      "actual": 10388
+     }
+    },
+    "n_mismatches": 26,
+    "rows_by_origin": {
+     "stream": 3306865,
+     "golden": 29997015,
+     "merge": 47998
+    },
+    "journal_physical_records": 33351878,
+    "snapshot_total_records": 33351878,
+    "table_live_rows": 33351878,
+    "journal_commits": 183
+   },
+   "no_duplicate_event_ids": {
+    "ok": true,
+    "duplicates": 0,
+    "rows": 33351878
+   },
+   "committed_ops_in_lineage": {
+    "ok": false,
+    "lineage_len": 183,
+    "lineage_error": null,
+    "committed_checked": 18,
+    "missing": [
+     {
+      "op_id": "stage3-S5-P0-mid-s11-adr011-20261108-cdc_merge-0012",
+      "snapshot_id": 6050996646542360965
+     }
+    ],
+    "n_missing": 1
+   },
+   "aborted_ops_absent": {
+    "ok": true,
+    "failed_ops": 7,
+    "snapshots_in_lineage": [],
+    "aborted_rows_checked": 24000,
+    "aborted_rows_present": 0,
+    "lineage_error": null
+   },
+   "version_monotonic": {
+    "ok": false,
+    "rows_checked": 33351878,
+    "rows_expected_updated": 213799,
+    "mismatches": 24000
+   },
+   "ok": false
+  }
+ },
+ "after_restore": {
+  "ledger_row_counts": {
+   "ok": true,
+   "partitions_checked": 288,
+   "mismatches": {},
+   "n_mismatches": 0,
+   "rows_by_origin": {
+    "golden": 29997015,
+    "stream": 3362265,
+    "merge": 53998
+   },
+   "journal_physical_records": 33413278,
+   "snapshot_total_records": 33413278,
+   "table_live_rows": 33413278,
+   "journal_commits": 187
+  },
+  "no_duplicate_event_ids": {
+   "ok": true,
+   "duplicates": 0,
+   "rows": 33413278
+  },
+  "committed_ops_in_lineage": {
+   "ok": true,
+   "lineage_len": 187,
+   "lineage_error": null,
+   "committed_checked": 18,
+   "missing": [],
+   "n_missing": 0
+  },
+  "aborted_ops_absent": {
+   "ok": true,
+   "failed_ops": 7,
+   "snapshots_in_lineage": [],
+   "aborted_rows_checked": 24000,
+   "aborted_rows_present": 0,
+   "lineage_error": null
+  },
+  "version_monotonic": {
+   "ok": true,
+   "rows_checked": 33413278,
+   "rows_expected_updated": 213799,
+   "mismatches": 0
+  },
+  "ok": true
+ }
+}

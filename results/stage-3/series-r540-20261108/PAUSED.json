@@ -1,0 +1,12 @@
+{
+  "paused_by_user": true,
+  "at_utc": "2026-11-08T20:26:44Z",
+  "branch": "main",
+  "head": "ac3c4220013cb3342d13e5d3df1e7bf98ed92996",
+  "pipeline_exit": 2,
+  "active_experiments": false,
+  "invalid_run": "stage3-S4-P0-mid-s11-r540-20261108",
+  "formal_review_rounds_used": 0,
+  "next_action": "Reproduce runtime file filtering state mismatch; no implementation fix applied yet.",
+  "resume_requires_new_user_instruction": true
+}

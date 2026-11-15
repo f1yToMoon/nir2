@@ -1,0 +1,17 @@
+{
+  "app_id": "app-20261115134501-0011",
+  "name": "capl-stage3-S0-P0-mid-s1-rep-r540-sessions-20261115",
+  "properties": {
+    "spark.cores.max": "8",
+    "spark.driver.memory": "3g",
+    "spark.executor.cores": "2",
+    "spark.executor.memory": "2g",
+    "spark.master": "spark://spark-master:7077",
+    "spark.scheduler.allocation.file": "/workspace/infra/spark/fairscheduler.xml",
+    "spark.scheduler.mode": "FAIR",
+    "spark.sql.adaptive.enabled": "true",
+    "spark.sql.defaultCatalog": "lake",
+    "spark.sql.session.timeZone": "UTC",
+    "spark.sql.shuffle.partitions": "32"
+  }
+}

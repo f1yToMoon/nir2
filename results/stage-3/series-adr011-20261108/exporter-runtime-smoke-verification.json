@@ -1,0 +1,8 @@
+{
+  "run_id": "stage3-tech-S4-adr011-120s-20261108",
+  "files_verified": 19,
+  "events_verified": 220800,
+  "recomputed_p95_s": 14.430593264102935,
+  "matches_original": true,
+  "runtime": "runner Python 3.10"
+}

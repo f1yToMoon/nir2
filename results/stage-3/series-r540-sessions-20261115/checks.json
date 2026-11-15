@@ -1,0 +1,987 @@
+{
+ "runs": {
+  "stage3-S4-P0-mid-s11-r540-sessions-20261115": {
+   "scenario": "S4_merge_vs_stream_serializable",
+   "status": "finished",
+   "invariants_ok": true,
+   "git_sha": "764d95fc0b33a42fab35305a1b6fe19371c9ef49",
+   "n_ops": 35,
+   "k2": 23,
+   "k1_fail": 0,
+   "k1_with_409": 0,
+   "outcomes": {
+    "committed": 12,
+    "data_conflict": 23
+   },
+   "background_expire": {
+    "n": 30,
+    "cpu_s": 52.49,
+    "outcomes": {
+     "committed": 30
+    },
+    "late_max_s": 12.5,
+    "d_exec_max_s": 12.23846,
+    "d_exec_p50_s": 5.8908005
+   },
+   "commit_rate_per_s": 0.07923699064784326,
+   "R_s": 540.0,
+   "I_s": 60.0
+  },
+  "stage3-S5-P0-mid-s11-r540-sessions-20261115": {
+   "scenario": "S5_compliance_delete",
+   "status": "finished",
+   "invariants_ok": true,
+   "git_sha": "764d95fc0b33a42fab35305a1b6fe19371c9ef49",
+   "n_ops": 25,
+   "k2": 6,
+   "k1_fail": 0,
+   "k1_with_409": 1,
+   "outcomes": {
+    "committed": 19,
+    "data_conflict": 6
+   },
+   "background_expire": {
+    "n": 28,
+    "cpu_s": 55.309,
+    "outcomes": {
+     "committed": 28
+    },
+    "late_max_s": 4.4,
+    "d_exec_max_s": 4.234864,
+    "d_exec_p50_s": 1.3378714999999999
+   },
+   "commit_rate_per_s": 0.11736697479619367,
+   "R_s": 540.0,
+   "I_s": 60.0
+  },
+  "stage3-S0-P0-mid-s1-r540-sessions-20261115": {
+   "scenario": "S0_baseline",
+   "status": "finished",
+   "invariants_ok": true,
+   "git_sha": "1f506a610ac9bafa27311f8ae75c86557e94de83",
+   "n_ops": 11,
+   "k2": 0,
+   "k1_fail": 0,
+   "k1_with_409": 0,
+   "outcomes": {
+    "committed": 11
+   },
+   "background_expire": {
+    "n": 28,
+    "cpu_s": 42.983,
+    "outcomes": {
+     "committed": 28
+    },
+    "late_max_s": 2.8,
+    "d_exec_max_s": 2.198359,
+    "d_exec_p50_s": 1.026685
+   },
+   "commit_rate_per_s": 0.11257630954453456,
+   "R_s": 540.0,
+   "I_s": 60.0
+  },
+  "stage3-S0-P0-mid-s1-rep-r540-sessions-20261115": {
+   "scenario": "S0_baseline",
+   "status": "finished",
+   "invariants_ok": true,
+   "git_sha": "1f506a610ac9bafa27311f8ae75c86557e94de83",
+   "n_ops": 11,
+   "k2": 0,
+   "k1_fail": 0,
+   "k1_with_409": 0,
+   "outcomes": {
+    "committed": 11
+   },
+   "background_expire": {
+    "n": 28,
+    "cpu_s": 43.463,
+    "outcomes": {
+     "committed": 28
+    },
+    "late_max_s": 2.8,
+    "d_exec_max_s": 2.232035,
+    "d_exec_p50_s": 1.002552
+   },
+   "commit_rate_per_s": 0.11257597707033337,
+   "R_s": 540.0,
+   "I_s": 60.0
+  },
+  "stage3-S1-P0-mid-s11-r540-sessions-20261115": {
+   "scenario": "S1_compaction_vs_stream_append",
+   "status": "finished",
+   "invariants_ok": true,
+   "git_sha": "1f506a610ac9bafa27311f8ae75c86557e94de83",
+   "n_ops": 13,
+   "k2": 0,
+   "k1_fail": 0,
+   "k1_with_409": 12,
+   "outcomes": {
+    "committed": 13
+   },
+   "background_expire": {
+    "n": 28,
+    "cpu_s": 322.615,
+    "outcomes": {
+     "committed": 28
+    },
+    "late_max_s": 12.1,
+    "d_exec_max_s": 11.617844,
+    "d_exec_p50_s": 9.7457925
+   },
+   "commit_rate_per_s": 2.215822703919725,
+   "R_s": 540.0,
+   "I_s": 60.0
+  },
+  "stage3-S2-P0-mid-s11-r540-sessions-20261115": {
+   "scenario": "S2_compaction_vs_cdc_merge",
+   "status": "finished",
+   "invariants_ok": true,
+   "git_sha": "1f506a610ac9bafa27311f8ae75c86557e94de83",
+   "n_ops": 28,
+   "k2": 10,
+   "k1_fail": 0,
+   "k1_with_409": 0,
+   "outcomes": {
+    "committed": 18,
+    "data_conflict": 10
+   },
+   "background_expire": {
+    "n": 28,
+    "cpu_s": 58.153,
+    "outcomes": {
+     "committed": 28
+    },
+    "late_max_s": 8.0,
+    "d_exec_max_s": 7.732544,
+    "d_exec_p50_s": 1.4648775
+   },
+   "commit_rate_per_s": 0.11666604715606745,
+   "R_s": 540.0,
+   "I_s": 60.0
+  },
+  "stage3-S3-P0-mid-s11-r540-sessions-20261115": {
+   "scenario": "S3_compaction_vs_mor_dml",
+   "status": "finished",
+   "invariants_ok": true,
+   "git_sha": "1f506a610ac9bafa27311f8ae75c86557e94de83",
+   "n_ops": 50,
+   "k2": 4,
+   "k1_fail": 0,
+   "k1_with_409": 1,
+   "outcomes": {
+    "noop": 1,
+    "committed": 45,
+    "data_conflict": 4
+   },
+   "background_expire": {
+    "n": 28,
+    "cpu_s": 57.286,
+    "outcomes": {
+     "committed": 28
+    },
+    "late_max_s": 2.9,
+    "d_exec_max_s": 2.330093,
+    "d_exec_p50_s": 1.2603745
+   },
+   "commit_rate_per_s": 0.132934296590975,
+   "R_s": 540.0,
+   "I_s": 60.0
+  }
+ },
+ "checks": {
+  "stage3-S4-P0-mid-s11-r540-sessions-20261115: finished, invariants_ok": {
+   "ok": true,
+   "invariants": {
+    "ledger_row_counts": true,
+    "no_duplicate_event_ids": true,
+    "committed_ops_in_lineage": true,
+    "aborted_ops_absent": true,
+    "version_monotonic": true,
+    "ok": true
+   }
+  },
+  "stage3-S4-P0-mid-s11-r540-sessions-20261115: validation.ok": {
+   "ok": true,
+   "validation": {
+    "ok": true,
+    "incomplete_cost": [],
+    "runner_errors": []
+   }
+  },
+  "stage3-S4-P0-mid-s11-r540-sessions-20261115: stream freshness fully observed": {
+   "ok": true,
+   "freshness": {
+    "complete": true,
+    "n_expected": 3517600,
+    "n_samples": 3517600,
+    "missing": 0,
+    "p95_s": 14.533032011985778,
+    "errors": [],
+    "unresolved_snapshots": {},
+    "n_snapshots": 118,
+    "observer_cpu_s": 13.40039122700004,
+    "clock": "producer UTC time.time → successful commit_attempts.responded_at"
+   }
+  },
+  "stage3-S4-P0-mid-s11-r540-sessions-20261115: sum cpu_ms <= app cpu": {
+   "ok": true,
+   "ops_cpu_ms": 572896,
+   "app_cpu_ms": 5967882,
+   "workers_cgroup_cpu_ms": 11744974,
+   "share_of_app": 0.096
+  },
+  "stage3-S4-P0-mid-s11-r540-sessions-20261115: app cpu <= workers cgroup cpu": {
+   "ok": true,
+   "app_cpu_ms": 5967882,
+   "workers_cgroup_cpu_ms": 11744974
+  },
+  "stage3-S4-P0-mid-s11-r540-sessions-20261115: complete cost for every executed operation": {
+   "ok": true,
+   "incomplete": []
+  },
+  "stage3-S4-P0-mid-s11-r540-sessions-20261115: footprint_executed ⊆ requested": {
+   "ok": true,
+   "committed": 12,
+   "with_executed": 12,
+   "violations": []
+  },
+  "stage3-S4-P0-mid-s11-r540-sessions-20261115: K2+K1 > 0 and class K2": {
+   "ok": true,
+   "k2": 23,
+   "k1_with_409": 0,
+   "k1_fail": 0,
+   "n_ops": 35,
+   "share": 0.657
+  },
+  "stage3-S4-P0-mid-s11-r540-sessions-20261115: complete history timing coverage": {
+   "ok": true,
+   "expected": 35,
+   "observed": 35,
+   "missing_or_invalid": []
+  },
+  "stage3-S4-P0-mid-s11-r540-sessions-20261115: no operation older than R (or counted)": {
+   "ok": true,
+   "R_s": 540.0,
+   "over_r": [],
+   "n_over_r": 0,
+   "base_expired": 0,
+   "history_unresolved": 0,
+   "errors": 0
+  },
+  "stage3-S4-P0-mid-s11-r540-sessions-20261115: no runner/infrastructure errors": {
+   "ok": true,
+   "errors": []
+  },
+  "stage3-S4-P0-mid-s11-r540-sessions-20261115: history <= verified point (1452 / 1.51 MB)": {
+   "ok": true,
+   "max_snapshots": 47,
+   "max_metadata_bytes": 63624,
+   "B": [
+    1800,
+    1880000
+   ]
+  },
+  "stage3-S4-P0-mid-s11-r540-sessions-20261115: dense history upper bound <= 1452": {
+   "ok": true,
+   "unique_additions": 130,
+   "unique_removals": 89,
+   "lower": {
+    "peak_snapshots": 48,
+    "at": "2026-11-15 12:29:39.694685+00:00",
+    "final_snapshots": 42
+   },
+   "upper": {
+    "peak_snapshots": 48,
+    "at": "2026-11-15 12:29:39.667268+00:00",
+    "final_snapshots": 42
+   }
+  },
+  "stage3-S5-P0-mid-s11-r540-sessions-20261115: finished, invariants_ok": {
+   "ok": true,
+   "invariants": {
+    "ledger_row_counts": true,
+    "no_duplicate_event_ids": true,
+    "committed_ops_in_lineage": true,
+    "aborted_ops_absent": true,
+    "version_monotonic": true,
+    "ok": true
+   }
+  },
+  "stage3-S5-P0-mid-s11-r540-sessions-20261115: validation.ok": {
+   "ok": true,
+   "validation": {
+    "ok": true,
+    "incomplete_cost": [],
+    "runner_errors": []
+   }
+  },
+  "stage3-S5-P0-mid-s11-r540-sessions-20261115: stream freshness fully observed": {
+   "ok": true,
+   "freshness": {
+    "complete": true,
+    "n_expected": 3340600,
+    "n_samples": 3340600,
+    "missing": 0,
+    "p95_s": 9.721097767353058,
+    "errors": [],
+    "unresolved_snapshots": {},
+    "n_snapshots": 168,
+    "observer_cpu_s": 10.19236708800001,
+    "clock": "producer UTC time.time → successful commit_attempts.responded_at"
+   }
+  },
+  "stage3-S5-P0-mid-s11-r540-sessions-20261115: sum cpu_ms <= app cpu": {
+   "ok": true,
+   "ops_cpu_ms": 399763,
+   "app_cpu_ms": 1960516,
+   "workers_cgroup_cpu_ms": 2739466,
+   "share_of_app": 0.204
+  },
+  "stage3-S5-P0-mid-s11-r540-sessions-20261115: app cpu <= workers cgroup cpu": {
+   "ok": true,
+   "app_cpu_ms": 1960516,
+   "workers_cgroup_cpu_ms": 2739466
+  },
+  "stage3-S5-P0-mid-s11-r540-sessions-20261115: complete cost for every executed operation": {
+   "ok": true,
+   "incomplete": []
+  },
+  "stage3-S5-P0-mid-s11-r540-sessions-20261115: footprint_executed ⊆ requested": {
+   "ok": true,
+   "committed": 19,
+   "with_executed": 19,
+   "violations": []
+  },
+  "stage3-S5-P0-mid-s11-r540-sessions-20261115: K2+K1 > 0 and class K2": {
+   "ok": true,
+   "k2": 6,
+   "k1_with_409": 1,
+   "k1_fail": 0,
+   "n_ops": 25,
+   "share": 0.28
+  },
+  "stage3-S5-P0-mid-s11-r540-sessions-20261115: complete history timing coverage": {
+   "ok": true,
+   "expected": 25,
+   "observed": 25,
+   "missing_or_invalid": []
+  },
+  "stage3-S5-P0-mid-s11-r540-sessions-20261115: no operation older than R (or counted)": {
+   "ok": true,
+   "R_s": 540.0,
+   "over_r": [],
+   "n_over_r": 0,
+   "base_expired": 0,
+   "history_unresolved": 0,
+   "errors": 0
+  },
+  "stage3-S5-P0-mid-s11-r540-sessions-20261115: no runner/infrastructure errors": {
+   "ok": true,
+   "errors": []
+  },
+  "stage3-S5-P0-mid-s11-r540-sessions-20261115: history <= verified point (1452 / 1.51 MB)": {
+   "ok": true,
+   "max_snapshots": 68,
+   "max_metadata_bytes": 84501,
+   "B": [
+    1800,
+    1880000
+   ]
+  },
+  "stage3-S5-P0-mid-s11-r540-sessions-20261115: dense history upper bound <= 1452": {
+   "ok": true,
+   "unique_additions": 187,
+   "unique_removals": 125,
+   "lower": {
+    "peak_snapshots": 71,
+    "at": "2026-11-15 12:55:46.071849+00:00",
+    "final_snapshots": 63
+   },
+   "upper": {
+    "peak_snapshots": 71,
+    "at": "2026-11-15 12:55:46.053634+00:00",
+    "final_snapshots": 63
+   }
+  },
+  "stage3-S0-P0-mid-s1-r540-sessions-20261115: finished, invariants_ok": {
+   "ok": true,
+   "invariants": {
+    "ledger_row_counts": true,
+    "no_duplicate_event_ids": true,
+    "committed_ops_in_lineage": true,
+    "aborted_ops_absent": true,
+    "version_monotonic": true,
+    "ok": true
+   }
+  },
+  "stage3-S0-P0-mid-s1-r540-sessions-20261115: validation.ok": {
+   "ok": true,
+   "validation": {
+    "ok": true,
+    "incomplete_cost": [],
+    "runner_errors": []
+   }
+  },
+  "stage3-S0-P0-mid-s1-r540-sessions-20261115: stream freshness fully observed": {
+   "ok": true,
+   "freshness": {
+    "complete": true,
+    "n_expected": 1670300,
+    "n_samples": 1670300,
+    "missing": 0,
+    "p95_s": 9.613282513618469,
+    "errors": [],
+    "unresolved_snapshots": {},
+    "n_snapshots": 168,
+    "observer_cpu_s": 6.336986944,
+    "clock": "producer UTC time.time → successful commit_attempts.responded_at"
+   }
+  },
+  "stage3-S0-P0-mid-s1-r540-sessions-20261115: sum cpu_ms <= app cpu": {
+   "ok": true,
+   "ops_cpu_ms": 150249,
+   "app_cpu_ms": 804334,
+   "workers_cgroup_cpu_ms": 1343313,
+   "share_of_app": 0.187
+  },
+  "stage3-S0-P0-mid-s1-r540-sessions-20261115: app cpu <= workers cgroup cpu": {
+   "ok": true,
+   "app_cpu_ms": 804334,
+   "workers_cgroup_cpu_ms": 1343313
+  },
+  "stage3-S0-P0-mid-s1-r540-sessions-20261115: complete cost for every executed operation": {
+   "ok": true,
+   "incomplete": []
+  },
+  "stage3-S0-P0-mid-s1-r540-sessions-20261115: footprint_executed ⊆ requested": {
+   "ok": true,
+   "committed": 11,
+   "with_executed": 11,
+   "violations": []
+  },
+  "stage3-S0-P0-mid-s1-r540-sessions-20261115: complete history timing coverage": {
+   "ok": true,
+   "expected": 11,
+   "observed": 11,
+   "missing_or_invalid": []
+  },
+  "stage3-S0-P0-mid-s1-r540-sessions-20261115: no operation older than R (or counted)": {
+   "ok": true,
+   "R_s": 540.0,
+   "over_r": [],
+   "n_over_r": 0,
+   "base_expired": 0,
+   "history_unresolved": 0,
+   "errors": 0
+  },
+  "stage3-S0-P0-mid-s1-r540-sessions-20261115: no runner/infrastructure errors": {
+   "ok": true,
+   "errors": []
+  },
+  "stage3-S0-P0-mid-s1-r540-sessions-20261115: history <= verified point (1452 / 1.51 MB)": {
+   "ok": true,
+   "max_snapshots": 64,
+   "max_metadata_bytes": 80054,
+   "B": [
+    1800,
+    1880000
+   ]
+  },
+  "stage3-S0-P0-mid-s1-r540-sessions-20261115: dense history upper bound <= 1452": {
+   "ok": true,
+   "unique_additions": 179,
+   "unique_removals": 121,
+   "lower": {
+    "peak_snapshots": 67,
+    "at": "2026-11-15 13:27:54.171706+00:00",
+    "final_snapshots": 59
+   },
+   "upper": {
+    "peak_snapshots": 67,
+    "at": "2026-11-15 13:27:54.161992+00:00",
+    "final_snapshots": 59
+   }
+  },
+  "stage3-S0-P0-mid-s1-rep-r540-sessions-20261115: finished, invariants_ok": {
+   "ok": true,
+   "invariants": {
+    "ledger_row_counts": true,
+    "no_duplicate_event_ids": true,
+    "committed_ops_in_lineage": true,
+    "aborted_ops_absent": true,
+    "version_monotonic": true,
+    "ok": true
+   }
+  },
+  "stage3-S0-P0-mid-s1-rep-r540-sessions-20261115: validation.ok": {
+   "ok": true,
+   "validation": {
+    "ok": true,
+    "incomplete_cost": [],
+    "runner_errors": []
+   }
+  },
+  "stage3-S0-P0-mid-s1-rep-r540-sessions-20261115: stream freshness fully observed": {
+   "ok": true,
+   "freshness": {
+    "complete": true,
+    "n_expected": 1670600,
+    "n_samples": 1670600,
+    "missing": 0,
+    "p95_s": 9.647354197502136,
+    "errors": [],
+    "unresolved_snapshots": {},
+    "n_snapshots": 168,
+    "observer_cpu_s": 6.589579169999985,
+    "clock": "producer UTC time.time → successful commit_attempts.responded_at"
+   }
+  },
+  "stage3-S0-P0-mid-s1-rep-r540-sessions-20261115: sum cpu_ms <= app cpu": {
+   "ok": true,
+   "ops_cpu_ms": 150350,
+   "app_cpu_ms": 793196,
+   "workers_cgroup_cpu_ms": 1313249,
+   "share_of_app": 0.19
+  },
+  "stage3-S0-P0-mid-s1-rep-r540-sessions-20261115: app cpu <= workers cgroup cpu": {
+   "ok": true,
+   "app_cpu_ms": 793196,
+   "workers_cgroup_cpu_ms": 1313249
+  },
+  "stage3-S0-P0-mid-s1-rep-r540-sessions-20261115: complete cost for every executed operation": {
+   "ok": true,
+   "incomplete": []
+  },
+  "stage3-S0-P0-mid-s1-rep-r540-sessions-20261115: footprint_executed ⊆ requested": {
+   "ok": true,
+   "committed": 11,
+   "with_executed": 11,
+   "violations": []
+  },
+  "stage3-S0-P0-mid-s1-rep-r540-sessions-20261115: complete history timing coverage": {
+   "ok": true,
+   "expected": 11,
+   "observed": 11,
+   "missing_or_invalid": []
+  },
+  "stage3-S0-P0-mid-s1-rep-r540-sessions-20261115: no operation older than R (or counted)": {
+   "ok": true,
+   "R_s": 540.0,
+   "over_r": [],
+   "n_over_r": 0,
+   "base_expired": 0,
+   "history_unresolved": 0,
+   "errors": 0
+  },
+  "stage3-S0-P0-mid-s1-rep-r540-sessions-20261115: no runner/infrastructure errors": {
+   "ok": true,
+   "errors": []
+  },
+  "stage3-S0-P0-mid-s1-rep-r540-sessions-20261115: history <= verified point (1452 / 1.51 MB)": {
+   "ok": true,
+   "max_snapshots": 64,
+   "max_metadata_bytes": 80106,
+   "B": [
+    1800,
+    1880000
+   ]
+  },
+  "stage3-S0-P0-mid-s1-rep-r540-sessions-20261115: dense history upper bound <= 1452": {
+   "ok": true,
+   "unique_additions": 179,
+   "unique_removals": 121,
+   "lower": {
+    "peak_snapshots": 67,
+    "at": "2026-11-15 13:57:08.533994+00:00",
+    "final_snapshots": 59
+   },
+   "upper": {
+    "peak_snapshots": 67,
+    "at": "2026-11-15 13:57:08.523927+00:00",
+    "final_snapshots": 59
+   }
+  },
+  "stage3-S1-P0-mid-s11-r540-sessions-20261115: finished, invariants_ok": {
+   "ok": true,
+   "invariants": {
+    "ledger_row_counts": true,
+    "no_duplicate_event_ids": true,
+    "committed_ops_in_lineage": true,
+    "aborted_ops_absent": true,
+    "version_monotonic": true,
+    "ok": true
+   }
+  },
+  "stage3-S1-P0-mid-s11-r540-sessions-20261115: validation.ok": {
+   "ok": true,
+   "validation": {
+    "ok": true,
+    "incomplete_cost": [],
+    "runner_errors": []
+   }
+  },
+  "stage3-S1-P0-mid-s11-r540-sessions-20261115: stream freshness fully observed": {
+   "ok": true,
+   "freshness": {
+    "complete": true,
+    "n_expected": 5355700,
+    "n_samples": 5355700,
+    "missing": 0,
+    "p95_s": 5.072331440448761,
+    "errors": [],
+    "unresolved_snapshots": {},
+    "n_snapshots": 3681,
+    "observer_cpu_s": 201.73629120799998,
+    "clock": "producer UTC time.time → successful commit_attempts.responded_at"
+   }
+  },
+  "stage3-S1-P0-mid-s11-r540-sessions-20261115: sum cpu_ms <= app cpu": {
+   "ok": true,
+   "ops_cpu_ms": 619764,
+   "app_cpu_ms": 1325030,
+   "workers_cgroup_cpu_ms": 5520177,
+   "share_of_app": 0.468
+  },
+  "stage3-S1-P0-mid-s11-r540-sessions-20261115: app cpu <= workers cgroup cpu": {
+   "ok": true,
+   "app_cpu_ms": 1325030,
+   "workers_cgroup_cpu_ms": 5520177
+  },
+  "stage3-S1-P0-mid-s11-r540-sessions-20261115: complete cost for every executed operation": {
+   "ok": true,
+   "incomplete": []
+  },
+  "stage3-S1-P0-mid-s11-r540-sessions-20261115: footprint_executed ⊆ requested": {
+   "ok": true,
+   "committed": 13,
+   "with_executed": 13,
+   "violations": []
+  },
+  "stage3-S1-P0-mid-s11-r540-sessions-20261115: K2+K1 > 0 and class K1": {
+   "ok": true,
+   "k2": 0,
+   "k1_with_409": 12,
+   "k1_fail": 0,
+   "n_ops": 13,
+   "share": 0.923
+  },
+  "stage3-S1-P0-mid-s11-r540-sessions-20261115: complete history timing coverage": {
+   "ok": true,
+   "expected": 13,
+   "observed": 13,
+   "missing_or_invalid": []
+  },
+  "stage3-S1-P0-mid-s11-r540-sessions-20261115: no operation older than R (or counted)": {
+   "ok": true,
+   "R_s": 540.0,
+   "over_r": [],
+   "n_over_r": 0,
+   "base_expired": 0,
+   "history_unresolved": 0,
+   "errors": 0
+  },
+  "stage3-S1-P0-mid-s11-r540-sessions-20261115: no runner/infrastructure errors": {
+   "ok": true,
+   "errors": []
+  },
+  "stage3-S1-P0-mid-s11-r540-sessions-20261115: history <= verified point (1452 / 1.51 MB)": {
+   "ok": true,
+   "max_snapshots": 1271,
+   "max_metadata_bytes": 1270464,
+   "B": [
+    1800,
+    1880000
+   ]
+  },
+  "stage3-S1-P0-mid-s11-r540-sessions-20261115: dense history upper bound <= 1452": {
+   "ok": true,
+   "unique_additions": 3694,
+   "unique_removals": 2493,
+   "lower": {
+    "peak_snapshots": 1327,
+    "at": "2026-11-15 14:28:18.788913+00:00",
+    "final_snapshots": 1202
+   },
+   "upper": {
+    "peak_snapshots": 1327,
+    "at": "2026-11-15 14:28:18.750123+00:00",
+    "final_snapshots": 1202
+   }
+  },
+  "stage3-S2-P0-mid-s11-r540-sessions-20261115: finished, invariants_ok": {
+   "ok": true,
+   "invariants": {
+    "ledger_row_counts": true,
+    "no_duplicate_event_ids": true,
+    "committed_ops_in_lineage": true,
+    "aborted_ops_absent": true,
+    "version_monotonic": true,
+    "ok": true
+   }
+  },
+  "stage3-S2-P0-mid-s11-r540-sessions-20261115: validation.ok": {
+   "ok": true,
+   "validation": {
+    "ok": true,
+    "incomplete_cost": [],
+    "runner_errors": []
+   }
+  },
+  "stage3-S2-P0-mid-s11-r540-sessions-20261115: stream freshness fully observed": {
+   "ok": true,
+   "freshness": {
+    "complete": true,
+    "n_expected": 3367400,
+    "n_samples": 3367400,
+    "missing": 0,
+    "p95_s": 9.698565244674683,
+    "errors": [],
+    "unresolved_snapshots": {},
+    "n_snapshots": 169,
+    "observer_cpu_s": 10.901782039000002,
+    "clock": "producer UTC time.time → successful commit_attempts.responded_at"
+   }
+  },
+  "stage3-S2-P0-mid-s11-r540-sessions-20261115: sum cpu_ms <= app cpu": {
+   "ok": true,
+   "ops_cpu_ms": 323654,
+   "app_cpu_ms": 2673563,
+   "workers_cgroup_cpu_ms": 5419543,
+   "share_of_app": 0.121
+  },
+  "stage3-S2-P0-mid-s11-r540-sessions-20261115: app cpu <= workers cgroup cpu": {
+   "ok": true,
+   "app_cpu_ms": 2673563,
+   "workers_cgroup_cpu_ms": 5419543
+  },
+  "stage3-S2-P0-mid-s11-r540-sessions-20261115: complete cost for every executed operation": {
+   "ok": true,
+   "incomplete": []
+  },
+  "stage3-S2-P0-mid-s11-r540-sessions-20261115: footprint_executed ⊆ requested": {
+   "ok": true,
+   "committed": 18,
+   "with_executed": 18,
+   "violations": []
+  },
+  "stage3-S2-P0-mid-s11-r540-sessions-20261115: K2+K1 > 0 and class K2": {
+   "ok": true,
+   "k2": 10,
+   "k1_with_409": 0,
+   "k1_fail": 0,
+   "n_ops": 28,
+   "share": 0.357
+  },
+  "stage3-S2-P0-mid-s11-r540-sessions-20261115: complete history timing coverage": {
+   "ok": true,
+   "expected": 28,
+   "observed": 28,
+   "missing_or_invalid": []
+  },
+  "stage3-S2-P0-mid-s11-r540-sessions-20261115: no operation older than R (or counted)": {
+   "ok": true,
+   "R_s": 540.0,
+   "over_r": [],
+   "n_over_r": 0,
+   "base_expired": 0,
+   "history_unresolved": 0,
+   "errors": 0
+  },
+  "stage3-S2-P0-mid-s11-r540-sessions-20261115: no runner/infrastructure errors": {
+   "ok": true,
+   "errors": []
+  },
+  "stage3-S2-P0-mid-s11-r540-sessions-20261115: history <= verified point (1452 / 1.51 MB)": {
+   "ok": true,
+   "max_snapshots": 68,
+   "max_metadata_bytes": 84302,
+   "B": [
+    1800,
+    1880000
+   ]
+  },
+  "stage3-S2-P0-mid-s11-r540-sessions-20261115: dense history upper bound <= 1452": {
+   "ok": true,
+   "unique_additions": 187,
+   "unique_removals": 124,
+   "lower": {
+    "peak_snapshots": 70,
+    "at": "2026-11-15 15:01:20.459517+00:00",
+    "final_snapshots": 64
+   },
+   "upper": {
+    "peak_snapshots": 70,
+    "at": "2026-11-15 15:01:20.448899+00:00",
+    "final_snapshots": 64
+   }
+  },
+  "stage3-S3-P0-mid-s11-r540-sessions-20261115: finished, invariants_ok": {
+   "ok": true,
+   "invariants": {
+    "ledger_row_counts": true,
+    "no_duplicate_event_ids": true,
+    "committed_ops_in_lineage": true,
+    "aborted_ops_absent": true,
+    "version_monotonic": true,
+    "ok": true
+   }
+  },
+  "stage3-S3-P0-mid-s11-r540-sessions-20261115: validation.ok": {
+   "ok": true,
+   "validation": {
+    "ok": true,
+    "incomplete_cost": [],
+    "runner_errors": []
+   }
+  },
+  "stage3-S3-P0-mid-s11-r540-sessions-20261115: stream freshness fully observed": {
+   "ok": true,
+   "freshness": {
+    "complete": true,
+    "n_expected": 3340400,
+    "n_samples": 3340400,
+    "missing": 0,
+    "p95_s": 9.637423050403594,
+    "errors": [],
+    "unresolved_snapshots": {},
+    "n_snapshots": 168,
+    "observer_cpu_s": 8.41391733099999,
+    "clock": "producer UTC time.time → successful commit_attempts.responded_at"
+   }
+  },
+  "stage3-S3-P0-mid-s11-r540-sessions-20261115: sum cpu_ms <= app cpu": {
+   "ok": true,
+   "ops_cpu_ms": 217530,
+   "app_cpu_ms": 380533,
+   "workers_cgroup_cpu_ms": 906217,
+   "share_of_app": 0.572
+  },
+  "stage3-S3-P0-mid-s11-r540-sessions-20261115: app cpu <= workers cgroup cpu": {
+   "ok": true,
+   "app_cpu_ms": 380533,
+   "workers_cgroup_cpu_ms": 906217
+  },
+  "stage3-S3-P0-mid-s11-r540-sessions-20261115: complete cost for every executed operation": {
+   "ok": true,
+   "incomplete": []
+  },
+  "stage3-S3-P0-mid-s11-r540-sessions-20261115: footprint_executed ⊆ requested": {
+   "ok": true,
+   "committed": 45,
+   "with_executed": 45,
+   "violations": []
+  },
+  "stage3-S3-P0-mid-s11-r540-sessions-20261115: K2+K1 > 0 and class K2": {
+   "ok": true,
+   "k2": 4,
+   "k1_with_409": 1,
+   "k1_fail": 0,
+   "n_ops": 50,
+   "share": 0.1
+  },
+  "stage3-S3-P0-mid-s11-r540-sessions-20261115: complete history timing coverage": {
+   "ok": true,
+   "expected": 49,
+   "observed": 49,
+   "missing_or_invalid": []
+  },
+  "stage3-S3-P0-mid-s11-r540-sessions-20261115: no operation older than R (or counted)": {
+   "ok": true,
+   "R_s": 540.0,
+   "over_r": [],
+   "n_over_r": 0,
+   "base_expired": 0,
+   "history_unresolved": 0,
+   "errors": 0
+  },
+  "stage3-S3-P0-mid-s11-r540-sessions-20261115: no runner/infrastructure errors": {
+   "ok": true,
+   "errors": []
+  },
+  "stage3-S3-P0-mid-s11-r540-sessions-20261115: history <= verified point (1452 / 1.51 MB)": {
+   "ok": true,
+   "max_snapshots": 80,
+   "max_metadata_bytes": 100093,
+   "B": [
+    1800,
+    1880000
+   ]
+  },
+  "stage3-S3-P0-mid-s11-r540-sessions-20261115: dense history upper bound <= 1452": {
+   "ok": true,
+   "unique_additions": 213,
+   "unique_removals": 143,
+   "lower": {
+    "peak_snapshots": 85,
+    "at": "2026-11-15 15:29:57.060743+00:00",
+    "final_snapshots": 71
+   },
+   "upper": {
+    "peak_snapshots": 85,
+    "at": "2026-11-15 15:29:57.051002+00:00",
+    "final_snapshots": 71
+   }
+  },
+  "determinism: identical intents": {
+   "ok": true,
+   "n_a": 11,
+   "n_b": 11,
+   "resolved_footprint_jaccard_mean": 1.0,
+   "resolved_identical": 11,
+   "resolved_n": 11
+  },
+  "retention: nonempty timing coverage": {
+   "ok": true,
+   "n_observed": 172
+  },
+  "retention: measured lower bound <= configured R": {
+   "ok": true,
+   "lower_s": 377.3,
+   "configured_R_s": 540.0
+  },
+  "retention: configured R <= measured upper bound": {
+   "ok": true,
+   "configured_R_s": 540.0,
+   "upper_s": 595.3
+  },
+  "retention: D_max <= 349 s (else author decision)": {
+   "ok": true,
+   "d_max_s": 38.7
+  }
+ },
+ "retention": {
+  "d_max_s": 38.7,
+  "d_max_op": "stage3-S4-P0-mid-s11-r540-sessions-20261115-batch_merge-0020",
+  "d_max_run": "stage3-S4-P0-mid-s11-r540-sessions-20261115",
+  "top5": [
+   [
+    38.7,
+    "stage3-S4-P0-mid-s11-r540-sessions-20261115-batch_merge-0020"
+   ],
+   [
+    35.4,
+    "stage3-S4-P0-mid-s11-r540-sessions-20261115-batch_merge-0007"
+   ],
+   [
+    35.1,
+    "stage3-S4-P0-mid-s11-r540-sessions-20261115-batch_merge-0003"
+   ],
+   [
+    34.8,
+    "stage3-S4-P0-mid-s11-r540-sessions-20261115-batch_merge-0027"
+   ],
+   [
+    34.2,
+    "stage3-S4-P0-mid-s11-r540-sessions-20261115-batch_merge-0006"
+   ]
+  ],
+  "num_retries": 4,
+  "R_low_s (2·D_max + (n+1)·hold)": 377.3,
+  "R_low_single_hold_s": 137.3,
+  "S1_commit_rate_per_s": 2.215822703919725,
+  "R_high_verified_point_s": 595.3,
+  "R_high_B_s": 752.3,
+  "author_stop (D_max > 349 s)": false
+ },
+ "failed": []
+}

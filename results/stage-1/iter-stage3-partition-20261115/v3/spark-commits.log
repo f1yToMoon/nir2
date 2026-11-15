@@ -1,0 +1,401 @@
+1794757781877	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757782521	SparkWrite	Committed in 642 ms
+1794757783511	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757783592	SparkWrite	Committed in 81 ms
+1794757783805	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757783886	SparkWrite	Committed in 80 ms
+1794757787143	SparkWrite	Committing overwrite of 1 data files with 1 new data files, scanSnapshotId: 1807763065483598346, conflictDetectionFilter: ((ref(name="bkt") == 0 and ref(name="id") >= 0) and ref(name="id") <= 9) to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757787724	SparkPositionDeltaWrite	Committing position delta with 1 data files, 1 delete files and 0 rewritten delete files(scanSnapshotId: 1807763065483598346, conflictDetectionFilter: (((not_null(ref(name="bkt")) and not_null(ref(name="id"))) and ref(name="bkt") == 0) and ref(name="id") == 5000), isolationLevel: SERIALIZABLE) to table cat_c.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757787833	SparkPositionDeltaWrite	Committed in 109 ms
+1794757788478	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757788578	SparkWrite	Committed in 100 ms
+1794757788722	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757788821	SparkWrite	Committed in 99 ms
+1794757789583	SparkWrite	Committing overwrite of 1 data files with 1 new data files, scanSnapshotId: 3905874513507433346, conflictDetectionFilter: ((ref(name="bkt") == 0 and ref(name="id") >= 10000) and ref(name="id") <= 10009) to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757789961	SparkPositionDeltaWrite	Committing position delta with 1 data files, 1 delete files and 0 rewritten delete files(scanSnapshotId: 3905874513507433346, conflictDetectionFilter: (((not_null(ref(name="bkt")) and not_null(ref(name="id"))) and ref(name="bkt") == 0) and ref(name="id") == 15000), isolationLevel: SERIALIZABLE) to table cat_c.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757790063	SparkPositionDeltaWrite	Committed in 102 ms
+1794757790748	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757790844	SparkWrite	Committed in 96 ms
+1794757790985	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757791078	SparkWrite	Committed in 93 ms
+1794757791816	SparkWrite	Committing overwrite of 1 data files with 1 new data files, scanSnapshotId: 5874063755241891855, conflictDetectionFilter: ((ref(name="bkt") == 0 and ref(name="id") >= 20000) and ref(name="id") <= 20009) to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757792215	SparkPositionDeltaWrite	Committing position delta with 1 data files, 1 delete files and 0 rewritten delete files(scanSnapshotId: 5874063755241891855, conflictDetectionFilter: (((not_null(ref(name="bkt")) and not_null(ref(name="id"))) and ref(name="bkt") == 0) and ref(name="id") == 25000), isolationLevel: SERIALIZABLE) to table cat_c.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757792322	SparkPositionDeltaWrite	Committed in 107 ms
+1794757792804	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757792898	SparkWrite	Committed in 94 ms
+1794757793018	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757793110	SparkWrite	Committed in 92 ms
+1794757793920	SparkWrite	Committing overwrite of 1 data files with 1 new data files, scanSnapshotId: 7486473575848518389, conflictDetectionFilter: ((ref(name="bkt") == 0 and ref(name="id") >= 30000) and ref(name="id") <= 30009) to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757794243	SparkPositionDeltaWrite	Committing position delta with 1 data files, 1 delete files and 0 rewritten delete files(scanSnapshotId: 7486473575848518389, conflictDetectionFilter: (((not_null(ref(name="bkt")) and not_null(ref(name="id"))) and ref(name="bkt") == 0) and ref(name="id") == 35000), isolationLevel: SERIALIZABLE) to table cat_c.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757794340	SparkPositionDeltaWrite	Committed in 97 ms
+1794757794764	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757794861	SparkWrite	Committed in 96 ms
+1794757795002	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757795101	SparkWrite	Committed in 99 ms
+1794757795953	SparkWrite	Committing overwrite of 1 data files with 1 new data files, scanSnapshotId: 2908463326888535149, conflictDetectionFilter: ((ref(name="bkt") == 0 and ref(name="id") >= 40000) and ref(name="id") <= 40009) to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757796275	SparkPositionDeltaWrite	Committing position delta with 1 data files, 1 delete files and 0 rewritten delete files(scanSnapshotId: 2908463326888535149, conflictDetectionFilter: (((not_null(ref(name="bkt")) and not_null(ref(name="id"))) and ref(name="bkt") == 0) and ref(name="id") == 45000), isolationLevel: SERIALIZABLE) to table cat_c.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757796375	SparkPositionDeltaWrite	Committed in 100 ms
+1794757796784	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757796885	SparkWrite	Committed in 101 ms
+1794757797014	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757797107	SparkWrite	Committed in 93 ms
+1794757797675	SparkWrite	Committing overwrite of 1 data files with 1 new data files, scanSnapshotId: 3145444956264259890, conflictDetectionFilter: ((ref(name="bkt") == 0 and ref(name="id") >= 50000) and ref(name="id") <= 50009) to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757798254	SparkPositionDeltaWrite	Committing position delta with 1 data files, 1 delete files and 0 rewritten delete files(scanSnapshotId: 3145444956264259890, conflictDetectionFilter: (((not_null(ref(name="bkt")) and not_null(ref(name="id"))) and ref(name="bkt") == 0) and ref(name="id") == 55000), isolationLevel: SERIALIZABLE) to table cat_c.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757798352	SparkPositionDeltaWrite	Committed in 98 ms
+1794757798785	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757798890	SparkWrite	Committed in 105 ms
+1794757799044	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757799142	SparkWrite	Committed in 98 ms
+1794757799652	SparkWrite	Committing overwrite of 1 data files with 1 new data files, scanSnapshotId: 8048415916144209949, conflictDetectionFilter: ((ref(name="bkt") == 0 and ref(name="id") >= 60000) and ref(name="id") <= 60009) to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757799913	SparkPositionDeltaWrite	Committing position delta with 1 data files, 1 delete files and 0 rewritten delete files(scanSnapshotId: 8048415916144209949, conflictDetectionFilter: (((not_null(ref(name="bkt")) and not_null(ref(name="id"))) and ref(name="bkt") == 0) and ref(name="id") == 65000), isolationLevel: SERIALIZABLE) to table cat_c.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757800012	SparkPositionDeltaWrite	Committed in 99 ms
+1794757800442	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757800537	SparkWrite	Committed in 95 ms
+1794757800624	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757800715	SparkWrite	Committed in 91 ms
+1794757801223	SparkWrite	Committing overwrite of 1 data files with 1 new data files, scanSnapshotId: 2141775470578315135, conflictDetectionFilter: ((ref(name="bkt") == 0 and ref(name="id") >= 70000) and ref(name="id") <= 70009) to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757801568	SparkPositionDeltaWrite	Committing position delta with 1 data files, 1 delete files and 0 rewritten delete files(scanSnapshotId: 2141775470578315135, conflictDetectionFilter: (((not_null(ref(name="bkt")) and not_null(ref(name="id"))) and ref(name="bkt") == 0) and ref(name="id") == 75000), isolationLevel: SERIALIZABLE) to table cat_c.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757801668	SparkPositionDeltaWrite	Committed in 100 ms
+1794757802062	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757802150	SparkWrite	Committed in 88 ms
+1794757802231	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757802320	SparkWrite	Committed in 89 ms
+1794757802854	SparkWrite	Committing overwrite of 1 data files with 1 new data files, scanSnapshotId: 3641532883646105911, conflictDetectionFilter: ((ref(name="bkt") == 0 and ref(name="id") >= 80000) and ref(name="id") <= 80009) to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757803135	SparkPositionDeltaWrite	Committing position delta with 1 data files, 1 delete files and 0 rewritten delete files(scanSnapshotId: 3641532883646105911, conflictDetectionFilter: (((not_null(ref(name="bkt")) and not_null(ref(name="id"))) and ref(name="bkt") == 0) and ref(name="id") == 85000), isolationLevel: SERIALIZABLE) to table cat_c.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757803231	SparkPositionDeltaWrite	Committed in 96 ms
+1794757803606	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757803696	SparkWrite	Committed in 90 ms
+1794757803788	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757803882	SparkWrite	Committed in 94 ms
+1794757804446	SparkWrite	Committing overwrite of 1 data files with 1 new data files, scanSnapshotId: 8274842544674108969, conflictDetectionFilter: ((ref(name="bkt") == 0 and ref(name="id") >= 90000) and ref(name="id") <= 90009) to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757804679	SparkPositionDeltaWrite	Committing position delta with 1 data files, 1 delete files and 0 rewritten delete files(scanSnapshotId: 8274842544674108969, conflictDetectionFilter: (((not_null(ref(name="bkt")) and not_null(ref(name="id"))) and ref(name="bkt") == 0) and ref(name="id") == 95000), isolationLevel: SERIALIZABLE) to table cat_c.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757804782	SparkPositionDeltaWrite	Committed in 103 ms
+1794757805187	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757805284	SparkWrite	Committed in 97 ms
+1794757805377	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757805466	SparkWrite	Committed in 89 ms
+1794757805956	SparkWrite	Committing overwrite of 1 data files with 1 new data files, scanSnapshotId: 6617571717846550038, conflictDetectionFilter: ((ref(name="bkt") == 0 and ref(name="id") >= 100000) and ref(name="id") <= 100009) to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757806265	SparkPositionDeltaWrite	Committing position delta with 1 data files, 1 delete files and 0 rewritten delete files(scanSnapshotId: 6617571717846550038, conflictDetectionFilter: (((not_null(ref(name="bkt")) and not_null(ref(name="id"))) and ref(name="bkt") == 0) and ref(name="id") == 105000), isolationLevel: SERIALIZABLE) to table cat_c.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757806363	SparkPositionDeltaWrite	Committed in 98 ms
+1794757806761	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757806851	SparkWrite	Committed in 90 ms
+1794757806947	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757807040	SparkWrite	Committed in 93 ms
+1794757807509	SparkWrite	Committing overwrite of 1 data files with 1 new data files, scanSnapshotId: 5570556728767759104, conflictDetectionFilter: ((ref(name="bkt") == 0 and ref(name="id") >= 110000) and ref(name="id") <= 110009) to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757807808	SparkPositionDeltaWrite	Committing position delta with 1 data files, 1 delete files and 0 rewritten delete files(scanSnapshotId: 5570556728767759104, conflictDetectionFilter: (((not_null(ref(name="bkt")) and not_null(ref(name="id"))) and ref(name="bkt") == 0) and ref(name="id") == 115000), isolationLevel: SERIALIZABLE) to table cat_c.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757807907	SparkPositionDeltaWrite	Committed in 99 ms
+1794757808305	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757808395	SparkWrite	Committed in 90 ms
+1794757808492	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757808585	SparkWrite	Committed in 93 ms
+1794757809117	SparkWrite	Committing overwrite of 1 data files with 1 new data files, scanSnapshotId: 6929549344462687385, conflictDetectionFilter: ((ref(name="bkt") == 0 and ref(name="id") >= 120000) and ref(name="id") <= 120009) to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757809366	SparkPositionDeltaWrite	Committing position delta with 1 data files, 1 delete files and 0 rewritten delete files(scanSnapshotId: 6929549344462687385, conflictDetectionFilter: (((not_null(ref(name="bkt")) and not_null(ref(name="id"))) and ref(name="bkt") == 0) and ref(name="id") == 125000), isolationLevel: SERIALIZABLE) to table cat_c.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757809465	SparkPositionDeltaWrite	Committed in 98 ms
+1794757809862	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757809959	SparkWrite	Committed in 97 ms
+1794757810079	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757810176	SparkWrite	Committed in 97 ms
+1794757810616	SparkWrite	Committing overwrite of 1 data files with 1 new data files, scanSnapshotId: 4147749012160715480, conflictDetectionFilter: ((ref(name="bkt") == 0 and ref(name="id") >= 130000) and ref(name="id") <= 130009) to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757810958	SparkPositionDeltaWrite	Committing position delta with 1 data files, 1 delete files and 0 rewritten delete files(scanSnapshotId: 4147749012160715480, conflictDetectionFilter: (((not_null(ref(name="bkt")) and not_null(ref(name="id"))) and ref(name="bkt") == 0) and ref(name="id") == 135000), isolationLevel: SERIALIZABLE) to table cat_c.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757811054	SparkPositionDeltaWrite	Committed in 96 ms
+1794757811423	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757811520	SparkWrite	Committed in 97 ms
+1794757811627	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757811723	SparkWrite	Committed in 95 ms
+1794757812208	SparkWrite	Committing overwrite of 1 data files with 1 new data files, scanSnapshotId: 5846150308356424702, conflictDetectionFilter: ((ref(name="bkt") == 0 and ref(name="id") >= 140000) and ref(name="id") <= 140009) to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757812497	SparkPositionDeltaWrite	Committing position delta with 1 data files, 1 delete files and 0 rewritten delete files(scanSnapshotId: 5846150308356424702, conflictDetectionFilter: (((not_null(ref(name="bkt")) and not_null(ref(name="id"))) and ref(name="bkt") == 0) and ref(name="id") == 145000), isolationLevel: SERIALIZABLE) to table cat_c.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757812597	SparkPositionDeltaWrite	Committed in 99 ms
+1794757812995	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757813090	SparkWrite	Committed in 94 ms
+1794757813185	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757813278	SparkWrite	Committed in 93 ms
+1794757813723	SparkWrite	Committing overwrite of 1 data files with 1 new data files, scanSnapshotId: 7851339857223679732, conflictDetectionFilter: ((ref(name="bkt") == 0 and ref(name="id") >= 150000) and ref(name="id") <= 150009) to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757814041	SparkPositionDeltaWrite	Committing position delta with 1 data files, 1 delete files and 0 rewritten delete files(scanSnapshotId: 7851339857223679732, conflictDetectionFilter: (((not_null(ref(name="bkt")) and not_null(ref(name="id"))) and ref(name="bkt") == 0) and ref(name="id") == 155000), isolationLevel: SERIALIZABLE) to table cat_c.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757814142	SparkPositionDeltaWrite	Committed in 100 ms
+1794757814520	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757814611	SparkWrite	Committed in 91 ms
+1794757814696	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757814783	SparkWrite	Committed in 87 ms
+1794757815272	SparkWrite	Committing overwrite of 1 data files with 1 new data files, scanSnapshotId: 1855430833796492594, conflictDetectionFilter: ((ref(name="bkt") == 0 and ref(name="id") >= 160000) and ref(name="id") <= 160009) to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757815561	SparkPositionDeltaWrite	Committing position delta with 1 data files, 1 delete files and 0 rewritten delete files(scanSnapshotId: 1855430833796492594, conflictDetectionFilter: (((not_null(ref(name="bkt")) and not_null(ref(name="id"))) and ref(name="bkt") == 0) and ref(name="id") == 165000), isolationLevel: SERIALIZABLE) to table cat_c.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757815663	SparkPositionDeltaWrite	Committed in 102 ms
+1794757816030	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757816117	SparkWrite	Committed in 87 ms
+1794757816191	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757816279	SparkWrite	Committed in 88 ms
+1794757816802	SparkWrite	Committing overwrite of 1 data files with 1 new data files, scanSnapshotId: 5177142132637880596, conflictDetectionFilter: ((ref(name="bkt") == 0 and ref(name="id") >= 170000) and ref(name="id") <= 170009) to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757817051	SparkPositionDeltaWrite	Committing position delta with 1 data files, 1 delete files and 0 rewritten delete files(scanSnapshotId: 5177142132637880596, conflictDetectionFilter: (((not_null(ref(name="bkt")) and not_null(ref(name="id"))) and ref(name="bkt") == 0) and ref(name="id") == 175000), isolationLevel: SERIALIZABLE) to table cat_c.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757817146	SparkPositionDeltaWrite	Committed in 95 ms
+1794757817500	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757817588	SparkWrite	Committed in 88 ms
+1794757817665	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757817759	SparkWrite	Committed in 94 ms
+1794757818219	SparkWrite	Committing overwrite of 1 data files with 1 new data files, scanSnapshotId: 7583968927152283825, conflictDetectionFilter: ((ref(name="bkt") == 0 and ref(name="id") >= 180000) and ref(name="id") <= 180009) to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757818542	SparkPositionDeltaWrite	Committing position delta with 1 data files, 1 delete files and 0 rewritten delete files(scanSnapshotId: 7583968927152283825, conflictDetectionFilter: (((not_null(ref(name="bkt")) and not_null(ref(name="id"))) and ref(name="bkt") == 0) and ref(name="id") == 185000), isolationLevel: SERIALIZABLE) to table cat_c.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757818638	SparkPositionDeltaWrite	Committed in 96 ms
+1794757818984	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757819074	SparkWrite	Committed in 90 ms
+1794757819146	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757819236	SparkWrite	Committed in 90 ms
+1794757819690	SparkWrite	Committing overwrite of 1 data files with 1 new data files, scanSnapshotId: 1534595799051683281, conflictDetectionFilter: ((ref(name="bkt") == 0 and ref(name="id") >= 190000) and ref(name="id") <= 190009) to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757820006	SparkPositionDeltaWrite	Committing position delta with 1 data files, 1 delete files and 0 rewritten delete files(scanSnapshotId: 1534595799051683281, conflictDetectionFilter: (((not_null(ref(name="bkt")) and not_null(ref(name="id"))) and ref(name="bkt") == 0) and ref(name="id") == 195000), isolationLevel: SERIALIZABLE) to table cat_c.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757820102	SparkPositionDeltaWrite	Committed in 96 ms
+1794757820463	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757820552	SparkWrite	Committed in 89 ms
+1794757820636	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757820730	SparkWrite	Committed in 94 ms
+1794757820832	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757820929	SparkWrite	Committed in 97 ms
+1794757821444	SparkWrite	Committing overwrite of 1 data files with 1 new data files, scanSnapshotId: 4953281295327051344, conflictDetectionFilter: ((ref(name="bkt") == 0 and ref(name="id") >= 10000000) and ref(name="id") <= 10000009) to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757821680	SparkPositionDeltaWrite	Committing position delta with 1 data files, 1 delete files and 0 rewritten delete files(scanSnapshotId: 4953281295327051344, conflictDetectionFilter: (((not_null(ref(name="bkt")) and not_null(ref(name="id"))) and ref(name="bkt") == 1) and ref(name="id") == 11005000), isolationLevel: SERIALIZABLE) to table cat_c.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757821776	SparkPositionDeltaWrite	Committed in 96 ms
+1794757822022	SparkWrite	Committed in 578 ms
+1794757822149	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757822247	SparkWrite	Committed in 98 ms
+1794757822343	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757822437	SparkWrite	Committed in 94 ms
+1794757822519	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757822608	SparkWrite	Committed in 89 ms
+1794757823100	SparkWrite	Committing overwrite of 1 data files with 1 new data files, scanSnapshotId: 7620902125846481989, conflictDetectionFilter: ((ref(name="bkt") == 0 and ref(name="id") >= 10010000) and ref(name="id") <= 10010009) to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757823364	SparkPositionDeltaWrite	Committing position delta with 1 data files, 1 delete files and 0 rewritten delete files(scanSnapshotId: 7620902125846481989, conflictDetectionFilter: (((not_null(ref(name="bkt")) and not_null(ref(name="id"))) and ref(name="bkt") == 1) and ref(name="id") == 11015000), isolationLevel: SERIALIZABLE) to table cat_c.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757823462	SparkPositionDeltaWrite	Committed in 97 ms
+1794757823708	SparkWrite	Committed in 608 ms
+1794757823848	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757823945	SparkWrite	Committed in 96 ms
+1794757824043	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757824134	SparkWrite	Committed in 91 ms
+1794757824206	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757824296	SparkWrite	Committed in 90 ms
+1794757824780	SparkWrite	Committing overwrite of 1 data files with 1 new data files, scanSnapshotId: 2531788100307709522, conflictDetectionFilter: ((ref(name="bkt") == 0 and ref(name="id") >= 10020000) and ref(name="id") <= 10020009) to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757825065	SparkPositionDeltaWrite	Committing position delta with 1 data files, 1 delete files and 0 rewritten delete files(scanSnapshotId: 2531788100307709522, conflictDetectionFilter: (((not_null(ref(name="bkt")) and not_null(ref(name="id"))) and ref(name="bkt") == 1) and ref(name="id") == 11025000), isolationLevel: SERIALIZABLE) to table cat_c.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757825164	SparkPositionDeltaWrite	Committed in 99 ms
+1794757825407	SparkWrite	Committed in 626 ms
+1794757825545	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757825639	SparkWrite	Committed in 94 ms
+1794757825716	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757825806	SparkWrite	Committed in 90 ms
+1794757825870	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757825960	SparkWrite	Committed in 90 ms
+1794757826432	SparkWrite	Committing overwrite of 1 data files with 1 new data files, scanSnapshotId: 3467996591453331804, conflictDetectionFilter: ((ref(name="bkt") == 0 and ref(name="id") >= 10030000) and ref(name="id") <= 10030009) to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757826720	SparkPositionDeltaWrite	Committing position delta with 1 data files, 1 delete files and 0 rewritten delete files(scanSnapshotId: 3467996591453331804, conflictDetectionFilter: (((not_null(ref(name="bkt")) and not_null(ref(name="id"))) and ref(name="bkt") == 1) and ref(name="id") == 11035000), isolationLevel: SERIALIZABLE) to table cat_c.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757826824	SparkPositionDeltaWrite	Committed in 104 ms
+1794757827060	SparkWrite	Committed in 627 ms
+1794757827189	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757827292	SparkWrite	Committed in 103 ms
+1794757827368	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757827459	SparkWrite	Committed in 91 ms
+1794757827524	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757827614	SparkWrite	Committed in 90 ms
+1794757828080	SparkWrite	Committing overwrite of 1 data files with 1 new data files, scanSnapshotId: 5107703359776279482, conflictDetectionFilter: ((ref(name="bkt") == 0 and ref(name="id") >= 10040000) and ref(name="id") <= 10040009) to table cat_p.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757828366	SparkPositionDeltaWrite	Committing position delta with 1 data files, 1 delete files and 0 rewritten delete files(scanSnapshotId: 5107703359776279482, conflictDetectionFilter: (((not_null(ref(name="bkt")) and not_null(ref(name="id"))) and ref(name="bkt") == 1) and ref(name="id") == 11045000), isolationLevel: SERIALIZABLE) to table cat_c.matrix_ns.t_cow_dml_mor_update_ser_v3_part
+1794757828464	SparkPositionDeltaWrite	Committed in 98 ms
+1794757828706	SparkWrite	Committed in 626 ms
+1794757828832	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757828888	SparkWrite	Committed in 56 ms
+1794757828962	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757829029	SparkWrite	Committed in 66 ms
+1794757829102	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757829167	SparkWrite	Committed in 65 ms
+1794757829390	SparkWrite	Committing overwrite of 1 data files with 1 new data files, scanSnapshotId: 1677742127630081665, conflictDetectionFilter: ((ref(name="bkt") == 0 and ref(name="id") >= 0) and ref(name="id") <= 9) to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757829672	SparkPositionDeltaWrite	Committing position delta with 1 data files, 1 delete files and 0 rewritten delete files(scanSnapshotId: 1677742127630081665, conflictDetectionFilter: (((not_null(ref(name="bkt")) and not_null(ref(name="id"))) and ref(name="bkt") == 0) and ref(name="id") == 5000), isolationLevel: SERIALIZABLE) to table cat_c.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757829758	SparkPositionDeltaWrite	Committed in 86 ms
+1794757830115	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757830202	SparkWrite	Committed in 86 ms
+1794757830276	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757830359	SparkWrite	Committed in 83 ms
+1794757830565	SparkWrite	Committing overwrite of 1 data files with 1 new data files, scanSnapshotId: 3782993435210331798, conflictDetectionFilter: ((ref(name="bkt") == 0 and ref(name="id") >= 10000) and ref(name="id") <= 10009) to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757830835	SparkPositionDeltaWrite	Committing position delta with 1 data files, 1 delete files and 0 rewritten delete files(scanSnapshotId: 3782993435210331798, conflictDetectionFilter: (((not_null(ref(name="bkt")) and not_null(ref(name="id"))) and ref(name="bkt") == 0) and ref(name="id") == 15000), isolationLevel: SERIALIZABLE) to table cat_c.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757830936	SparkPositionDeltaWrite	Committed in 101 ms
+1794757831298	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757831385	SparkWrite	Committed in 87 ms
+1794757831480	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757831576	SparkWrite	Committed in 96 ms
+1794757831801	SparkWrite	Committing overwrite of 1 data files with 1 new data files, scanSnapshotId: 8656405015804109247, conflictDetectionFilter: ((ref(name="bkt") == 0 and ref(name="id") >= 20000) and ref(name="id") <= 20009) to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757832081	SparkPositionDeltaWrite	Committing position delta with 1 data files, 1 delete files and 0 rewritten delete files(scanSnapshotId: 8656405015804109247, conflictDetectionFilter: (((not_null(ref(name="bkt")) and not_null(ref(name="id"))) and ref(name="bkt") == 0) and ref(name="id") == 25000), isolationLevel: SERIALIZABLE) to table cat_c.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757832176	SparkPositionDeltaWrite	Committed in 95 ms
+1794757832536	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757832627	SparkWrite	Committed in 91 ms
+1794757832693	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757832781	SparkWrite	Committed in 87 ms
+1794757833002	SparkWrite	Committing overwrite of 1 data files with 1 new data files, scanSnapshotId: 5220061865718005041, conflictDetectionFilter: ((ref(name="bkt") == 0 and ref(name="id") >= 30000) and ref(name="id") <= 30009) to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757833252	SparkPositionDeltaWrite	Committing position delta with 1 data files, 1 delete files and 0 rewritten delete files(scanSnapshotId: 5220061865718005041, conflictDetectionFilter: (((not_null(ref(name="bkt")) and not_null(ref(name="id"))) and ref(name="bkt") == 0) and ref(name="id") == 35000), isolationLevel: SERIALIZABLE) to table cat_c.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757833346	SparkPositionDeltaWrite	Committed in 94 ms
+1794757833703	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757833789	SparkWrite	Committed in 86 ms
+1794757833864	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757833947	SparkWrite	Committed in 83 ms
+1794757834179	SparkWrite	Committing overwrite of 1 data files with 1 new data files, scanSnapshotId: 8979299644259525613, conflictDetectionFilter: ((ref(name="bkt") == 0 and ref(name="id") >= 40000) and ref(name="id") <= 40009) to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757834427	SparkPositionDeltaWrite	Committing position delta with 1 data files, 1 delete files and 0 rewritten delete files(scanSnapshotId: 8979299644259525613, conflictDetectionFilter: (((not_null(ref(name="bkt")) and not_null(ref(name="id"))) and ref(name="bkt") == 0) and ref(name="id") == 45000), isolationLevel: SERIALIZABLE) to table cat_c.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757834517	SparkPositionDeltaWrite	Committed in 90 ms
+1794757834852	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757834935	SparkWrite	Committed in 82 ms
+1794757834995	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757835083	SparkWrite	Committed in 88 ms
+1794757835273	SparkWrite	Committing overwrite of 1 data files with 1 new data files, scanSnapshotId: 7312815219809267310, conflictDetectionFilter: ((ref(name="bkt") == 0 and ref(name="id") >= 50000) and ref(name="id") <= 50009) to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757835527	SparkPositionDeltaWrite	Committing position delta with 1 data files, 1 delete files and 0 rewritten delete files(scanSnapshotId: 7312815219809267310, conflictDetectionFilter: (((not_null(ref(name="bkt")) and not_null(ref(name="id"))) and ref(name="bkt") == 0) and ref(name="id") == 55000), isolationLevel: SERIALIZABLE) to table cat_c.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757835619	SparkPositionDeltaWrite	Committed in 92 ms
+1794757835951	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757836034	SparkWrite	Committed in 83 ms
+1794757836100	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757836183	SparkWrite	Committed in 83 ms
+1794757836370	SparkWrite	Committing overwrite of 1 data files with 1 new data files, scanSnapshotId: 4115535563559967492, conflictDetectionFilter: ((ref(name="bkt") == 0 and ref(name="id") >= 60000) and ref(name="id") <= 60009) to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757836628	SparkPositionDeltaWrite	Committing position delta with 1 data files, 1 delete files and 0 rewritten delete files(scanSnapshotId: 4115535563559967492, conflictDetectionFilter: (((not_null(ref(name="bkt")) and not_null(ref(name="id"))) and ref(name="bkt") == 0) and ref(name="id") == 65000), isolationLevel: SERIALIZABLE) to table cat_c.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757836718	SparkPositionDeltaWrite	Committed in 90 ms
+1794757837050	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757837132	SparkWrite	Committed in 82 ms
+1794757837189	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757837273	SparkWrite	Committed in 84 ms
+1794757837477	SparkWrite	Committing overwrite of 1 data files with 1 new data files, scanSnapshotId: 7160031047767442359, conflictDetectionFilter: ((ref(name="bkt") == 0 and ref(name="id") >= 70000) and ref(name="id") <= 70009) to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757837728	SparkPositionDeltaWrite	Committing position delta with 1 data files, 1 delete files and 0 rewritten delete files(scanSnapshotId: 7160031047767442359, conflictDetectionFilter: (((not_null(ref(name="bkt")) and not_null(ref(name="id"))) and ref(name="bkt") == 0) and ref(name="id") == 75000), isolationLevel: SERIALIZABLE) to table cat_c.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757837826	SparkPositionDeltaWrite	Committed in 98 ms
+1794757838157	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757838240	SparkWrite	Committed in 83 ms
+1794757838298	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757838382	SparkWrite	Committed in 84 ms
+1794757838596	SparkWrite	Committing overwrite of 1 data files with 1 new data files, scanSnapshotId: 2997632800252833084, conflictDetectionFilter: ((ref(name="bkt") == 0 and ref(name="id") >= 80000) and ref(name="id") <= 80009) to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757838840	SparkPositionDeltaWrite	Committing position delta with 1 data files, 1 delete files and 0 rewritten delete files(scanSnapshotId: 2997632800252833084, conflictDetectionFilter: (((not_null(ref(name="bkt")) and not_null(ref(name="id"))) and ref(name="bkt") == 0) and ref(name="id") == 85000), isolationLevel: SERIALIZABLE) to table cat_c.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757838932	SparkPositionDeltaWrite	Committed in 91 ms
+1794757839279	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757839361	SparkWrite	Committed in 82 ms
+1794757839419	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757839502	SparkWrite	Committed in 83 ms
+1794757839711	SparkWrite	Committing overwrite of 1 data files with 1 new data files, scanSnapshotId: 7485273466271865632, conflictDetectionFilter: ((ref(name="bkt") == 0 and ref(name="id") >= 90000) and ref(name="id") <= 90009) to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757839956	SparkPositionDeltaWrite	Committing position delta with 1 data files, 1 delete files and 0 rewritten delete files(scanSnapshotId: 7485273466271865632, conflictDetectionFilter: (((not_null(ref(name="bkt")) and not_null(ref(name="id"))) and ref(name="bkt") == 0) and ref(name="id") == 95000), isolationLevel: SERIALIZABLE) to table cat_c.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757840047	SparkPositionDeltaWrite	Committed in 91 ms
+1794757840377	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757840460	SparkWrite	Committed in 83 ms
+1794757840515	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757840599	SparkWrite	Committed in 84 ms
+1794757840817	SparkWrite	Committing overwrite of 1 data files with 1 new data files, scanSnapshotId: 4596187305963238954, conflictDetectionFilter: ((ref(name="bkt") == 0 and ref(name="id") >= 100000) and ref(name="id") <= 100009) to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757841068	SparkPositionDeltaWrite	Committing position delta with 1 data files, 1 delete files and 0 rewritten delete files(scanSnapshotId: 4596187305963238954, conflictDetectionFilter: (((not_null(ref(name="bkt")) and not_null(ref(name="id"))) and ref(name="bkt") == 0) and ref(name="id") == 105000), isolationLevel: SERIALIZABLE) to table cat_c.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757841160	SparkPositionDeltaWrite	Committed in 92 ms
+1794757841482	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757841566	SparkWrite	Committed in 84 ms
+1794757841629	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757841712	SparkWrite	Committed in 83 ms
+1794757841908	SparkWrite	Committing overwrite of 1 data files with 1 new data files, scanSnapshotId: 7910084711979879211, conflictDetectionFilter: ((ref(name="bkt") == 0 and ref(name="id") >= 110000) and ref(name="id") <= 110009) to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757842169	SparkPositionDeltaWrite	Committing position delta with 1 data files, 1 delete files and 0 rewritten delete files(scanSnapshotId: 7910084711979879211, conflictDetectionFilter: (((not_null(ref(name="bkt")) and not_null(ref(name="id"))) and ref(name="bkt") == 0) and ref(name="id") == 115000), isolationLevel: SERIALIZABLE) to table cat_c.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757842260	SparkPositionDeltaWrite	Committed in 91 ms
+1794757842585	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757842670	SparkWrite	Committed in 85 ms
+1794757842726	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757842798	SparkWrite	Committed in 72 ms
+1794757843006	SparkWrite	Committing overwrite of 1 data files with 1 new data files, scanSnapshotId: 2360349123005326254, conflictDetectionFilter: ((ref(name="bkt") == 0 and ref(name="id") >= 120000) and ref(name="id") <= 120009) to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757843249	SparkPositionDeltaWrite	Committing position delta with 1 data files, 1 delete files and 0 rewritten delete files(scanSnapshotId: 2360349123005326254, conflictDetectionFilter: (((not_null(ref(name="bkt")) and not_null(ref(name="id"))) and ref(name="bkt") == 0) and ref(name="id") == 125000), isolationLevel: SERIALIZABLE) to table cat_c.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757843341	SparkPositionDeltaWrite	Committed in 92 ms
+1794757843675	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757843759	SparkWrite	Committed in 84 ms
+1794757843815	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757843899	SparkWrite	Committed in 84 ms
+1794757844102	SparkWrite	Committing overwrite of 1 data files with 1 new data files, scanSnapshotId: 8452832048259209170, conflictDetectionFilter: ((ref(name="bkt") == 0 and ref(name="id") >= 130000) and ref(name="id") <= 130009) to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757844349	SparkPositionDeltaWrite	Committing position delta with 1 data files, 1 delete files and 0 rewritten delete files(scanSnapshotId: 8452832048259209170, conflictDetectionFilter: (((not_null(ref(name="bkt")) and not_null(ref(name="id"))) and ref(name="bkt") == 0) and ref(name="id") == 135000), isolationLevel: SERIALIZABLE) to table cat_c.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757844441	SparkPositionDeltaWrite	Committed in 92 ms
+1794757844772	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757844856	SparkWrite	Committed in 84 ms
+1794757844914	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757844998	SparkWrite	Committed in 84 ms
+1794757845209	SparkWrite	Committing overwrite of 1 data files with 1 new data files, scanSnapshotId: 378645457790720470, conflictDetectionFilter: ((ref(name="bkt") == 0 and ref(name="id") >= 140000) and ref(name="id") <= 140009) to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757845449	SparkPositionDeltaWrite	Committing position delta with 1 data files, 1 delete files and 0 rewritten delete files(scanSnapshotId: 378645457790720470, conflictDetectionFilter: (((not_null(ref(name="bkt")) and not_null(ref(name="id"))) and ref(name="bkt") == 0) and ref(name="id") == 145000), isolationLevel: SERIALIZABLE) to table cat_c.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757845541	SparkPositionDeltaWrite	Committed in 92 ms
+1794757845878	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757845964	SparkWrite	Committed in 86 ms
+1794757846020	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757846105	SparkWrite	Committed in 85 ms
+1794757846326	SparkWrite	Committing overwrite of 1 data files with 1 new data files, scanSnapshotId: 2923090261866301491, conflictDetectionFilter: ((ref(name="bkt") == 0 and ref(name="id") >= 150000) and ref(name="id") <= 150009) to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757846553	SparkPositionDeltaWrite	Committing position delta with 1 data files, 1 delete files and 0 rewritten delete files(scanSnapshotId: 2923090261866301491, conflictDetectionFilter: (((not_null(ref(name="bkt")) and not_null(ref(name="id"))) and ref(name="bkt") == 0) and ref(name="id") == 155000), isolationLevel: SERIALIZABLE) to table cat_c.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757846647	SparkPositionDeltaWrite	Committed in 93 ms
+1794757847000	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757847084	SparkWrite	Committed in 84 ms
+1794757847139	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757847225	SparkWrite	Committed in 86 ms
+1794757847450	SparkWrite	Committing overwrite of 1 data files with 1 new data files, scanSnapshotId: 8864471406561971287, conflictDetectionFilter: ((ref(name="bkt") == 0 and ref(name="id") >= 160000) and ref(name="id") <= 160009) to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757847694	SparkPositionDeltaWrite	Committing position delta with 1 data files, 1 delete files and 0 rewritten delete files(scanSnapshotId: 8864471406561971287, conflictDetectionFilter: (((not_null(ref(name="bkt")) and not_null(ref(name="id"))) and ref(name="bkt") == 0) and ref(name="id") == 165000), isolationLevel: SERIALIZABLE) to table cat_c.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757847787	SparkPositionDeltaWrite	Committed in 93 ms
+1794757848119	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757848204	SparkWrite	Committed in 84 ms
+1794757848259	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757848344	SparkWrite	Committed in 85 ms
+1794757848575	SparkWrite	Committing overwrite of 1 data files with 1 new data files, scanSnapshotId: 8023272315143452359, conflictDetectionFilter: ((ref(name="bkt") == 0 and ref(name="id") >= 170000) and ref(name="id") <= 170009) to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757848806	SparkPositionDeltaWrite	Committing position delta with 1 data files, 1 delete files and 0 rewritten delete files(scanSnapshotId: 8023272315143452359, conflictDetectionFilter: (((not_null(ref(name="bkt")) and not_null(ref(name="id"))) and ref(name="bkt") == 0) and ref(name="id") == 175000), isolationLevel: SERIALIZABLE) to table cat_c.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757848902	SparkPositionDeltaWrite	Committed in 96 ms
+1794757849237	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757849321	SparkWrite	Committed in 84 ms
+1794757849396	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757849481	SparkWrite	Committed in 85 ms
+1794757849706	SparkWrite	Committing overwrite of 1 data files with 1 new data files, scanSnapshotId: 808611311829002800, conflictDetectionFilter: ((ref(name="bkt") == 0 and ref(name="id") >= 180000) and ref(name="id") <= 180009) to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757849941	SparkPositionDeltaWrite	Committing position delta with 1 data files, 1 delete files and 0 rewritten delete files(scanSnapshotId: 808611311829002800, conflictDetectionFilter: (((not_null(ref(name="bkt")) and not_null(ref(name="id"))) and ref(name="bkt") == 0) and ref(name="id") == 185000), isolationLevel: SERIALIZABLE) to table cat_c.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757850034	SparkPositionDeltaWrite	Committed in 93 ms
+1794757850370	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757850455	SparkWrite	Committed in 85 ms
+1794757850510	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757850595	SparkWrite	Committed in 85 ms
+1794757850829	SparkWrite	Committing overwrite of 1 data files with 1 new data files, scanSnapshotId: 1403374492727712681, conflictDetectionFilter: ((ref(name="bkt") == 0 and ref(name="id") >= 190000) and ref(name="id") <= 190009) to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757851059	SparkPositionDeltaWrite	Committing position delta with 1 data files, 1 delete files and 0 rewritten delete files(scanSnapshotId: 1403374492727712681, conflictDetectionFilter: (((not_null(ref(name="bkt")) and not_null(ref(name="id"))) and ref(name="bkt") == 0) and ref(name="id") == 195000), isolationLevel: SERIALIZABLE) to table cat_c.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757851154	SparkPositionDeltaWrite	Committed in 94 ms
+1794757851492	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757851579	SparkWrite	Committed in 87 ms
+1794757851637	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757851723	SparkWrite	Committed in 86 ms
+1794757851782	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757851867	SparkWrite	Committed in 85 ms
+1794757852090	SparkWrite	Committing overwrite of 1 data files with 1 new data files, scanSnapshotId: 3846195235481971486, conflictDetectionFilter: ((ref(name="bkt") == 0 and ref(name="id") >= 10000000) and ref(name="id") <= 10000009) to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757852306	SparkPositionDeltaWrite	Committing position delta with 1 data files, 1 delete files and 0 rewritten delete files(scanSnapshotId: 3846195235481971486, conflictDetectionFilter: (((not_null(ref(name="bkt")) and not_null(ref(name="id"))) and ref(name="bkt") == 1) and ref(name="id") == 11005000), isolationLevel: SERIALIZABLE) to table cat_c.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757852401	SparkPositionDeltaWrite	Committed in 94 ms
+1794757852635	SparkWrite	Committed in 545 ms
+1794757852726	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757852812	SparkWrite	Committed in 86 ms
+1794757852867	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757852952	SparkWrite	Committed in 85 ms
+1794757853007	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757853093	SparkWrite	Committed in 86 ms
+1794757853348	SparkWrite	Committing overwrite of 1 data files with 1 new data files, scanSnapshotId: 4201781278216791044, conflictDetectionFilter: ((ref(name="bkt") == 0 and ref(name="id") >= 10010000) and ref(name="id") <= 10010009) to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757853870	SparkPositionDeltaWrite	Committing position delta with 1 data files, 1 delete files and 0 rewritten delete files(scanSnapshotId: 4201781278216791044, conflictDetectionFilter: (((not_null(ref(name="bkt")) and not_null(ref(name="id"))) and ref(name="bkt") == 1) and ref(name="id") == 11015000), isolationLevel: SERIALIZABLE) to table cat_c.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757853964	SparkPositionDeltaWrite	Committed in 94 ms
+1794757854193	SparkWrite	Committed in 845 ms
+1794757854282	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757854370	SparkWrite	Committed in 88 ms
+1794757854426	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757854513	SparkWrite	Committed in 87 ms
+1794757854566	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757854652	SparkWrite	Committed in 86 ms
+1794757854879	SparkWrite	Committing overwrite of 1 data files with 1 new data files, scanSnapshotId: 6662492855894177514, conflictDetectionFilter: ((ref(name="bkt") == 0 and ref(name="id") >= 10020000) and ref(name="id") <= 10020009) to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757855112	SparkPositionDeltaWrite	Committing position delta with 1 data files, 1 delete files and 0 rewritten delete files(scanSnapshotId: 6662492855894177514, conflictDetectionFilter: (((not_null(ref(name="bkt")) and not_null(ref(name="id"))) and ref(name="bkt") == 1) and ref(name="id") == 11025000), isolationLevel: SERIALIZABLE) to table cat_c.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757855207	SparkPositionDeltaWrite	Committed in 95 ms
+1794757855435	SparkWrite	Committed in 556 ms
+1794757855529	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757855616	SparkWrite	Committed in 87 ms
+1794757855673	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757855761	SparkWrite	Committed in 88 ms
+1794757855820	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757855908	SparkWrite	Committed in 88 ms
+1794757856136	SparkWrite	Committing overwrite of 1 data files with 1 new data files, scanSnapshotId: 5933734692566179341, conflictDetectionFilter: ((ref(name="bkt") == 0 and ref(name="id") >= 10030000) and ref(name="id") <= 10030009) to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757856350	SparkPositionDeltaWrite	Committing position delta with 1 data files, 1 delete files and 0 rewritten delete files(scanSnapshotId: 5933734692566179341, conflictDetectionFilter: (((not_null(ref(name="bkt")) and not_null(ref(name="id"))) and ref(name="bkt") == 1) and ref(name="id") == 11035000), isolationLevel: SERIALIZABLE) to table cat_c.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757856445	SparkPositionDeltaWrite	Committed in 95 ms
+1794757856674	SparkWrite	Committed in 538 ms
+1794757856770	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757856858	SparkWrite	Committed in 88 ms
+1794757856910	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757856998	SparkWrite	Committed in 87 ms
+1794757857052	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757857140	SparkWrite	Committed in 88 ms
+1794757857369	SparkWrite	Committing overwrite of 1 data files with 1 new data files, scanSnapshotId: 4042504016901213132, conflictDetectionFilter: ((ref(name="bkt") == 0 and ref(name="id") >= 10040000) and ref(name="id") <= 10040009) to table cat_p.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757857602	SparkPositionDeltaWrite	Committing position delta with 1 data files, 1 delete files and 0 rewritten delete files(scanSnapshotId: 4042504016901213132, conflictDetectionFilter: (((not_null(ref(name="bkt")) and not_null(ref(name="id"))) and ref(name="bkt") == 1) and ref(name="id") == 11045000), isolationLevel: SERIALIZABLE) to table cat_c.matrix_ns.t_cow_dml_mor_merge_ser_v3_part
+1794757857700	SparkPositionDeltaWrite	Committed in 98 ms
+1794757857935	SparkWrite	Committed in 565 ms
+1794757859207	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_overwrite_iso_only_none_ser_v3
+1794757859256	SparkWrite	Committed in 49 ms
+1794757859315	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_overwrite_iso_only_none_ser_v3
+1794757859376	SparkWrite	Committed in 61 ms
+1794757859443	SparkWrite	Committing dynamic partition overwrite with 1 new data files to table cat_p.matrix_ns.t_overwrite_iso_only_none_ser_v3
+1794757859605	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_overwrite_iso_only_none_ser_v3
+1794757859666	SparkWrite	Committed in 61 ms
+1794757859722	SparkWrite	Committing dynamic partition overwrite with 1 new data files to table cat_p.matrix_ns.t_overwrite_iso_only_none_ser_v3
+1794757859885	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_overwrite_iso_only_none_ser_v3
+1794757859946	SparkWrite	Committed in 61 ms
+1794757860003	SparkWrite	Committing dynamic partition overwrite with 1 new data files to table cat_p.matrix_ns.t_overwrite_iso_only_none_ser_v3
+1794757860170	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_overwrite_iso_only_none_ser_v3
+1794757860233	SparkWrite	Committed in 62 ms
+1794757860288	SparkWrite	Committing dynamic partition overwrite with 1 new data files to table cat_p.matrix_ns.t_overwrite_iso_only_none_ser_v3
+1794757860459	SparkWrite	Committing append with 1 new data files to table cat_p.matrix_ns.t_overwrite_iso_only_none_ser_v3
+1794757860520	SparkWrite	Committed in 61 ms
+1794757860572	SparkWrite	Committing dynamic partition overwrite with 1 new data files to table cat_p.matrix_ns.t_overwrite_iso_only_none_ser_v3

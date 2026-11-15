@@ -1,0 +1,10 @@
+{
+  "run_id": "stage3-S2-P0-mid-s11-adr011-20261108",
+  "git_sha": "7faa3edbbf1c63889af8280232d2662e01a92e33",
+  "unique_committed_snapshots": 187,
+  "controlled_operations": 28,
+  "data_conflicts": 9,
+  "metadata_observations": 53,
+  "bin_seconds": 30,
+  "risk_prediction_available": false
+}

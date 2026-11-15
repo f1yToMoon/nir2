@@ -1,0 +1,1 @@
+{"op_id": "stage3-S4-P0-mid-s11-bg_expire-0002", "sql": ["CALL m0.system.expire_snapshots(table => 'bench.events', older_than => TIMESTAMP '2026-11-07 16:22:56.553', retain_last => 20)"], "result": []}

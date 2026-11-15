@@ -1,0 +1,193 @@
+{
+  "stage3-S4-P0-mid-s11-adr011-20261108": {
+    "n_background": 30,
+    "background_cpu_s": 52.439,
+    "controlled_cpu_s": 520.154,
+    "unexecuted_empty_footprint_noops": 0,
+    "duration_max_s": 10.960054,
+    "start_lag_max_s": 0.037361,
+    "finish_lag_max_s": 10.973936,
+    "overlapping_background_pairs": 0,
+    "background_controlled_overlap_pairs": [
+      {
+        "background_op": "stage3-S4-P0-mid-s11-adr011-20261108-bg_expire-0008",
+        "controlled_op": "stage3-S4-P0-mid-s11-adr011-20261108-batch_merge-0003",
+        "controlled_type": "cow_dml",
+        "seconds": 3.942482
+      },
+      {
+        "background_op": "stage3-S4-P0-mid-s11-adr011-20261108-bg_expire-0009",
+        "controlled_op": "stage3-S4-P0-mid-s11-adr011-20261108-batch_merge-0004",
+        "controlled_type": "cow_dml",
+        "seconds": 2.208091
+      },
+      {
+        "background_op": "stage3-S4-P0-mid-s11-adr011-20261108-bg_expire-0011",
+        "controlled_op": "stage3-S4-P0-mid-s11-adr011-20261108-batch_merge-0007",
+        "controlled_type": "cow_dml",
+        "seconds": 8.41924
+      },
+      {
+        "background_op": "stage3-S4-P0-mid-s11-adr011-20261108-bg_expire-0013",
+        "controlled_op": "stage3-S4-P0-mid-s11-adr011-20261108-batch_merge-0010",
+        "controlled_type": "cow_dml",
+        "seconds": 1.806746
+      },
+      {
+        "background_op": "stage3-S4-P0-mid-s11-adr011-20261108-bg_expire-0015",
+        "controlled_op": "stage3-S4-P0-mid-s11-adr011-20261108-batch_merge-0013",
+        "controlled_type": "cow_dml",
+        "seconds": 6.248191
+      },
+      {
+        "background_op": "stage3-S4-P0-mid-s11-adr011-20261108-bg_expire-0017",
+        "controlled_op": "stage3-S4-P0-mid-s11-adr011-20261108-batch_merge-0016",
+        "controlled_type": "cow_dml",
+        "seconds": 4.964921
+      },
+      {
+        "background_op": "stage3-S4-P0-mid-s11-adr011-20261108-bg_expire-0022",
+        "controlled_op": "stage3-S4-P0-mid-s11-adr011-20261108-batch_merge-0020",
+        "controlled_type": "cow_dml",
+        "seconds": 7.090089
+      },
+      {
+        "background_op": "stage3-S4-P0-mid-s11-adr011-20261108-bg_expire-0023",
+        "controlled_op": "stage3-S4-P0-mid-s11-adr011-20261108-batch_merge-0023",
+        "controlled_type": "cow_dml",
+        "seconds": 2.892399
+      },
+      {
+        "background_op": "stage3-S4-P0-mid-s11-adr011-20261108-bg_expire-0025",
+        "controlled_op": "stage3-S4-P0-mid-s11-adr011-20261108-batch_merge-0026",
+        "controlled_type": "cow_dml",
+        "seconds": 3.943448
+      },
+      {
+        "background_op": "stage3-S4-P0-mid-s11-adr011-20261108-bg_expire-0026",
+        "controlled_op": "stage3-S4-P0-mid-s11-adr011-20261108-batch_merge-0028",
+        "controlled_type": "cow_dml",
+        "seconds": 4.471681
+      }
+    ],
+    "pairwise_overlap_seconds": 45.98728800000001,
+    "note": "Pairwise intersections may overlap each other; no causal slowdown is inferred."
+  },
+  "stage3-S5-P0-mid-s11-adr011-20261108": {
+    "n_background": 28,
+    "background_cpu_s": 53.698,
+    "controlled_cpu_s": 334.383,
+    "unexecuted_empty_footprint_noops": 0,
+    "duration_max_s": 4.279432,
+    "start_lag_max_s": 0.019729,
+    "finish_lag_max_s": 4.291789,
+    "overlapping_background_pairs": 0,
+    "background_controlled_overlap_pairs": [],
+    "pairwise_overlap_seconds": 0,
+    "note": "Pairwise intersections may overlap each other; no causal slowdown is inferred."
+  },
+  "stage3-S0-P0-mid-s1-adr011-20261108": {
+    "n_background": 28,
+    "background_cpu_s": 44.892,
+    "controlled_cpu_s": 107.237,
+    "unexecuted_empty_footprint_noops": 0,
+    "duration_max_s": 3.922448,
+    "start_lag_max_s": 0.01489,
+    "finish_lag_max_s": 3.931039,
+    "overlapping_background_pairs": 0,
+    "background_controlled_overlap_pairs": [],
+    "pairwise_overlap_seconds": 0,
+    "note": "Pairwise intersections may overlap each other; no causal slowdown is inferred."
+  },
+  "stage3-S0-P0-mid-s1-rep-adr011-20261108": {
+    "n_background": 28,
+    "background_cpu_s": 44.459,
+    "controlled_cpu_s": 108.264,
+    "unexecuted_empty_footprint_noops": 0,
+    "duration_max_s": 2.336309,
+    "start_lag_max_s": 0.012777,
+    "finish_lag_max_s": 2.342521,
+    "overlapping_background_pairs": 0,
+    "background_controlled_overlap_pairs": [],
+    "pairwise_overlap_seconds": 0,
+    "note": "Pairwise intersections may overlap each other; no causal slowdown is inferred."
+  },
+  "stage3-S1-P0-mid-s11-adr011-20261108": {
+    "n_background": 28,
+    "background_cpu_s": 348.023,
+    "controlled_cpu_s": 301.875,
+    "unexecuted_empty_footprint_noops": 0,
+    "duration_max_s": 13.755948,
+    "start_lag_max_s": 0.158612,
+    "finish_lag_max_s": 13.890354,
+    "overlapping_background_pairs": 0,
+    "background_controlled_overlap_pairs": [
+      {
+        "background_op": "stage3-S1-P0-mid-s11-adr011-20261108-bg_expire-0003",
+        "controlled_op": "stage3-S1-P0-mid-s11-adr011-20261108-compaction_hot-0000",
+        "controlled_type": "rewrite_data",
+        "seconds": 4.979377
+      },
+      {
+        "background_op": "stage3-S1-P0-mid-s11-adr011-20261108-bg_expire-0023",
+        "controlled_op": "stage3-S1-P0-mid-s11-adr011-20261108-compaction_hot-0010",
+        "controlled_type": "rewrite_data",
+        "seconds": 2.185941
+      },
+      {
+        "background_op": "stage3-S1-P0-mid-s11-adr011-20261108-bg_expire-0027",
+        "controlled_op": "stage3-S1-P0-mid-s11-adr011-20261108-compaction_hot-0012",
+        "controlled_type": "rewrite_data",
+        "seconds": 5.10041
+      }
+    ],
+    "pairwise_overlap_seconds": 12.265728000000001,
+    "note": "Pairwise intersections may overlap each other; no causal slowdown is inferred."
+  },
+  "stage3-S2-P0-mid-s11-adr011-20261108": {
+    "n_background": 28,
+    "background_cpu_s": 55.687,
+    "controlled_cpu_s": 269.18,
+    "unexecuted_empty_footprint_noops": 0,
+    "duration_max_s": 6.749222,
+    "start_lag_max_s": 0.049059,
+    "finish_lag_max_s": 6.766316,
+    "overlapping_background_pairs": 0,
+    "background_controlled_overlap_pairs": [
+      {
+        "background_op": "stage3-S2-P0-mid-s11-adr011-20261108-bg_expire-0011",
+        "controlled_op": "stage3-S2-P0-mid-s11-adr011-20261108-cdc_merge-0009",
+        "controlled_type": "cow_dml",
+        "seconds": 2.091619
+      },
+      {
+        "background_op": "stage3-S2-P0-mid-s11-adr011-20261108-bg_expire-0026",
+        "controlled_op": "stage3-S2-P0-mid-s11-adr011-20261108-compaction-0009",
+        "controlled_type": "rewrite_data",
+        "seconds": 0.772609
+      }
+    ],
+    "pairwise_overlap_seconds": 2.864228,
+    "note": "Pairwise intersections may overlap each other; no causal slowdown is inferred."
+  },
+  "stage3-S3-P0-mid-s11-adr011-20261108": {
+    "n_background": 28,
+    "background_cpu_s": 57.191,
+    "controlled_cpu_s": 163.261,
+    "unexecuted_empty_footprint_noops": 1,
+    "duration_max_s": 2.259265,
+    "start_lag_max_s": 0.013622,
+    "finish_lag_max_s": 2.26522,
+    "overlapping_background_pairs": 0,
+    "background_controlled_overlap_pairs": [
+      {
+        "background_op": "stage3-S3-P0-mid-s11-adr011-20261108-bg_expire-0004",
+        "controlled_op": "stage3-S3-P0-mid-s11-adr011-20261108-mor_updates-0001",
+        "controlled_type": "mor_update",
+        "seconds": 1.431345
+      }
+    ],
+    "pairwise_overlap_seconds": 1.431345,
+    "note": "Pairwise intersections may overlap each other; no causal slowdown is inferred."
+  }
+}

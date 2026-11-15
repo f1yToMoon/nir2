@@ -1,0 +1,296 @@
+/home/an/nir/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:300: PytestDeprecationWarning: The configuration option "asyncio_default_fixture_loop_scope" is unset.
+The event loop scope for asynchronous fixtures will default to the "fixture" caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to "function" scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: "function", "class", "module", "package", "session"
+
+  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))
+FFFFFFFFFF                                                               [100%]
+=================================== FAILURES ===================================
+________________ test_main_refuses_finished_invalid_json[None] _________________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x78d05d85a6d0>
+tmp_path = PosixPath('/tmp/pytest-of-an/pytest-8/test_main_refuses_finished_inv0')
+payload = None
+
+    @pytest.mark.parametrize("payload", INVALID)
+    def test_main_refuses_finished_invalid_json(monkeypatch: Any, tmp_path: Path,
+                                               payload: bytes | None) -> None:
+        from runner import main
+        run_id = "finished-invalid"
+        path = prepare(tmp_path, run_id, payload)
+        db = FinishedDB(run_id)
+        monkeypatch.setattr(main, "DB", lambda *_args: db)
+        monkeypatch.setattr(main, "RESULTS_DIR", tmp_path)
+        monkeypatch.setattr(main, "build_session", lambda *_a, **_k: pytest.fail("Spark must not start"))
+        run = main.Run.__new__(main.Run)
+        run.env = SimpleNamespace(pg_dsn="unused", pg_schema="test")
+        run.sc, run.args, run.run_id = SimpleNamespace(), SimpleNamespace(force=False), run_id
+        run._golden = lambda: ({}, {})
+>       with pytest.raises((ValueError, SystemExit), match="Cannot resume"):
+E       Failed: DID NOT RAISE any of (ValueError, SystemExit)
+
+/tmp/capl_resume_regressions/test_runner_resume.py:53: Failed
+----------------------------- Captured stdout call -----------------------------
+[13:06:00] already finished run_id=finished-invalid
+__________________ test_main_refuses_finished_invalid_json[{] __________________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x78d05b158050>
+tmp_path = PosixPath('/tmp/pytest-of-an/pytest-8/test_main_refuses_finished_inv1')
+payload = b'{'
+
+    @pytest.mark.parametrize("payload", INVALID)
+    def test_main_refuses_finished_invalid_json(monkeypatch: Any, tmp_path: Path,
+                                               payload: bytes | None) -> None:
+        from runner import main
+        run_id = "finished-invalid"
+        path = prepare(tmp_path, run_id, payload)
+        db = FinishedDB(run_id)
+        monkeypatch.setattr(main, "DB", lambda *_args: db)
+        monkeypatch.setattr(main, "RESULTS_DIR", tmp_path)
+        monkeypatch.setattr(main, "build_session", lambda *_a, **_k: pytest.fail("Spark must not start"))
+        run = main.Run.__new__(main.Run)
+        run.env = SimpleNamespace(pg_dsn="unused", pg_schema="test")
+        run.sc, run.args, run.run_id = SimpleNamespace(), SimpleNamespace(force=False), run_id
+        run._golden = lambda: ({}, {})
+>       with pytest.raises((ValueError, SystemExit), match="Cannot resume"):
+E       Failed: DID NOT RAISE any of (ValueError, SystemExit)
+
+/tmp/capl_resume_regressions/test_runner_resume.py:53: Failed
+----------------------------- Captured stdout call -----------------------------
+[13:06:00] already finished run_id=finished-invalid
+_____ test_main_refuses_finished_invalid_json[{"validation":{"ok":false}}] _____
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x78d05b536010>
+tmp_path = PosixPath('/tmp/pytest-of-an/pytest-8/test_main_refuses_finished_inv2')
+payload = b'{"validation":{"ok":false}}'
+
+    @pytest.mark.parametrize("payload", INVALID)
+    def test_main_refuses_finished_invalid_json(monkeypatch: Any, tmp_path: Path,
+                                               payload: bytes | None) -> None:
+        from runner import main
+        run_id = "finished-invalid"
+        path = prepare(tmp_path, run_id, payload)
+        db = FinishedDB(run_id)
+        monkeypatch.setattr(main, "DB", lambda *_args: db)
+        monkeypatch.setattr(main, "RESULTS_DIR", tmp_path)
+        monkeypatch.setattr(main, "build_session", lambda *_a, **_k: pytest.fail("Spark must not start"))
+        run = main.Run.__new__(main.Run)
+        run.env = SimpleNamespace(pg_dsn="unused", pg_schema="test")
+        run.sc, run.args, run.run_id = SimpleNamespace(), SimpleNamespace(force=False), run_id
+        run._golden = lambda: ({}, {})
+>       with pytest.raises((ValueError, SystemExit), match="Cannot resume"):
+E       Failed: DID NOT RAISE any of (ValueError, SystemExit)
+
+/tmp/capl_resume_regressions/test_runner_resume.py:53: Failed
+----------------------------- Captured stdout call -----------------------------
+[13:06:00] already finished run_id=finished-invalid
+_______ test_main_refuses_finished_invalid_json[{"validation":{"ok":1}}] _______
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x78d05ad5c410>
+tmp_path = PosixPath('/tmp/pytest-of-an/pytest-8/test_main_refuses_finished_inv3')
+payload = b'{"validation":{"ok":1}}'
+
+    @pytest.mark.parametrize("payload", INVALID)
+    def test_main_refuses_finished_invalid_json(monkeypatch: Any, tmp_path: Path,
+                                               payload: bytes | None) -> None:
+        from runner import main
+        run_id = "finished-invalid"
+        path = prepare(tmp_path, run_id, payload)
+        db = FinishedDB(run_id)
+        monkeypatch.setattr(main, "DB", lambda *_args: db)
+        monkeypatch.setattr(main, "RESULTS_DIR", tmp_path)
+        monkeypatch.setattr(main, "build_session", lambda *_a, **_k: pytest.fail("Spark must not start"))
+        run = main.Run.__new__(main.Run)
+        run.env = SimpleNamespace(pg_dsn="unused", pg_schema="test")
+        run.sc, run.args, run.run_id = SimpleNamespace(), SimpleNamespace(force=False), run_id
+        run._golden = lambda: ({}, {})
+>       with pytest.raises((ValueError, SystemExit), match="Cannot resume"):
+E       Failed: DID NOT RAISE any of (ValueError, SystemExit)
+
+/tmp/capl_resume_regressions/test_runner_resume.py:53: Failed
+----------------------------- Captured stdout call -----------------------------
+[13:06:00] already finished run_id=finished-invalid
+__________________ test_main_skips_valid_result_and_closes_db __________________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x78d05ad1e790>
+tmp_path = PosixPath('/tmp/pytest-of-an/pytest-8/test_main_skips_valid_result_a0')
+
+    def test_main_skips_valid_result_and_closes_db(monkeypatch: Any, tmp_path: Path) -> None:
+        from runner import main
+        run_id = "finished-valid"
+        path = prepare(tmp_path, run_id, b'{"validation":{"ok":true}}')
+        db = FinishedDB(run_id)
+        monkeypatch.setattr(main, "DB", lambda *_args: db)
+        monkeypatch.setattr(main, "RESULTS_DIR", tmp_path)
+        run = main.Run.__new__(main.Run)
+        run.env = SimpleNamespace(pg_dsn="unused", pg_schema="test")
+        run.sc, run.args, run.run_id = SimpleNamespace(), SimpleNamespace(force=False), run_id
+        run._golden = lambda: ({}, {})
+        assert run.execute() == 0
+>       assert not db.deleted and db.closed
+E       assert (not False and False)
+E        +  where False = <test_runner_resume.FinishedDB object at 0x78d05ad1e090>.deleted
+E        +  and   False = <test_runner_resume.FinishedDB object at 0x78d05ad1e090>.closed
+
+/tmp/capl_resume_regressions/test_runner_resume.py:71: AssertionError
+----------------------------- Captured stdout call -----------------------------
+[13:06:00] already finished run_id=finished-valid
+________________ test_batch_finished_result_is_validated[None] _________________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x78d05ad922d0>
+tmp_path = PosixPath('/tmp/pytest-of-an/pytest-8/test_batch_finished_result_is_0')
+payload = None
+
+    @pytest.mark.parametrize("payload", [*INVALID, b'{"validation":{"ok":true}}'])
+    def test_batch_finished_result_is_validated(monkeypatch: Any, tmp_path: Path,
+                                               payload: bytes | None) -> None:
+        from runner import batch, db as db_module
+        run_id = "verify-S0-P0-mid-s1"
+        path = prepare(tmp_path, run_id, payload)
+        db = FinishedDB(run_id)
+        monkeypatch.setattr(db_module, "DB", lambda *_args: db)
+        monkeypatch.setattr(batch, "RESULTS_DIR", tmp_path, raising=False)
+        monkeypatch.setattr(batch.subprocess, "call", lambda *_a, **_k: pytest.fail("must not rerun"))
+        matrix = tmp_path / "matrix.yaml"
+        matrix.write_text(json.dumps({"series": {"verify": {
+            "scenarios": ["S0_baseline"], "runs": [{"policy": "P0"}], "seeds": [1]}}}))
+        args = ["--matrix", str(matrix), "--series", "verify"]
+        if payload == b'{"validation":{"ok":true}}':
+            assert batch.main(args) == 0
+        else:
+>           with pytest.raises((ValueError, SystemExit), match="Cannot resume"):
+E           Failed: DID NOT RAISE any of (ValueError, SystemExit)
+
+/tmp/capl_resume_regressions/test_runner_resume.py:92: Failed
+----------------------------- Captured stdout call -----------------------------
+skip finished verify-S0-P0-mid-s1
+__________________ test_batch_finished_result_is_validated[{] __________________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x78d05d9e2610>
+tmp_path = PosixPath('/tmp/pytest-of-an/pytest-8/test_batch_finished_result_is_1')
+payload = b'{'
+
+    @pytest.mark.parametrize("payload", [*INVALID, b'{"validation":{"ok":true}}'])
+    def test_batch_finished_result_is_validated(monkeypatch: Any, tmp_path: Path,
+                                               payload: bytes | None) -> None:
+        from runner import batch, db as db_module
+        run_id = "verify-S0-P0-mid-s1"
+        path = prepare(tmp_path, run_id, payload)
+        db = FinishedDB(run_id)
+        monkeypatch.setattr(db_module, "DB", lambda *_args: db)
+        monkeypatch.setattr(batch, "RESULTS_DIR", tmp_path, raising=False)
+        monkeypatch.setattr(batch.subprocess, "call", lambda *_a, **_k: pytest.fail("must not rerun"))
+        matrix = tmp_path / "matrix.yaml"
+        matrix.write_text(json.dumps({"series": {"verify": {
+            "scenarios": ["S0_baseline"], "runs": [{"policy": "P0"}], "seeds": [1]}}}))
+        args = ["--matrix", str(matrix), "--series", "verify"]
+        if payload == b'{"validation":{"ok":true}}':
+            assert batch.main(args) == 0
+        else:
+>           with pytest.raises((ValueError, SystemExit), match="Cannot resume"):
+E           Failed: DID NOT RAISE any of (ValueError, SystemExit)
+
+/tmp/capl_resume_regressions/test_runner_resume.py:92: Failed
+----------------------------- Captured stdout call -----------------------------
+skip finished verify-S0-P0-mid-s1
+_____ test_batch_finished_result_is_validated[{"validation":{"ok":false}}] _____
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x78d05d85aa10>
+tmp_path = PosixPath('/tmp/pytest-of-an/pytest-8/test_batch_finished_result_is_2')
+payload = b'{"validation":{"ok":false}}'
+
+    @pytest.mark.parametrize("payload", [*INVALID, b'{"validation":{"ok":true}}'])
+    def test_batch_finished_result_is_validated(monkeypatch: Any, tmp_path: Path,
+                                               payload: bytes | None) -> None:
+        from runner import batch, db as db_module
+        run_id = "verify-S0-P0-mid-s1"
+        path = prepare(tmp_path, run_id, payload)
+        db = FinishedDB(run_id)
+        monkeypatch.setattr(db_module, "DB", lambda *_args: db)
+        monkeypatch.setattr(batch, "RESULTS_DIR", tmp_path, raising=False)
+        monkeypatch.setattr(batch.subprocess, "call", lambda *_a, **_k: pytest.fail("must not rerun"))
+        matrix = tmp_path / "matrix.yaml"
+        matrix.write_text(json.dumps({"series": {"verify": {
+            "scenarios": ["S0_baseline"], "runs": [{"policy": "P0"}], "seeds": [1]}}}))
+        args = ["--matrix", str(matrix), "--series", "verify"]
+        if payload == b'{"validation":{"ok":true}}':
+            assert batch.main(args) == 0
+        else:
+>           with pytest.raises((ValueError, SystemExit), match="Cannot resume"):
+E           Failed: DID NOT RAISE any of (ValueError, SystemExit)
+
+/tmp/capl_resume_regressions/test_runner_resume.py:92: Failed
+----------------------------- Captured stdout call -----------------------------
+skip finished verify-S0-P0-mid-s1
+_______ test_batch_finished_result_is_validated[{"validation":{"ok":1}}] _______
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x78d05ad00390>
+tmp_path = PosixPath('/tmp/pytest-of-an/pytest-8/test_batch_finished_result_is_3')
+payload = b'{"validation":{"ok":1}}'
+
+    @pytest.mark.parametrize("payload", [*INVALID, b'{"validation":{"ok":true}}'])
+    def test_batch_finished_result_is_validated(monkeypatch: Any, tmp_path: Path,
+                                               payload: bytes | None) -> None:
+        from runner import batch, db as db_module
+        run_id = "verify-S0-P0-mid-s1"
+        path = prepare(tmp_path, run_id, payload)
+        db = FinishedDB(run_id)
+        monkeypatch.setattr(db_module, "DB", lambda *_args: db)
+        monkeypatch.setattr(batch, "RESULTS_DIR", tmp_path, raising=False)
+        monkeypatch.setattr(batch.subprocess, "call", lambda *_a, **_k: pytest.fail("must not rerun"))
+        matrix = tmp_path / "matrix.yaml"
+        matrix.write_text(json.dumps({"series": {"verify": {
+            "scenarios": ["S0_baseline"], "runs": [{"policy": "P0"}], "seeds": [1]}}}))
+        args = ["--matrix", str(matrix), "--series", "verify"]
+        if payload == b'{"validation":{"ok":true}}':
+            assert batch.main(args) == 0
+        else:
+>           with pytest.raises((ValueError, SystemExit), match="Cannot resume"):
+E           Failed: DID NOT RAISE any of (ValueError, SystemExit)
+
+/tmp/capl_resume_regressions/test_runner_resume.py:92: Failed
+----------------------------- Captured stdout call -----------------------------
+skip finished verify-S0-P0-mid-s1
+_____ test_batch_finished_result_is_validated[{"validation":{"ok":true}}] ______
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x78d05ad30ed0>
+tmp_path = PosixPath('/tmp/pytest-of-an/pytest-8/test_batch_finished_result_is_4')
+payload = b'{"validation":{"ok":true}}'
+
+    @pytest.mark.parametrize("payload", [*INVALID, b'{"validation":{"ok":true}}'])
+    def test_batch_finished_result_is_validated(monkeypatch: Any, tmp_path: Path,
+                                               payload: bytes | None) -> None:
+        from runner import batch, db as db_module
+        run_id = "verify-S0-P0-mid-s1"
+        path = prepare(tmp_path, run_id, payload)
+        db = FinishedDB(run_id)
+        monkeypatch.setattr(db_module, "DB", lambda *_args: db)
+        monkeypatch.setattr(batch, "RESULTS_DIR", tmp_path, raising=False)
+        monkeypatch.setattr(batch.subprocess, "call", lambda *_a, **_k: pytest.fail("must not rerun"))
+        matrix = tmp_path / "matrix.yaml"
+        matrix.write_text(json.dumps({"series": {"verify": {
+            "scenarios": ["S0_baseline"], "runs": [{"policy": "P0"}], "seeds": [1]}}}))
+        args = ["--matrix", str(matrix), "--series", "verify"]
+        if payload == b'{"validation":{"ok":true}}':
+            assert batch.main(args) == 0
+        else:
+            with pytest.raises((ValueError, SystemExit), match="Cannot resume"):
+                batch.main(args)
+>       assert not db.deleted and db.closed
+E       assert (not False and False)
+E        +  where False = <test_runner_resume.FinishedDB object at 0x78d05ad33650>.deleted
+E        +  and   False = <test_runner_resume.FinishedDB object at 0x78d05ad33650>.closed
+
+/tmp/capl_resume_regressions/test_runner_resume.py:94: AssertionError
+----------------------------- Captured stdout call -----------------------------
+skip finished verify-S0-P0-mid-s1
+=========================== short test summary info ============================
+FAILED ../../../tmp/capl_resume_regressions/test_runner_resume.py::test_main_refuses_finished_invalid_json[None]
+FAILED ../../../tmp/capl_resume_regressions/test_runner_resume.py::test_main_refuses_finished_invalid_json[{]
+FAILED ../../../tmp/capl_resume_regressions/test_runner_resume.py::test_main_refuses_finished_invalid_json[{"validation":{"ok":false}}]
+FAILED ../../../tmp/capl_resume_regressions/test_runner_resume.py::test_main_refuses_finished_invalid_json[{"validation":{"ok":1}}]
+FAILED ../../../tmp/capl_resume_regressions/test_runner_resume.py::test_main_skips_valid_result_and_closes_db
+FAILED ../../../tmp/capl_resume_regressions/test_runner_resume.py::test_batch_finished_result_is_validated[None]
+FAILED ../../../tmp/capl_resume_regressions/test_runner_resume.py::test_batch_finished_result_is_validated[{]
+FAILED ../../../tmp/capl_resume_regressions/test_runner_resume.py::test_batch_finished_result_is_validated[{"validation":{"ok":false}}]
+FAILED ../../../tmp/capl_resume_regressions/test_runner_resume.py::test_batch_finished_result_is_validated[{"validation":{"ok":1}}]
+FAILED ../../../tmp/capl_resume_regressions/test_runner_resume.py::test_batch_finished_result_is_validated[{"validation":{"ok":true}}]
+10 failed in 0.36s

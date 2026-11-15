@@ -1,0 +1,36 @@
+{
+  "handler_exit": 0,
+  "handler_stdout_top_level_fields": [
+    "hookSpecificOutput"
+  ],
+  "contract_compatible": false,
+  "versions": {
+    "0.167.0": {
+      "source_url": "https://raw.githubusercontent.com/openai/codex/rust-v0.167.0/codex-rs/hooks/schema/generated/post-compact.command.output.schema.json",
+      "schema_file": "post-compact-output-0.167.0.schema.json",
+      "sha256": "48355bfcb568259cf396beb6ade2ac32827f50bf6a3c20b395c337dce184cbed",
+      "additionalProperties": false,
+      "unexpected_fields": [
+        "hookSpecificOutput"
+      ],
+      "valid": false
+    },
+    "0.169.0": {
+      "source_url": "https://raw.githubusercontent.com/openai/codex/rust-v0.169.0/codex-rs/hooks/schema/generated/post-compact.command.output.schema.json",
+      "schema_file": "post-compact-output-0.169.0.schema.json",
+      "sha256": "48355bfcb568259cf396beb6ade2ac32827f50bf6a3c20b395c337dce184cbed",
+      "additionalProperties": false,
+      "unexpected_fields": [
+        "hookSpecificOutput"
+      ],
+      "valid": false
+    }
+  },
+  "native_parser_evidence": {
+    "tag": "rust-v0.169.0",
+    "schema.rs:178-185": "PostCompactCommandOutputWire has serde(deny_unknown_fields) and only universal output",
+    "engine/output_parser.rs:250-257,345-357": "deserialize this exact wire type; deserialization error becomes None",
+    "events/compact.rs:276-310": "exit 0 plus JSON rejected by parser becomes HookRunStatus::Failed; message: hook returned invalid PostCompact hook JSON output"
+  },
+  "original_stderr_recovered": false
+}

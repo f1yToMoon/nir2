@@ -1,0 +1,9 @@
+{
+  "operation_id": "stage3-S5-P0-mid-s11-adr011-20261108-gdpr_delete-0001",
+  "deleted_events": {
+    "golden": 2985,
+    "stream": 135,
+    "merge": 2
+  },
+  "total": 3122
+}

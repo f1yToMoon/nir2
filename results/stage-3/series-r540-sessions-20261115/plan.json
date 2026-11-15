@@ -1,0 +1,62 @@
+{
+  "source_sha": "764d95fc0b33a42fab35305a1b6fe19371c9ef49",
+  "R_s": 540,
+  "policy": "P0",
+  "concurrency": "mid",
+  "warmup_s": 180,
+  "duration_s": 1500,
+  "cooldown_s": 120,
+  "runs": [
+    {
+      "run_id": "stage3-S4-P0-mid-s11-r540-sessions-20261115",
+      "scenario": "S4_merge_vs_stream_serializable",
+      "seed": 11,
+      "git_sha": "764d95fc0b33a42fab35305a1b6fe19371c9ef49"
+    },
+    {
+      "run_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115",
+      "scenario": "S5_compliance_delete",
+      "seed": 11,
+      "git_sha": "764d95fc0b33a42fab35305a1b6fe19371c9ef49"
+    },
+    {
+      "run_id": "stage3-S0-P0-mid-s1-r540-sessions-20261115",
+      "scenario": "S0_baseline",
+      "seed": 1,
+      "git_sha": "764d95fc0b33a42fab35305a1b6fe19371c9ef49"
+    },
+    {
+      "run_id": "stage3-S0-P0-mid-s1-rep-r540-sessions-20261115",
+      "scenario": "S0_baseline",
+      "seed": 1,
+      "git_sha": "764d95fc0b33a42fab35305a1b6fe19371c9ef49"
+    },
+    {
+      "run_id": "stage3-S1-P0-mid-s11-r540-sessions-20261115",
+      "scenario": "S1_compaction_vs_stream_append",
+      "seed": 11,
+      "git_sha": "764d95fc0b33a42fab35305a1b6fe19371c9ef49"
+    },
+    {
+      "run_id": "stage3-S2-P0-mid-s11-r540-sessions-20261115",
+      "scenario": "S2_compaction_vs_cdc_merge",
+      "seed": 11,
+      "git_sha": "764d95fc0b33a42fab35305a1b6fe19371c9ef49"
+    },
+    {
+      "run_id": "stage3-S3-P0-mid-s11-r540-sessions-20261115",
+      "scenario": "S3_compaction_vs_mor_dml",
+      "seed": 11,
+      "git_sha": "764d95fc0b33a42fab35305a1b6fe19371c9ef49"
+    }
+  ],
+  "config_sha256": {
+    "config/workloads/_base.yaml": "5831602848bc8cd675639d4363e64077b35df6020550ec6629d25539c53ab427",
+    "config/workloads/S4_merge_vs_stream_serializable.yaml": "a792f2c031f938234979b6c549b9934add83d214611edd94a63800ec2670aed9",
+    "config/workloads/S5_compliance_delete.yaml": "01c6e84566fcd3a23a2661b4acf43f6187f7aff14b7621c3a3e2b0d9ae9fde9f",
+    "config/workloads/S0_baseline.yaml": "75ba4202a0461086f6d7e62627c4d6466f02d1cafb4255a840affa851cdcea7b",
+    "config/workloads/S1_compaction_vs_stream_append.yaml": "ec29c080fa5f17e993819e496296dafe59c64d048e782f7053b3d6517e1d974c",
+    "config/workloads/S2_compaction_vs_cdc_merge.yaml": "9fc9221411786f987526772b611a95047d33bb8ee9f22974d8f62f1bde5124b7",
+    "config/workloads/S3_compaction_vs_mor_dml.yaml": "c569e7589447478667bb9d241b50c923e1d31d617a8dfe3b878cf4b69a2e140e"
+  }
+}

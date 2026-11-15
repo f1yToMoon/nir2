@@ -1,0 +1,778 @@
+FFFF....                                                                 [100%]
+=================================== FAILURES ===================================
+_ test_stage3_effects_ignore_unread_append[snapshot-update_status-copy-on-write] _
+
+spark = <pyspark.sql.session.SparkSession object at 0x745224255810>
+mode = 'copy-on-write', statement = 'update_status', isolation = 'snapshot'
+
+    @pytest.mark.parametrize("mode", ["copy-on-write", "merge-on-read"])
+    @pytest.mark.parametrize("statement", ["update_status", "delete_by_keys"])
+    @pytest.mark.parametrize("isolation", ["snapshot", "serializable"])
+    def test_stage3_effects_ignore_unread_append(spark: Any, mode: str, statement: str, isolation: str) -> None:
+        from pyspark import InheritableThread
+    
+        env = Env()
+        key = f"{mode.replace('-', '_')}_{statement}_{isolation}"
+        name = f"stage3_it.effects_{key}"
+        table = f"lake.{name}"
+        op_id = f"effects-micro-{key}-{time.time_ns()}"
+        verb = "update" if statement == "update_status" else "delete"
+        op_type = "cow_dml" if mode == "copy-on-write" else f"mor_{verb}"
+        out: dict[str, Any] = {"mode": mode, "statement": statement, "isolation": isolation}
+        spark.sql("CREATE NAMESPACE IF NOT EXISTS lake.stage3_it")
+        spark.sql(f"DROP TABLE IF EXISTS {table} PURGE")
+        spark.sql(f"CREATE TABLE {table} (event_id BIGINT, key BIGINT, dt DATE, version INT) USING iceberg "
+                  "PARTITIONED BY (dt, bucket(1, key)) TBLPROPERTIES ('format-version'='2', "
+                  f"'write.{verb}.mode'='{mode}', 'write.{verb}.isolation-level'='{isolation}')")
+        spark.sql(f"INSERT INTO {table} VALUES (1,97,DATE '2026-11-01',0),(2,98,DATE '2026-11-01',0)")
+        base = load_table_state(env, name).current_snapshot_id
+        out["base_snapshot_id"] = base
+        sql = (f"UPDATE s0.{name} SET version=version+1 WHERE key=97" if verb == "update" else
+               f"DELETE FROM s0.{name} WHERE key=97")
+    
+        def pending() -> None:
+            try:
+                frame = spark.sql(sql)
+                frame.collect()
+                out["physical_plan"] = frame._jdf.queryExecution().executedPlan().treeString()
+                out["frame"] = frame
+                out["outcome"] = "success"
+            except Exception as exc:
+                out["outcome"] = classify(str(exc))
+                out["exception"] = str(exc)
+    
+        thread = InheritableThread(target=pending, daemon=True)
+        try:
+            requests.put(f"{env.advisor_uri}/v1/debug/slots/s0",
+                         json={"op_id": op_id, "op_type": op_type}, timeout=10).raise_for_status()
+            requests.post(f"{env.advisor_uri}/v1/debug/hold", json={"slot": "s0", "max_ms": 60000},
+                          timeout=10).raise_for_status()
+            thread.start()
+            deadline = time.monotonic() + 120
+            held = []
+            while time.monotonic() < deadline and thread.is_alive():
+                entries = requests.get(f"{env.advisor_uri}/_capl/debug/last-commits", timeout=10).json()
+                held = [x for x in entries if x.get("op_id") == op_id]
+                if held:
+                    break
+                time.sleep(0.1)
+            assert held and thread.is_alive(), out
+            spark.sql(f"INSERT INTO {table} VALUES (3,97,DATE '2026-11-01',0)")
+            appended = load_table_state(env, name).current_snapshot_id
+            assert appended != base
+            out["append_snapshot_id"] = appended
+            requests.delete(f"{env.advisor_uri}/v1/debug/hold/s0", timeout=10).raise_for_status()
+            thread.join(timeout=120)
+            assert not thread.is_alive(), "DML did not finish after releasing hold"
+            actual = {int(r['event_id']): int(r['version']) for r in
+                      spark.sql(f"SELECT event_id,version FROM {table}").collect()}
+            out["actual_versions"] = actual
+            assert actual[3] == 0, out
+            if isolation == "serializable":
+                assert out["outcome"] == "K2", out
+                assert actual == {1: 0, 2: 0, 3: 0}, out
+            else:
+                assert out["outcome"] == "success", out
+                assert actual == ({1: 1, 2: 0, 3: 0} if verb == "update" else {2: 0, 3: 0}), out
+                state = load_table_state(env, name)
+                sid = state.current_snapshot_id
+                assert state.snapshots[sid]["parent"] == appended
+                out["committed_snapshot_id"] = sid
+                out["snapshots"] = state.metadata["snapshots"]
+                journal: dict[str, Any] = ({"deleted_keys": [97]} if verb == "delete" else
+                                           {"update_rule": {"mod": 97, "r": 0}})
+                row = {"op_id": op_id, "outcome": "committed", "snapshot_id": sid,
+                       "planning_snapshot_id": base, "footprint_requested": ["dt=2026-11-01/key_bucket=0"]}
+                executor = OpExecutor.__new__(OpExecutor)
+                executor.ctx = SimpleNamespace(spark=spark, env=env, table=name,
+                                               sc=SimpleNamespace(table=SimpleNamespace(n_buckets=1)))
+                executor.record_effects(SimpleNamespace(type=op_type, params={"statement": statement}), row, journal)
+                out["journal"] = journal
+                affected = ({r[0] for r in journal["deleted_rows"]} if verb == "delete" else
+                            set(journal["effect_updated_ids"]))
+>               assert affected == {1}, out
+E               AssertionError: {'mode': 'copy-on-write', 'statement': 'update_status', 'isolation': 'snapshot', 'base_snapshot_id': 7344747043475043181, ...}
+E               assert {1, 3} == {1}
+E                 
+E                 Extra items in the left set:
+E                 3
+E                 Use -v to get more diff
+
+tests/integration/test_runner_effects_stage3.py:116: AssertionError
+---------------------------- Captured stderr setup -----------------------------
+WARNING: Using incubator modules: jdk.incubator.vector
+Using Spark's default log4j profile: org/apache/spark/log4j2-defaults.properties
+Setting default log level to "WARN".
+To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
+26/11/08 10:52:43 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+----------------------------- Captured stderr call -----------------------------
+26/11/08 10:52:57 WARN Tasks: Retrying task after failure: sleepTimeMs=102 Commit failed: Requirement failed: branch main has changed: expected id 7344747043475043181 != 1102626627883716677
+org.apache.iceberg.exceptions.CommitFailedException: Commit failed: Requirement failed: branch main has changed: expected id 7344747043475043181 != 1102626627883716677
+	at org.apache.iceberg.rest.ErrorHandlers$CommitErrorHandler.accept(ErrorHandlers.java:128)
+	at org.apache.iceberg.rest.ErrorHandlers$CommitErrorHandler.accept(ErrorHandlers.java:119)
+	at org.apache.iceberg.rest.HTTPClient.throwFailure(HTTPClient.java:242)
+	at org.apache.iceberg.rest.HTTPClient.handleResponse(HTTPClient.java:367)
+	at org.apache.iceberg.rest.HTTPClient.lambda$execute$1(HTTPClient.java:325)
+	at org.apache.iceberg.shaded.org.apache.hc.client5.http.impl.classic.CloseableHttpClient.execute(CloseableHttpClient.java:247)
+	at org.apache.iceberg.shaded.org.apache.hc.client5.http.impl.classic.CloseableHttpClient.execute(CloseableHttpClient.java:188)
+	at org.apache.iceberg.rest.HTTPClient.execute(HTTPClient.java:321)
+	at org.apache.iceberg.rest.HTTPClient.execute(HTTPClient.java:299)
+	at org.apache.iceberg.rest.BaseHTTPClient.post(BaseHTTPClient.java:112)
+	at org.apache.iceberg.rest.RESTClient.post(RESTClient.java:150)
+	at org.apache.iceberg.rest.RESTTableOperations.commit(RESTTableOperations.java:227)
+	at org.apache.iceberg.SnapshotProducer.lambda$commit$2(SnapshotProducer.java:533)
+	at org.apache.iceberg.util.Tasks$Builder.runTaskWithRetry(Tasks.java:416)
+	at org.apache.iceberg.util.Tasks$Builder.runSingleThreaded(Tasks.java:222)
+	at org.apache.iceberg.util.Tasks$Builder.run(Tasks.java:206)
+	at org.apache.iceberg.util.Tasks$Builder.run(Tasks.java:199)
+	at org.apache.iceberg.SnapshotProducer.commit(SnapshotProducer.java:498)
+	at org.apache.iceberg.BaseOverwriteFiles.commit(BaseOverwriteFiles.java:31)
+	at org.apache.iceberg.spark.source.SparkWrite.commitOperation(SparkWrite.java:258)
+	at org.apache.iceberg.spark.source.SparkWrite$CopyOnWriteOperation.commitWithSnapshotIsolation(SparkWrite.java:535)
+	at org.apache.iceberg.spark.source.SparkWrite$CopyOnWriteOperation.commit(SparkWrite.java:481)
+	at org.apache.spark.sql.execution.datasources.v2.V2TableWriteExec.writeWithV2(WriteToDataSourceV2Exec.scala:438)
+	at org.apache.spark.sql.execution.datasources.v2.V2TableWriteExec.writeWithV2$(WriteToDataSourceV2Exec.scala:397)
+	at org.apache.spark.sql.execution.datasources.v2.ReplaceDataExec.writeWithV2(WriteToDataSourceV2Exec.scala:283)
+	at org.apache.spark.sql.execution.datasources.v2.V2ExistingTableWriteExec.run(WriteToDataSourceV2Exec.scala:360)
+	at org.apache.spark.sql.execution.datasources.v2.V2ExistingTableWriteExec.run$(WriteToDataSourceV2Exec.scala:358)
+	at org.apache.spark.sql.execution.datasources.v2.ReplaceDataExec.run(WriteToDataSourceV2Exec.scala:283)
+	at org.apache.spark.sql.execution.datasources.v2.V2CommandExec.result$lzycompute(V2CommandExec.scala:43)
+	at org.apache.spark.sql.execution.datasources.v2.V2CommandExec.result(V2CommandExec.scala:43)
+	at org.apache.spark.sql.execution.datasources.v2.V2CommandExec.executeCollect(V2CommandExec.scala:49)
+	at org.apache.spark.sql.execution.QueryExecution.$anonfun$eagerlyExecuteCommands$2(QueryExecution.scala:155)
+	at org.apache.spark.sql.execution.SQLExecution$.$anonfun$withNewExecutionId0$8(SQLExecution.scala:163)
+	at org.apache.spark.sql.execution.SQLExecution$.withSessionTagsApplied(SQLExecution.scala:272)
+	at org.apache.spark.sql.execution.SQLExecution$.$anonfun$withNewExecutionId0$7(SQLExecution.scala:125)
+	at org.apache.spark.JobArtifactSet$.withActiveJobArtifactState(JobArtifactSet.scala:94)
+	at org.apache.spark.sql.artifact.ArtifactManager.$anonfun$withResources$1(ArtifactManager.scala:112)
+	at org.apache.spark.sql.artifact.ArtifactManager.withClassLoaderIfNeeded(ArtifactManager.scala:106)
+	at org.apache.spark.sql.artifact.ArtifactManager.withResources(ArtifactManager.scala:111)
+	at org.apache.spark.sql.execution.SQLExecution$.$anonfun$withNewExecutionId0$6(SQLExecution.scala:125)
+	at org.apache.spark.sql.execution.SQLExecution$.withSQLConfPropagated(SQLExecution.scala:295)
+	at org.apache.spark.sql.execution.SQLExecution$.$anonfun$withNewExecutionId0$1(SQLExecution.scala:124)
+	at org.apache.spark.sql.SparkSession.withActive(SparkSession.scala:804)
+	at org.apache.spark.sql.execution.SQLExecution$.withNewExecutionId0(SQLExecution.scala:78)
+	at org.apache.spark.sql.execution.SQLExecution$.withNewExecutionId(SQLExecution.scala:237)
+	at org.apache.spark.sql.execution.QueryExecution.$anonfun$eagerlyExecuteCommands$1(QueryExecution.scala:155)
+	at org.apache.spark.sql.execution.QueryExecution$.withInternalError(QueryExecution.scala:654)
+	at org.apache.spark.sql.execution.QueryExecution.org$apache$spark$sql$execution$QueryExecution$$eagerlyExecute$1(QueryExecution.scala:154)
+	at org.apache.spark.sql.execution.QueryExecution$$anonfun$eagerlyExecuteCommands$3.applyOrElse(QueryExecution.scala:169)
+	at org.apache.spark.sql.execution.QueryExecution$$anonfun$eagerlyExecuteCommands$3.applyOrElse(QueryExecution.scala:164)
+	at org.apache.spark.sql.catalyst.trees.TreeNode.$anonfun$transformDownWithPruning$1(TreeNode.scala:470)
+	at org.apache.spark.sql.catalyst.trees.CurrentOrigin$.withOrigin(origin.scala:86)
+	at org.apache.spark.sql.catalyst.trees.TreeNode.transformDownWithPruning(TreeNode.scala:470)
+	at org.apache.spark.sql.catalyst.plans.logical.LogicalPlan.org$apache$spark$sql$catalyst$plans$logical$AnalysisHelper$$super$transformDownWithPruning(LogicalPlan.scala:37)
+	at org.apache.spark.sql.catalyst.plans.logical.AnalysisHelper.transformDownWithPruning(AnalysisHelper.scala:360)
+	at org.apache.spark.sql.catalyst.plans.logical.AnalysisHelper.transformDownWithPruning$(AnalysisHelper.scala:356)
+	at org.apache.spark.sql.catalyst.plans.logical.LogicalPlan.transformDownWithPruning(LogicalPlan.scala:37)
+	at org.apache.spark.sql.catalyst.plans.logical.LogicalPlan.transformDownWithPruning(LogicalPlan.scala:37)
+	at org.apache.spark.sql.catalyst.trees.TreeNode.transformDown(TreeNode.scala:446)
+	at org.apache.spark.sql.execution.QueryExecution.eagerlyExecuteCommands(QueryExecution.scala:164)
+	at org.apache.spark.sql.execution.QueryExecution.$anonfun$lazyCommandExecuted$1(QueryExecution.scala:126)
+	at scala.util.Try$.apply(Try.scala:217)
+	at org.apache.spark.util.Utils$.doTryWithCallerStacktrace(Utils.scala:1378)
+	at org.apache.spark.util.LazyTry.tryT$lzycompute(LazyTry.scala:46)
+	at org.apache.spark.util.LazyTry.tryT(LazyTry.scala:46)
+	at org.apache.spark.util.LazyTry.get(LazyTry.scala:58)
+	at org.apache.spark.sql.execution.QueryExecution.commandExecuted(QueryExecution.scala:131)
+	at org.apache.spark.sql.classic.Dataset.<init>(Dataset.scala:277)
+	at org.apache.spark.sql.classic.Dataset$.$anonfun$ofRows$5(Dataset.scala:140)
+	at org.apache.spark.sql.SparkSession.withActive(SparkSession.scala:804)
+	at org.apache.spark.sql.classic.Dataset$.ofRows(Dataset.scala:136)
+	at org.apache.spark.sql.classic.SparkSession.$anonfun$sql$1(SparkSession.scala:462)
+	at org.apache.spark.sql.SparkSession.withActive(SparkSession.scala:804)
+	at org.apache.spark.sql.classic.SparkSession.sql(SparkSession.scala:449)
+	at org.apache.spark.sql.classic.SparkSession.sql(SparkSession.scala:467)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at py4j.reflection.MethodInvoker.invoke(MethodInvoker.java:244)
+	at py4j.reflection.ReflectionEngine.invoke(ReflectionEngine.java:374)
+	at py4j.Gateway.invoke(Gateway.java:282)
+	at py4j.commands.AbstractCommand.invokeMethod(AbstractCommand.java:132)
+	at py4j.commands.CallCommand.execute(CallCommand.java:79)
+	at py4j.ClientServerConnection.waitForCommands(ClientServerConnection.java:184)
+	at py4j.ClientServerConnection.run(ClientServerConnection.java:108)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+_ test_stage3_effects_ignore_unread_append[snapshot-update_status-merge-on-read] _
+
+spark = <pyspark.sql.session.SparkSession object at 0x745224255810>
+mode = 'merge-on-read', statement = 'update_status', isolation = 'snapshot'
+
+    @pytest.mark.parametrize("mode", ["copy-on-write", "merge-on-read"])
+    @pytest.mark.parametrize("statement", ["update_status", "delete_by_keys"])
+    @pytest.mark.parametrize("isolation", ["snapshot", "serializable"])
+    def test_stage3_effects_ignore_unread_append(spark: Any, mode: str, statement: str, isolation: str) -> None:
+        from pyspark import InheritableThread
+    
+        env = Env()
+        key = f"{mode.replace('-', '_')}_{statement}_{isolation}"
+        name = f"stage3_it.effects_{key}"
+        table = f"lake.{name}"
+        op_id = f"effects-micro-{key}-{time.time_ns()}"
+        verb = "update" if statement == "update_status" else "delete"
+        op_type = "cow_dml" if mode == "copy-on-write" else f"mor_{verb}"
+        out: dict[str, Any] = {"mode": mode, "statement": statement, "isolation": isolation}
+        spark.sql("CREATE NAMESPACE IF NOT EXISTS lake.stage3_it")
+        spark.sql(f"DROP TABLE IF EXISTS {table} PURGE")
+        spark.sql(f"CREATE TABLE {table} (event_id BIGINT, key BIGINT, dt DATE, version INT) USING iceberg "
+                  "PARTITIONED BY (dt, bucket(1, key)) TBLPROPERTIES ('format-version'='2', "
+                  f"'write.{verb}.mode'='{mode}', 'write.{verb}.isolation-level'='{isolation}')")
+        spark.sql(f"INSERT INTO {table} VALUES (1,97,DATE '2026-11-01',0),(2,98,DATE '2026-11-01',0)")
+        base = load_table_state(env, name).current_snapshot_id
+        out["base_snapshot_id"] = base
+        sql = (f"UPDATE s0.{name} SET version=version+1 WHERE key=97" if verb == "update" else
+               f"DELETE FROM s0.{name} WHERE key=97")
+    
+        def pending() -> None:
+            try:
+                frame = spark.sql(sql)
+                frame.collect()
+                out["physical_plan"] = frame._jdf.queryExecution().executedPlan().treeString()
+                out["frame"] = frame
+                out["outcome"] = "success"
+            except Exception as exc:
+                out["outcome"] = classify(str(exc))
+                out["exception"] = str(exc)
+    
+        thread = InheritableThread(target=pending, daemon=True)
+        try:
+            requests.put(f"{env.advisor_uri}/v1/debug/slots/s0",
+                         json={"op_id": op_id, "op_type": op_type}, timeout=10).raise_for_status()
+            requests.post(f"{env.advisor_uri}/v1/debug/hold", json={"slot": "s0", "max_ms": 60000},
+                          timeout=10).raise_for_status()
+            thread.start()
+            deadline = time.monotonic() + 120
+            held = []
+            while time.monotonic() < deadline and thread.is_alive():
+                entries = requests.get(f"{env.advisor_uri}/_capl/debug/last-commits", timeout=10).json()
+                held = [x for x in entries if x.get("op_id") == op_id]
+                if held:
+                    break
+                time.sleep(0.1)
+            assert held and thread.is_alive(), out
+            spark.sql(f"INSERT INTO {table} VALUES (3,97,DATE '2026-11-01',0)")
+            appended = load_table_state(env, name).current_snapshot_id
+            assert appended != base
+            out["append_snapshot_id"] = appended
+            requests.delete(f"{env.advisor_uri}/v1/debug/hold/s0", timeout=10).raise_for_status()
+            thread.join(timeout=120)
+            assert not thread.is_alive(), "DML did not finish after releasing hold"
+            actual = {int(r['event_id']): int(r['version']) for r in
+                      spark.sql(f"SELECT event_id,version FROM {table}").collect()}
+            out["actual_versions"] = actual
+            assert actual[3] == 0, out
+            if isolation == "serializable":
+                assert out["outcome"] == "K2", out
+                assert actual == {1: 0, 2: 0, 3: 0}, out
+            else:
+                assert out["outcome"] == "success", out
+                assert actual == ({1: 1, 2: 0, 3: 0} if verb == "update" else {2: 0, 3: 0}), out
+                state = load_table_state(env, name)
+                sid = state.current_snapshot_id
+                assert state.snapshots[sid]["parent"] == appended
+                out["committed_snapshot_id"] = sid
+                out["snapshots"] = state.metadata["snapshots"]
+                journal: dict[str, Any] = ({"deleted_keys": [97]} if verb == "delete" else
+                                           {"update_rule": {"mod": 97, "r": 0}})
+                row = {"op_id": op_id, "outcome": "committed", "snapshot_id": sid,
+                       "planning_snapshot_id": base, "footprint_requested": ["dt=2026-11-01/key_bucket=0"]}
+                executor = OpExecutor.__new__(OpExecutor)
+                executor.ctx = SimpleNamespace(spark=spark, env=env, table=name,
+                                               sc=SimpleNamespace(table=SimpleNamespace(n_buckets=1)))
+                executor.record_effects(SimpleNamespace(type=op_type, params={"statement": statement}), row, journal)
+                out["journal"] = journal
+                affected = ({r[0] for r in journal["deleted_rows"]} if verb == "delete" else
+                            set(journal["effect_updated_ids"]))
+>               assert affected == {1}, out
+E               AssertionError: {'mode': 'merge-on-read', 'statement': 'update_status', 'isolation': 'snapshot', 'base_snapshot_id': 6041899078370032079, ...}
+E               assert {1, 3} == {1}
+E                 
+E                 Extra items in the left set:
+E                 3
+E                 Use -v to get more diff
+
+tests/integration/test_runner_effects_stage3.py:116: AssertionError
+----------------------------- Captured stderr call -----------------------------
+26/11/08 10:53:02 WARN Tasks: Retrying task after failure: sleepTimeMs=109 Commit failed: Requirement failed: branch main has changed: expected id 6041899078370032079 != 1180866269504490870
+org.apache.iceberg.exceptions.CommitFailedException: Commit failed: Requirement failed: branch main has changed: expected id 6041899078370032079 != 1180866269504490870
+	at org.apache.iceberg.rest.ErrorHandlers$CommitErrorHandler.accept(ErrorHandlers.java:128)
+	at org.apache.iceberg.rest.ErrorHandlers$CommitErrorHandler.accept(ErrorHandlers.java:119)
+	at org.apache.iceberg.rest.HTTPClient.throwFailure(HTTPClient.java:242)
+	at org.apache.iceberg.rest.HTTPClient.handleResponse(HTTPClient.java:367)
+	at org.apache.iceberg.rest.HTTPClient.lambda$execute$1(HTTPClient.java:325)
+	at org.apache.iceberg.shaded.org.apache.hc.client5.http.impl.classic.CloseableHttpClient.execute(CloseableHttpClient.java:247)
+	at org.apache.iceberg.shaded.org.apache.hc.client5.http.impl.classic.CloseableHttpClient.execute(CloseableHttpClient.java:188)
+	at org.apache.iceberg.rest.HTTPClient.execute(HTTPClient.java:321)
+	at org.apache.iceberg.rest.HTTPClient.execute(HTTPClient.java:299)
+	at org.apache.iceberg.rest.BaseHTTPClient.post(BaseHTTPClient.java:112)
+	at org.apache.iceberg.rest.RESTClient.post(RESTClient.java:150)
+	at org.apache.iceberg.rest.RESTTableOperations.commit(RESTTableOperations.java:227)
+	at org.apache.iceberg.SnapshotProducer.lambda$commit$2(SnapshotProducer.java:533)
+	at org.apache.iceberg.util.Tasks$Builder.runTaskWithRetry(Tasks.java:416)
+	at org.apache.iceberg.util.Tasks$Builder.runSingleThreaded(Tasks.java:222)
+	at org.apache.iceberg.util.Tasks$Builder.run(Tasks.java:206)
+	at org.apache.iceberg.util.Tasks$Builder.run(Tasks.java:199)
+	at org.apache.iceberg.SnapshotProducer.commit(SnapshotProducer.java:498)
+	at org.apache.iceberg.BaseRowDelta.commit(BaseRowDelta.java:31)
+	at org.apache.iceberg.spark.source.SparkPositionDeltaWrite$PositionDeltaBatchWrite.commitOperation(SparkPositionDeltaWrite.java:366)
+	at org.apache.iceberg.spark.source.SparkPositionDeltaWrite$PositionDeltaBatchWrite.commit(SparkPositionDeltaWrite.java:297)
+	at org.apache.spark.sql.execution.datasources.v2.V2TableWriteExec.writeWithV2(WriteToDataSourceV2Exec.scala:438)
+	at org.apache.spark.sql.execution.datasources.v2.V2TableWriteExec.writeWithV2$(WriteToDataSourceV2Exec.scala:397)
+	at org.apache.spark.sql.execution.datasources.v2.WriteDeltaExec.writeWithV2(WriteToDataSourceV2Exec.scala:308)
+	at org.apache.spark.sql.execution.datasources.v2.V2ExistingTableWriteExec.run(WriteToDataSourceV2Exec.scala:360)
+	at org.apache.spark.sql.execution.datasources.v2.V2ExistingTableWriteExec.run$(WriteToDataSourceV2Exec.scala:358)
+	at org.apache.spark.sql.execution.datasources.v2.WriteDeltaExec.run(WriteToDataSourceV2Exec.scala:308)
+	at org.apache.spark.sql.execution.datasources.v2.V2CommandExec.result$lzycompute(V2CommandExec.scala:43)
+	at org.apache.spark.sql.execution.datasources.v2.V2CommandExec.result(V2CommandExec.scala:43)
+	at org.apache.spark.sql.execution.datasources.v2.V2CommandExec.executeCollect(V2CommandExec.scala:49)
+	at org.apache.spark.sql.execution.QueryExecution.$anonfun$eagerlyExecuteCommands$2(QueryExecution.scala:155)
+	at org.apache.spark.sql.execution.SQLExecution$.$anonfun$withNewExecutionId0$8(SQLExecution.scala:163)
+	at org.apache.spark.sql.execution.SQLExecution$.withSessionTagsApplied(SQLExecution.scala:272)
+	at org.apache.spark.sql.execution.SQLExecution$.$anonfun$withNewExecutionId0$7(SQLExecution.scala:125)
+	at org.apache.spark.JobArtifactSet$.withActiveJobArtifactState(JobArtifactSet.scala:94)
+	at org.apache.spark.sql.artifact.ArtifactManager.$anonfun$withResources$1(ArtifactManager.scala:112)
+	at org.apache.spark.sql.artifact.ArtifactManager.withClassLoaderIfNeeded(ArtifactManager.scala:106)
+	at org.apache.spark.sql.artifact.ArtifactManager.withResources(ArtifactManager.scala:111)
+	at org.apache.spark.sql.execution.SQLExecution$.$anonfun$withNewExecutionId0$6(SQLExecution.scala:125)
+	at org.apache.spark.sql.execution.SQLExecution$.withSQLConfPropagated(SQLExecution.scala:295)
+	at org.apache.spark.sql.execution.SQLExecution$.$anonfun$withNewExecutionId0$1(SQLExecution.scala:124)
+	at org.apache.spark.sql.SparkSession.withActive(SparkSession.scala:804)
+	at org.apache.spark.sql.execution.SQLExecution$.withNewExecutionId0(SQLExecution.scala:78)
+	at org.apache.spark.sql.execution.SQLExecution$.withNewExecutionId(SQLExecution.scala:237)
+	at org.apache.spark.sql.execution.QueryExecution.$anonfun$eagerlyExecuteCommands$1(QueryExecution.scala:155)
+	at org.apache.spark.sql.execution.QueryExecution$.withInternalError(QueryExecution.scala:654)
+	at org.apache.spark.sql.execution.QueryExecution.org$apache$spark$sql$execution$QueryExecution$$eagerlyExecute$1(QueryExecution.scala:154)
+	at org.apache.spark.sql.execution.QueryExecution$$anonfun$eagerlyExecuteCommands$3.applyOrElse(QueryExecution.scala:169)
+	at org.apache.spark.sql.execution.QueryExecution$$anonfun$eagerlyExecuteCommands$3.applyOrElse(QueryExecution.scala:164)
+	at org.apache.spark.sql.catalyst.trees.TreeNode.$anonfun$transformDownWithPruning$1(TreeNode.scala:470)
+	at org.apache.spark.sql.catalyst.trees.CurrentOrigin$.withOrigin(origin.scala:86)
+	at org.apache.spark.sql.catalyst.trees.TreeNode.transformDownWithPruning(TreeNode.scala:470)
+	at org.apache.spark.sql.catalyst.plans.logical.LogicalPlan.org$apache$spark$sql$catalyst$plans$logical$AnalysisHelper$$super$transformDownWithPruning(LogicalPlan.scala:37)
+	at org.apache.spark.sql.catalyst.plans.logical.AnalysisHelper.transformDownWithPruning(AnalysisHelper.scala:360)
+	at org.apache.spark.sql.catalyst.plans.logical.AnalysisHelper.transformDownWithPruning$(AnalysisHelper.scala:356)
+	at org.apache.spark.sql.catalyst.plans.logical.LogicalPlan.transformDownWithPruning(LogicalPlan.scala:37)
+	at org.apache.spark.sql.catalyst.plans.logical.LogicalPlan.transformDownWithPruning(LogicalPlan.scala:37)
+	at org.apache.spark.sql.catalyst.trees.TreeNode.transformDown(TreeNode.scala:446)
+	at org.apache.spark.sql.execution.QueryExecution.eagerlyExecuteCommands(QueryExecution.scala:164)
+	at org.apache.spark.sql.execution.QueryExecution.$anonfun$lazyCommandExecuted$1(QueryExecution.scala:126)
+	at scala.util.Try$.apply(Try.scala:217)
+	at org.apache.spark.util.Utils$.doTryWithCallerStacktrace(Utils.scala:1378)
+	at org.apache.spark.util.LazyTry.tryT$lzycompute(LazyTry.scala:46)
+	at org.apache.spark.util.LazyTry.tryT(LazyTry.scala:46)
+	at org.apache.spark.util.LazyTry.get(LazyTry.scala:58)
+	at org.apache.spark.sql.execution.QueryExecution.commandExecuted(QueryExecution.scala:131)
+	at org.apache.spark.sql.classic.Dataset.<init>(Dataset.scala:277)
+	at org.apache.spark.sql.classic.Dataset$.$anonfun$ofRows$5(Dataset.scala:140)
+	at org.apache.spark.sql.SparkSession.withActive(SparkSession.scala:804)
+	at org.apache.spark.sql.classic.Dataset$.ofRows(Dataset.scala:136)
+	at org.apache.spark.sql.classic.SparkSession.$anonfun$sql$1(SparkSession.scala:462)
+	at org.apache.spark.sql.SparkSession.withActive(SparkSession.scala:804)
+	at org.apache.spark.sql.classic.SparkSession.sql(SparkSession.scala:449)
+	at org.apache.spark.sql.classic.SparkSession.sql(SparkSession.scala:467)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at py4j.reflection.MethodInvoker.invoke(MethodInvoker.java:244)
+	at py4j.reflection.ReflectionEngine.invoke(ReflectionEngine.java:374)
+	at py4j.Gateway.invoke(Gateway.java:282)
+	at py4j.commands.AbstractCommand.invokeMethod(AbstractCommand.java:132)
+	at py4j.commands.CallCommand.execute(CallCommand.java:79)
+	at py4j.ClientServerConnection.waitForCommands(ClientServerConnection.java:184)
+	at py4j.ClientServerConnection.run(ClientServerConnection.java:108)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+_ test_stage3_effects_ignore_unread_append[snapshot-delete_by_keys-copy-on-write] _
+
+spark = <pyspark.sql.session.SparkSession object at 0x745224255810>
+mode = 'copy-on-write', statement = 'delete_by_keys', isolation = 'snapshot'
+
+    @pytest.mark.parametrize("mode", ["copy-on-write", "merge-on-read"])
+    @pytest.mark.parametrize("statement", ["update_status", "delete_by_keys"])
+    @pytest.mark.parametrize("isolation", ["snapshot", "serializable"])
+    def test_stage3_effects_ignore_unread_append(spark: Any, mode: str, statement: str, isolation: str) -> None:
+        from pyspark import InheritableThread
+    
+        env = Env()
+        key = f"{mode.replace('-', '_')}_{statement}_{isolation}"
+        name = f"stage3_it.effects_{key}"
+        table = f"lake.{name}"
+        op_id = f"effects-micro-{key}-{time.time_ns()}"
+        verb = "update" if statement == "update_status" else "delete"
+        op_type = "cow_dml" if mode == "copy-on-write" else f"mor_{verb}"
+        out: dict[str, Any] = {"mode": mode, "statement": statement, "isolation": isolation}
+        spark.sql("CREATE NAMESPACE IF NOT EXISTS lake.stage3_it")
+        spark.sql(f"DROP TABLE IF EXISTS {table} PURGE")
+        spark.sql(f"CREATE TABLE {table} (event_id BIGINT, key BIGINT, dt DATE, version INT) USING iceberg "
+                  "PARTITIONED BY (dt, bucket(1, key)) TBLPROPERTIES ('format-version'='2', "
+                  f"'write.{verb}.mode'='{mode}', 'write.{verb}.isolation-level'='{isolation}')")
+        spark.sql(f"INSERT INTO {table} VALUES (1,97,DATE '2026-11-01',0),(2,98,DATE '2026-11-01',0)")
+        base = load_table_state(env, name).current_snapshot_id
+        out["base_snapshot_id"] = base
+        sql = (f"UPDATE s0.{name} SET version=version+1 WHERE key=97" if verb == "update" else
+               f"DELETE FROM s0.{name} WHERE key=97")
+    
+        def pending() -> None:
+            try:
+                frame = spark.sql(sql)
+                frame.collect()
+                out["physical_plan"] = frame._jdf.queryExecution().executedPlan().treeString()
+                out["frame"] = frame
+                out["outcome"] = "success"
+            except Exception as exc:
+                out["outcome"] = classify(str(exc))
+                out["exception"] = str(exc)
+    
+        thread = InheritableThread(target=pending, daemon=True)
+        try:
+            requests.put(f"{env.advisor_uri}/v1/debug/slots/s0",
+                         json={"op_id": op_id, "op_type": op_type}, timeout=10).raise_for_status()
+            requests.post(f"{env.advisor_uri}/v1/debug/hold", json={"slot": "s0", "max_ms": 60000},
+                          timeout=10).raise_for_status()
+            thread.start()
+            deadline = time.monotonic() + 120
+            held = []
+            while time.monotonic() < deadline and thread.is_alive():
+                entries = requests.get(f"{env.advisor_uri}/_capl/debug/last-commits", timeout=10).json()
+                held = [x for x in entries if x.get("op_id") == op_id]
+                if held:
+                    break
+                time.sleep(0.1)
+            assert held and thread.is_alive(), out
+            spark.sql(f"INSERT INTO {table} VALUES (3,97,DATE '2026-11-01',0)")
+            appended = load_table_state(env, name).current_snapshot_id
+            assert appended != base
+            out["append_snapshot_id"] = appended
+            requests.delete(f"{env.advisor_uri}/v1/debug/hold/s0", timeout=10).raise_for_status()
+            thread.join(timeout=120)
+            assert not thread.is_alive(), "DML did not finish after releasing hold"
+            actual = {int(r['event_id']): int(r['version']) for r in
+                      spark.sql(f"SELECT event_id,version FROM {table}").collect()}
+            out["actual_versions"] = actual
+            assert actual[3] == 0, out
+            if isolation == "serializable":
+                assert out["outcome"] == "K2", out
+                assert actual == {1: 0, 2: 0, 3: 0}, out
+            else:
+                assert out["outcome"] == "success", out
+                assert actual == ({1: 1, 2: 0, 3: 0} if verb == "update" else {2: 0, 3: 0}), out
+                state = load_table_state(env, name)
+                sid = state.current_snapshot_id
+                assert state.snapshots[sid]["parent"] == appended
+                out["committed_snapshot_id"] = sid
+                out["snapshots"] = state.metadata["snapshots"]
+                journal: dict[str, Any] = ({"deleted_keys": [97]} if verb == "delete" else
+                                           {"update_rule": {"mod": 97, "r": 0}})
+                row = {"op_id": op_id, "outcome": "committed", "snapshot_id": sid,
+                       "planning_snapshot_id": base, "footprint_requested": ["dt=2026-11-01/key_bucket=0"]}
+                executor = OpExecutor.__new__(OpExecutor)
+                executor.ctx = SimpleNamespace(spark=spark, env=env, table=name,
+                                               sc=SimpleNamespace(table=SimpleNamespace(n_buckets=1)))
+                executor.record_effects(SimpleNamespace(type=op_type, params={"statement": statement}), row, journal)
+                out["journal"] = journal
+                affected = ({r[0] for r in journal["deleted_rows"]} if verb == "delete" else
+                            set(journal["effect_updated_ids"]))
+>               assert affected == {1}, out
+E               AssertionError: {'mode': 'copy-on-write', 'statement': 'delete_by_keys', 'isolation': 'snapshot', 'base_snapshot_id': 2325388081201351030, ...}
+E               assert {1, 3} == {1}
+E                 
+E                 Extra items in the left set:
+E                 3
+E                 Use -v to get more diff
+
+tests/integration/test_runner_effects_stage3.py:116: AssertionError
+----------------------------- Captured stderr call -----------------------------
+26/11/08 10:53:04 WARN Tasks: Retrying task after failure: sleepTimeMs=104 Commit failed: Requirement failed: branch main has changed: expected id 2325388081201351030 != 2178098947641532387
+org.apache.iceberg.exceptions.CommitFailedException: Commit failed: Requirement failed: branch main has changed: expected id 2325388081201351030 != 2178098947641532387
+	at org.apache.iceberg.rest.ErrorHandlers$CommitErrorHandler.accept(ErrorHandlers.java:128)
+	at org.apache.iceberg.rest.ErrorHandlers$CommitErrorHandler.accept(ErrorHandlers.java:119)
+	at org.apache.iceberg.rest.HTTPClient.throwFailure(HTTPClient.java:242)
+	at org.apache.iceberg.rest.HTTPClient.handleResponse(HTTPClient.java:367)
+	at org.apache.iceberg.rest.HTTPClient.lambda$execute$1(HTTPClient.java:325)
+	at org.apache.iceberg.shaded.org.apache.hc.client5.http.impl.classic.CloseableHttpClient.execute(CloseableHttpClient.java:247)
+	at org.apache.iceberg.shaded.org.apache.hc.client5.http.impl.classic.CloseableHttpClient.execute(CloseableHttpClient.java:188)
+	at org.apache.iceberg.rest.HTTPClient.execute(HTTPClient.java:321)
+	at org.apache.iceberg.rest.HTTPClient.execute(HTTPClient.java:299)
+	at org.apache.iceberg.rest.BaseHTTPClient.post(BaseHTTPClient.java:112)
+	at org.apache.iceberg.rest.RESTClient.post(RESTClient.java:150)
+	at org.apache.iceberg.rest.RESTTableOperations.commit(RESTTableOperations.java:227)
+	at org.apache.iceberg.SnapshotProducer.lambda$commit$2(SnapshotProducer.java:533)
+	at org.apache.iceberg.util.Tasks$Builder.runTaskWithRetry(Tasks.java:416)
+	at org.apache.iceberg.util.Tasks$Builder.runSingleThreaded(Tasks.java:222)
+	at org.apache.iceberg.util.Tasks$Builder.run(Tasks.java:206)
+	at org.apache.iceberg.util.Tasks$Builder.run(Tasks.java:199)
+	at org.apache.iceberg.SnapshotProducer.commit(SnapshotProducer.java:498)
+	at org.apache.iceberg.BaseOverwriteFiles.commit(BaseOverwriteFiles.java:31)
+	at org.apache.iceberg.spark.source.SparkWrite.commitOperation(SparkWrite.java:258)
+	at org.apache.iceberg.spark.source.SparkWrite$CopyOnWriteOperation.commitWithSnapshotIsolation(SparkWrite.java:535)
+	at org.apache.iceberg.spark.source.SparkWrite$CopyOnWriteOperation.commit(SparkWrite.java:481)
+	at org.apache.spark.sql.execution.datasources.v2.V2TableWriteExec.writeWithV2(WriteToDataSourceV2Exec.scala:438)
+	at org.apache.spark.sql.execution.datasources.v2.V2TableWriteExec.writeWithV2$(WriteToDataSourceV2Exec.scala:397)
+	at org.apache.spark.sql.execution.datasources.v2.ReplaceDataExec.writeWithV2(WriteToDataSourceV2Exec.scala:283)
+	at org.apache.spark.sql.execution.datasources.v2.V2ExistingTableWriteExec.run(WriteToDataSourceV2Exec.scala:360)
+	at org.apache.spark.sql.execution.datasources.v2.V2ExistingTableWriteExec.run$(WriteToDataSourceV2Exec.scala:358)
+	at org.apache.spark.sql.execution.datasources.v2.ReplaceDataExec.run(WriteToDataSourceV2Exec.scala:283)
+	at org.apache.spark.sql.execution.datasources.v2.V2CommandExec.result$lzycompute(V2CommandExec.scala:43)
+	at org.apache.spark.sql.execution.datasources.v2.V2CommandExec.result(V2CommandExec.scala:43)
+	at org.apache.spark.sql.execution.datasources.v2.V2CommandExec.executeCollect(V2CommandExec.scala:49)
+	at org.apache.spark.sql.execution.QueryExecution.$anonfun$eagerlyExecuteCommands$2(QueryExecution.scala:155)
+	at org.apache.spark.sql.execution.SQLExecution$.$anonfun$withNewExecutionId0$8(SQLExecution.scala:163)
+	at org.apache.spark.sql.execution.SQLExecution$.withSessionTagsApplied(SQLExecution.scala:272)
+	at org.apache.spark.sql.execution.SQLExecution$.$anonfun$withNewExecutionId0$7(SQLExecution.scala:125)
+	at org.apache.spark.JobArtifactSet$.withActiveJobArtifactState(JobArtifactSet.scala:94)
+	at org.apache.spark.sql.artifact.ArtifactManager.$anonfun$withResources$1(ArtifactManager.scala:112)
+	at org.apache.spark.sql.artifact.ArtifactManager.withClassLoaderIfNeeded(ArtifactManager.scala:106)
+	at org.apache.spark.sql.artifact.ArtifactManager.withResources(ArtifactManager.scala:111)
+	at org.apache.spark.sql.execution.SQLExecution$.$anonfun$withNewExecutionId0$6(SQLExecution.scala:125)
+	at org.apache.spark.sql.execution.SQLExecution$.withSQLConfPropagated(SQLExecution.scala:295)
+	at org.apache.spark.sql.execution.SQLExecution$.$anonfun$withNewExecutionId0$1(SQLExecution.scala:124)
+	at org.apache.spark.sql.SparkSession.withActive(SparkSession.scala:804)
+	at org.apache.spark.sql.execution.SQLExecution$.withNewExecutionId0(SQLExecution.scala:78)
+	at org.apache.spark.sql.execution.SQLExecution$.withNewExecutionId(SQLExecution.scala:237)
+	at org.apache.spark.sql.execution.QueryExecution.$anonfun$eagerlyExecuteCommands$1(QueryExecution.scala:155)
+	at org.apache.spark.sql.execution.QueryExecution$.withInternalError(QueryExecution.scala:654)
+	at org.apache.spark.sql.execution.QueryExecution.org$apache$spark$sql$execution$QueryExecution$$eagerlyExecute$1(QueryExecution.scala:154)
+	at org.apache.spark.sql.execution.QueryExecution$$anonfun$eagerlyExecuteCommands$3.applyOrElse(QueryExecution.scala:169)
+	at org.apache.spark.sql.execution.QueryExecution$$anonfun$eagerlyExecuteCommands$3.applyOrElse(QueryExecution.scala:164)
+	at org.apache.spark.sql.catalyst.trees.TreeNode.$anonfun$transformDownWithPruning$1(TreeNode.scala:470)
+	at org.apache.spark.sql.catalyst.trees.CurrentOrigin$.withOrigin(origin.scala:86)
+	at org.apache.spark.sql.catalyst.trees.TreeNode.transformDownWithPruning(TreeNode.scala:470)
+	at org.apache.spark.sql.catalyst.plans.logical.LogicalPlan.org$apache$spark$sql$catalyst$plans$logical$AnalysisHelper$$super$transformDownWithPruning(LogicalPlan.scala:37)
+	at org.apache.spark.sql.catalyst.plans.logical.AnalysisHelper.transformDownWithPruning(AnalysisHelper.scala:360)
+	at org.apache.spark.sql.catalyst.plans.logical.AnalysisHelper.transformDownWithPruning$(AnalysisHelper.scala:356)
+	at org.apache.spark.sql.catalyst.plans.logical.LogicalPlan.transformDownWithPruning(LogicalPlan.scala:37)
+	at org.apache.spark.sql.catalyst.plans.logical.LogicalPlan.transformDownWithPruning(LogicalPlan.scala:37)
+	at org.apache.spark.sql.catalyst.trees.TreeNode.transformDown(TreeNode.scala:446)
+	at org.apache.spark.sql.execution.QueryExecution.eagerlyExecuteCommands(QueryExecution.scala:164)
+	at org.apache.spark.sql.execution.QueryExecution.$anonfun$lazyCommandExecuted$1(QueryExecution.scala:126)
+	at scala.util.Try$.apply(Try.scala:217)
+	at org.apache.spark.util.Utils$.doTryWithCallerStacktrace(Utils.scala:1378)
+	at org.apache.spark.util.LazyTry.tryT$lzycompute(LazyTry.scala:46)
+	at org.apache.spark.util.LazyTry.tryT(LazyTry.scala:46)
+	at org.apache.spark.util.LazyTry.get(LazyTry.scala:58)
+	at org.apache.spark.sql.execution.QueryExecution.commandExecuted(QueryExecution.scala:131)
+	at org.apache.spark.sql.classic.Dataset.<init>(Dataset.scala:277)
+	at org.apache.spark.sql.classic.Dataset$.$anonfun$ofRows$5(Dataset.scala:140)
+	at org.apache.spark.sql.SparkSession.withActive(SparkSession.scala:804)
+	at org.apache.spark.sql.classic.Dataset$.ofRows(Dataset.scala:136)
+	at org.apache.spark.sql.classic.SparkSession.$anonfun$sql$1(SparkSession.scala:462)
+	at org.apache.spark.sql.SparkSession.withActive(SparkSession.scala:804)
+	at org.apache.spark.sql.classic.SparkSession.sql(SparkSession.scala:449)
+	at org.apache.spark.sql.classic.SparkSession.sql(SparkSession.scala:467)
+	at jdk.internal.reflect.GeneratedMethodAccessor51.invoke(Unknown Source)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at py4j.reflection.MethodInvoker.invoke(MethodInvoker.java:244)
+	at py4j.reflection.ReflectionEngine.invoke(ReflectionEngine.java:374)
+	at py4j.Gateway.invoke(Gateway.java:282)
+	at py4j.commands.AbstractCommand.invokeMethod(AbstractCommand.java:132)
+	at py4j.commands.CallCommand.execute(CallCommand.java:79)
+	at py4j.ClientServerConnection.waitForCommands(ClientServerConnection.java:184)
+	at py4j.ClientServerConnection.run(ClientServerConnection.java:108)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+_ test_stage3_effects_ignore_unread_append[snapshot-delete_by_keys-merge-on-read] _
+
+spark = <pyspark.sql.session.SparkSession object at 0x745224255810>
+mode = 'merge-on-read', statement = 'delete_by_keys', isolation = 'snapshot'
+
+    @pytest.mark.parametrize("mode", ["copy-on-write", "merge-on-read"])
+    @pytest.mark.parametrize("statement", ["update_status", "delete_by_keys"])
+    @pytest.mark.parametrize("isolation", ["snapshot", "serializable"])
+    def test_stage3_effects_ignore_unread_append(spark: Any, mode: str, statement: str, isolation: str) -> None:
+        from pyspark import InheritableThread
+    
+        env = Env()
+        key = f"{mode.replace('-', '_')}_{statement}_{isolation}"
+        name = f"stage3_it.effects_{key}"
+        table = f"lake.{name}"
+        op_id = f"effects-micro-{key}-{time.time_ns()}"
+        verb = "update" if statement == "update_status" else "delete"
+        op_type = "cow_dml" if mode == "copy-on-write" else f"mor_{verb}"
+        out: dict[str, Any] = {"mode": mode, "statement": statement, "isolation": isolation}
+        spark.sql("CREATE NAMESPACE IF NOT EXISTS lake.stage3_it")
+        spark.sql(f"DROP TABLE IF EXISTS {table} PURGE")
+        spark.sql(f"CREATE TABLE {table} (event_id BIGINT, key BIGINT, dt DATE, version INT) USING iceberg "
+                  "PARTITIONED BY (dt, bucket(1, key)) TBLPROPERTIES ('format-version'='2', "
+                  f"'write.{verb}.mode'='{mode}', 'write.{verb}.isolation-level'='{isolation}')")
+        spark.sql(f"INSERT INTO {table} VALUES (1,97,DATE '2026-11-01',0),(2,98,DATE '2026-11-01',0)")
+        base = load_table_state(env, name).current_snapshot_id
+        out["base_snapshot_id"] = base
+        sql = (f"UPDATE s0.{name} SET version=version+1 WHERE key=97" if verb == "update" else
+               f"DELETE FROM s0.{name} WHERE key=97")
+    
+        def pending() -> None:
+            try:
+                frame = spark.sql(sql)
+                frame.collect()
+                out["physical_plan"] = frame._jdf.queryExecution().executedPlan().treeString()
+                out["frame"] = frame
+                out["outcome"] = "success"
+            except Exception as exc:
+                out["outcome"] = classify(str(exc))
+                out["exception"] = str(exc)
+    
+        thread = InheritableThread(target=pending, daemon=True)
+        try:
+            requests.put(f"{env.advisor_uri}/v1/debug/slots/s0",
+                         json={"op_id": op_id, "op_type": op_type}, timeout=10).raise_for_status()
+            requests.post(f"{env.advisor_uri}/v1/debug/hold", json={"slot": "s0", "max_ms": 60000},
+                          timeout=10).raise_for_status()
+            thread.start()
+            deadline = time.monotonic() + 120
+            held = []
+            while time.monotonic() < deadline and thread.is_alive():
+                entries = requests.get(f"{env.advisor_uri}/_capl/debug/last-commits", timeout=10).json()
+                held = [x for x in entries if x.get("op_id") == op_id]
+                if held:
+                    break
+                time.sleep(0.1)
+            assert held and thread.is_alive(), out
+            spark.sql(f"INSERT INTO {table} VALUES (3,97,DATE '2026-11-01',0)")
+            appended = load_table_state(env, name).current_snapshot_id
+            assert appended != base
+            out["append_snapshot_id"] = appended
+            requests.delete(f"{env.advisor_uri}/v1/debug/hold/s0", timeout=10).raise_for_status()
+            thread.join(timeout=120)
+            assert not thread.is_alive(), "DML did not finish after releasing hold"
+            actual = {int(r['event_id']): int(r['version']) for r in
+                      spark.sql(f"SELECT event_id,version FROM {table}").collect()}
+            out["actual_versions"] = actual
+            assert actual[3] == 0, out
+            if isolation == "serializable":
+                assert out["outcome"] == "K2", out
+                assert actual == {1: 0, 2: 0, 3: 0}, out
+            else:
+                assert out["outcome"] == "success", out
+                assert actual == ({1: 1, 2: 0, 3: 0} if verb == "update" else {2: 0, 3: 0}), out
+                state = load_table_state(env, name)
+                sid = state.current_snapshot_id
+                assert state.snapshots[sid]["parent"] == appended
+                out["committed_snapshot_id"] = sid
+                out["snapshots"] = state.metadata["snapshots"]
+                journal: dict[str, Any] = ({"deleted_keys": [97]} if verb == "delete" else
+                                           {"update_rule": {"mod": 97, "r": 0}})
+                row = {"op_id": op_id, "outcome": "committed", "snapshot_id": sid,
+                       "planning_snapshot_id": base, "footprint_requested": ["dt=2026-11-01/key_bucket=0"]}
+                executor = OpExecutor.__new__(OpExecutor)
+                executor.ctx = SimpleNamespace(spark=spark, env=env, table=name,
+                                               sc=SimpleNamespace(table=SimpleNamespace(n_buckets=1)))
+                executor.record_effects(SimpleNamespace(type=op_type, params={"statement": statement}), row, journal)
+                out["journal"] = journal
+                affected = ({r[0] for r in journal["deleted_rows"]} if verb == "delete" else
+                            set(journal["effect_updated_ids"]))
+>               assert affected == {1}, out
+E               AssertionError: {'mode': 'merge-on-read', 'statement': 'delete_by_keys', 'isolation': 'snapshot', 'base_snapshot_id': 7512697665102481681, ...}
+E               assert {1, 3} == {1}
+E                 
+E                 Extra items in the left set:
+E                 3
+E                 Use -v to get more diff
+
+tests/integration/test_runner_effects_stage3.py:116: AssertionError
+----------------------------- Captured stderr call -----------------------------
+26/11/08 10:53:06 WARN Tasks: Retrying task after failure: sleepTimeMs=103 Commit failed: Requirement failed: branch main has changed: expected id 7512697665102481681 != 8771559806803442540
+org.apache.iceberg.exceptions.CommitFailedException: Commit failed: Requirement failed: branch main has changed: expected id 7512697665102481681 != 8771559806803442540
+	at org.apache.iceberg.rest.ErrorHandlers$CommitErrorHandler.accept(ErrorHandlers.java:128)
+	at org.apache.iceberg.rest.ErrorHandlers$CommitErrorHandler.accept(ErrorHandlers.java:119)
+	at org.apache.iceberg.rest.HTTPClient.throwFailure(HTTPClient.java:242)
+	at org.apache.iceberg.rest.HTTPClient.handleResponse(HTTPClient.java:367)
+	at org.apache.iceberg.rest.HTTPClient.lambda$execute$1(HTTPClient.java:325)
+	at org.apache.iceberg.shaded.org.apache.hc.client5.http.impl.classic.CloseableHttpClient.execute(CloseableHttpClient.java:247)
+	at org.apache.iceberg.shaded.org.apache.hc.client5.http.impl.classic.CloseableHttpClient.execute(CloseableHttpClient.java:188)
+	at org.apache.iceberg.rest.HTTPClient.execute(HTTPClient.java:321)
+	at org.apache.iceberg.rest.HTTPClient.execute(HTTPClient.java:299)
+	at org.apache.iceberg.rest.BaseHTTPClient.post(BaseHTTPClient.java:112)
+	at org.apache.iceberg.rest.RESTClient.post(RESTClient.java:150)
+	at org.apache.iceberg.rest.RESTTableOperations.commit(RESTTableOperations.java:227)
+	at org.apache.iceberg.SnapshotProducer.lambda$commit$2(SnapshotProducer.java:533)
+	at org.apache.iceberg.util.Tasks$Builder.runTaskWithRetry(Tasks.java:416)
+	at org.apache.iceberg.util.Tasks$Builder.runSingleThreaded(Tasks.java:222)
+	at org.apache.iceberg.util.Tasks$Builder.run(Tasks.java:206)
+	at org.apache.iceberg.util.Tasks$Builder.run(Tasks.java:199)
+	at org.apache.iceberg.SnapshotProducer.commit(SnapshotProducer.java:498)
+	at org.apache.iceberg.BaseRowDelta.commit(BaseRowDelta.java:31)
+	at org.apache.iceberg.spark.source.SparkPositionDeltaWrite$PositionDeltaBatchWrite.commitOperation(SparkPositionDeltaWrite.java:366)
+	at org.apache.iceberg.spark.source.SparkPositionDeltaWrite$PositionDeltaBatchWrite.commit(SparkPositionDeltaWrite.java:297)
+	at org.apache.spark.sql.execution.datasources.v2.V2TableWriteExec.writeWithV2(WriteToDataSourceV2Exec.scala:438)
+	at org.apache.spark.sql.execution.datasources.v2.V2TableWriteExec.writeWithV2$(WriteToDataSourceV2Exec.scala:397)
+	at org.apache.spark.sql.execution.datasources.v2.WriteDeltaExec.writeWithV2(WriteToDataSourceV2Exec.scala:308)
+	at org.apache.spark.sql.execution.datasources.v2.V2ExistingTableWriteExec.run(WriteToDataSourceV2Exec.scala:360)
+	at org.apache.spark.sql.execution.datasources.v2.V2ExistingTableWriteExec.run$(WriteToDataSourceV2Exec.scala:358)
+	at org.apache.spark.sql.execution.datasources.v2.WriteDeltaExec.run(WriteToDataSourceV2Exec.scala:308)
+	at org.apache.spark.sql.execution.datasources.v2.V2CommandExec.result$lzycompute(V2CommandExec.scala:43)
+	at org.apache.spark.sql.execution.datasources.v2.V2CommandExec.result(V2CommandExec.scala:43)
+	at org.apache.spark.sql.execution.datasources.v2.V2CommandExec.executeCollect(V2CommandExec.scala:49)
+	at org.apache.spark.sql.execution.QueryExecution.$anonfun$eagerlyExecuteCommands$2(QueryExecution.scala:155)
+	at org.apache.spark.sql.execution.SQLExecution$.$anonfun$withNewExecutionId0$8(SQLExecution.scala:163)
+	at org.apache.spark.sql.execution.SQLExecution$.withSessionTagsApplied(SQLExecution.scala:272)
+	at org.apache.spark.sql.execution.SQLExecution$.$anonfun$withNewExecutionId0$7(SQLExecution.scala:125)
+	at org.apache.spark.JobArtifactSet$.withActiveJobArtifactState(JobArtifactSet.scala:94)
+	at org.apache.spark.sql.artifact.ArtifactManager.$anonfun$withResources$1(ArtifactManager.scala:112)
+	at org.apache.spark.sql.artifact.ArtifactManager.withClassLoaderIfNeeded(ArtifactManager.scala:106)
+	at org.apache.spark.sql.artifact.ArtifactManager.withResources(ArtifactManager.scala:111)
+	at org.apache.spark.sql.execution.SQLExecution$.$anonfun$withNewExecutionId0$6(SQLExecution.scala:125)
+	at org.apache.spark.sql.execution.SQLExecution$.withSQLConfPropagated(SQLExecution.scala:295)
+	at org.apache.spark.sql.execution.SQLExecution$.$anonfun$withNewExecutionId0$1(SQLExecution.scala:124)
+	at org.apache.spark.sql.SparkSession.withActive(SparkSession.scala:804)
+	at org.apache.spark.sql.execution.SQLExecution$.withNewExecutionId0(SQLExecution.scala:78)
+	at org.apache.spark.sql.execution.SQLExecution$.withNewExecutionId(SQLExecution.scala:237)
+	at org.apache.spark.sql.execution.QueryExecution.$anonfun$eagerlyExecuteCommands$1(QueryExecution.scala:155)
+	at org.apache.spark.sql.execution.QueryExecution$.withInternalError(QueryExecution.scala:654)
+	at org.apache.spark.sql.execution.QueryExecution.org$apache$spark$sql$execution$QueryExecution$$eagerlyExecute$1(QueryExecution.scala:154)
+	at org.apache.spark.sql.execution.QueryExecution$$anonfun$eagerlyExecuteCommands$3.applyOrElse(QueryExecution.scala:169)
+	at org.apache.spark.sql.execution.QueryExecution$$anonfun$eagerlyExecuteCommands$3.applyOrElse(QueryExecution.scala:164)
+	at org.apache.spark.sql.catalyst.trees.TreeNode.$anonfun$transformDownWithPruning$1(TreeNode.scala:470)
+	at org.apache.spark.sql.catalyst.trees.CurrentOrigin$.withOrigin(origin.scala:86)
+	at org.apache.spark.sql.catalyst.trees.TreeNode.transformDownWithPruning(TreeNode.scala:470)
+	at org.apache.spark.sql.catalyst.plans.logical.LogicalPlan.org$apache$spark$sql$catalyst$plans$logical$AnalysisHelper$$super$transformDownWithPruning(LogicalPlan.scala:37)
+	at org.apache.spark.sql.catalyst.plans.logical.AnalysisHelper.transformDownWithPruning(AnalysisHelper.scala:360)
+	at org.apache.spark.sql.catalyst.plans.logical.AnalysisHelper.transformDownWithPruning$(AnalysisHelper.scala:356)
+	at org.apache.spark.sql.catalyst.plans.logical.LogicalPlan.transformDownWithPruning(LogicalPlan.scala:37)
+	at org.apache.spark.sql.catalyst.plans.logical.LogicalPlan.transformDownWithPruning(LogicalPlan.scala:37)
+	at org.apache.spark.sql.catalyst.trees.TreeNode.transformDown(TreeNode.scala:446)
+	at org.apache.spark.sql.execution.QueryExecution.eagerlyExecuteCommands(QueryExecution.scala:164)
+	at org.apache.spark.sql.execution.QueryExecution.$anonfun$lazyCommandExecuted$1(QueryExecution.scala:126)
+	at scala.util.Try$.apply(Try.scala:217)
+	at org.apache.spark.util.Utils$.doTryWithCallerStacktrace(Utils.scala:1378)
+	at org.apache.spark.util.LazyTry.tryT$lzycompute(LazyTry.scala:46)
+	at org.apache.spark.util.LazyTry.tryT(LazyTry.scala:46)
+	at org.apache.spark.util.LazyTry.get(LazyTry.scala:58)
+	at org.apache.spark.sql.execution.QueryExecution.commandExecuted(QueryExecution.scala:131)
+	at org.apache.spark.sql.classic.Dataset.<init>(Dataset.scala:277)
+	at org.apache.spark.sql.classic.Dataset$.$anonfun$ofRows$5(Dataset.scala:140)
+	at org.apache.spark.sql.SparkSession.withActive(SparkSession.scala:804)
+	at org.apache.spark.sql.classic.Dataset$.ofRows(Dataset.scala:136)
+	at org.apache.spark.sql.classic.SparkSession.$anonfun$sql$1(SparkSession.scala:462)
+	at org.apache.spark.sql.SparkSession.withActive(SparkSession.scala:804)
+	at org.apache.spark.sql.classic.SparkSession.sql(SparkSession.scala:449)
+	at org.apache.spark.sql.classic.SparkSession.sql(SparkSession.scala:467)
+	at jdk.internal.reflect.GeneratedMethodAccessor51.invoke(Unknown Source)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at py4j.reflection.MethodInvoker.invoke(MethodInvoker.java:244)
+	at py4j.reflection.ReflectionEngine.invoke(ReflectionEngine.java:374)
+	at py4j.Gateway.invoke(Gateway.java:282)
+	at py4j.commands.AbstractCommand.invokeMethod(AbstractCommand.java:132)
+	at py4j.commands.CallCommand.execute(CallCommand.java:79)
+	at py4j.ClientServerConnection.waitForCommands(ClientServerConnection.java:184)
+	at py4j.ClientServerConnection.run(ClientServerConnection.java:108)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+=============================== warnings summary ===============================
+../usr/local/lib/python3.10/dist-packages/_pytest/config/__init__.py:1464
+  /usr/local/lib/python3.10/dist-packages/_pytest/config/__init__.py:1464: PytestConfigWarning: Unknown config option: asyncio_default_fixture_loop_scope
+  
+    self._warn_or_fail_if_strict(f"Unknown config option: {key}\n")
+
+../usr/local/lib/python3.10/dist-packages/_pytest/config/__init__.py:1464
+  /usr/local/lib/python3.10/dist-packages/_pytest/config/__init__.py:1464: PytestConfigWarning: Unknown config option: asyncio_mode
+  
+    self._warn_or_fail_if_strict(f"Unknown config option: {key}\n")
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/integration/test_runner_effects_stage3.py::test_stage3_effects_ignore_unread_append[snapshot-update_status-copy-on-write]
+FAILED tests/integration/test_runner_effects_stage3.py::test_stage3_effects_ignore_unread_append[snapshot-update_status-merge-on-read]
+FAILED tests/integration/test_runner_effects_stage3.py::test_stage3_effects_ignore_unread_append[snapshot-delete_by_keys-copy-on-write]
+FAILED tests/integration/test_runner_effects_stage3.py::test_stage3_effects_ignore_unread_append[snapshot-delete_by_keys-merge-on-read]
+4 failed, 4 passed, 2 warnings in 32.25s

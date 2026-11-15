@@ -1,0 +1,128 @@
+PASS stage3-S4-P0-mid-s11-r540-sessions-20261115: finished, invariants_ok
+PASS stage3-S4-P0-mid-s11-r540-sessions-20261115: validation.ok
+PASS stage3-S4-P0-mid-s11-r540-sessions-20261115: stream freshness fully observed
+PASS stage3-S4-P0-mid-s11-r540-sessions-20261115: sum cpu_ms <= app cpu
+PASS stage3-S4-P0-mid-s11-r540-sessions-20261115: app cpu <= workers cgroup cpu
+PASS stage3-S4-P0-mid-s11-r540-sessions-20261115: complete cost for every executed operation
+PASS stage3-S4-P0-mid-s11-r540-sessions-20261115: footprint_executed ⊆ requested
+PASS stage3-S4-P0-mid-s11-r540-sessions-20261115: K2+K1 > 0 and class K2
+PASS stage3-S4-P0-mid-s11-r540-sessions-20261115: complete history timing coverage
+PASS stage3-S4-P0-mid-s11-r540-sessions-20261115: no operation older than R (or counted)
+PASS stage3-S4-P0-mid-s11-r540-sessions-20261115: no runner/infrastructure errors
+PASS stage3-S4-P0-mid-s11-r540-sessions-20261115: history <= verified point (1452 / 1.51 MB)
+PASS stage3-S4-P0-mid-s11-r540-sessions-20261115: dense history upper bound <= 1452
+PASS stage3-S5-P0-mid-s11-r540-sessions-20261115: finished, invariants_ok
+PASS stage3-S5-P0-mid-s11-r540-sessions-20261115: validation.ok
+PASS stage3-S5-P0-mid-s11-r540-sessions-20261115: stream freshness fully observed
+PASS stage3-S5-P0-mid-s11-r540-sessions-20261115: sum cpu_ms <= app cpu
+PASS stage3-S5-P0-mid-s11-r540-sessions-20261115: app cpu <= workers cgroup cpu
+PASS stage3-S5-P0-mid-s11-r540-sessions-20261115: complete cost for every executed operation
+PASS stage3-S5-P0-mid-s11-r540-sessions-20261115: footprint_executed ⊆ requested
+PASS stage3-S5-P0-mid-s11-r540-sessions-20261115: K2+K1 > 0 and class K2
+PASS stage3-S5-P0-mid-s11-r540-sessions-20261115: complete history timing coverage
+PASS stage3-S5-P0-mid-s11-r540-sessions-20261115: no operation older than R (or counted)
+PASS stage3-S5-P0-mid-s11-r540-sessions-20261115: no runner/infrastructure errors
+PASS stage3-S5-P0-mid-s11-r540-sessions-20261115: history <= verified point (1452 / 1.51 MB)
+PASS stage3-S5-P0-mid-s11-r540-sessions-20261115: dense history upper bound <= 1452
+PASS stage3-S0-P0-mid-s1-r540-sessions-20261115: finished, invariants_ok
+PASS stage3-S0-P0-mid-s1-r540-sessions-20261115: validation.ok
+PASS stage3-S0-P0-mid-s1-r540-sessions-20261115: stream freshness fully observed
+PASS stage3-S0-P0-mid-s1-r540-sessions-20261115: sum cpu_ms <= app cpu
+PASS stage3-S0-P0-mid-s1-r540-sessions-20261115: app cpu <= workers cgroup cpu
+PASS stage3-S0-P0-mid-s1-r540-sessions-20261115: complete cost for every executed operation
+PASS stage3-S0-P0-mid-s1-r540-sessions-20261115: footprint_executed ⊆ requested
+PASS stage3-S0-P0-mid-s1-r540-sessions-20261115: complete history timing coverage
+PASS stage3-S0-P0-mid-s1-r540-sessions-20261115: no operation older than R (or counted)
+PASS stage3-S0-P0-mid-s1-r540-sessions-20261115: no runner/infrastructure errors
+PASS stage3-S0-P0-mid-s1-r540-sessions-20261115: history <= verified point (1452 / 1.51 MB)
+PASS stage3-S0-P0-mid-s1-r540-sessions-20261115: dense history upper bound <= 1452
+PASS stage3-S0-P0-mid-s1-rep-r540-sessions-20261115: finished, invariants_ok
+PASS stage3-S0-P0-mid-s1-rep-r540-sessions-20261115: validation.ok
+PASS stage3-S0-P0-mid-s1-rep-r540-sessions-20261115: stream freshness fully observed
+PASS stage3-S0-P0-mid-s1-rep-r540-sessions-20261115: sum cpu_ms <= app cpu
+PASS stage3-S0-P0-mid-s1-rep-r540-sessions-20261115: app cpu <= workers cgroup cpu
+PASS stage3-S0-P0-mid-s1-rep-r540-sessions-20261115: complete cost for every executed operation
+PASS stage3-S0-P0-mid-s1-rep-r540-sessions-20261115: footprint_executed ⊆ requested
+PASS stage3-S0-P0-mid-s1-rep-r540-sessions-20261115: complete history timing coverage
+PASS stage3-S0-P0-mid-s1-rep-r540-sessions-20261115: no operation older than R (or counted)
+PASS stage3-S0-P0-mid-s1-rep-r540-sessions-20261115: no runner/infrastructure errors
+PASS stage3-S0-P0-mid-s1-rep-r540-sessions-20261115: history <= verified point (1452 / 1.51 MB)
+PASS stage3-S0-P0-mid-s1-rep-r540-sessions-20261115: dense history upper bound <= 1452
+PASS stage3-S1-P0-mid-s11-r540-sessions-20261115: finished, invariants_ok
+PASS stage3-S1-P0-mid-s11-r540-sessions-20261115: validation.ok
+PASS stage3-S1-P0-mid-s11-r540-sessions-20261115: stream freshness fully observed
+PASS stage3-S1-P0-mid-s11-r540-sessions-20261115: sum cpu_ms <= app cpu
+PASS stage3-S1-P0-mid-s11-r540-sessions-20261115: app cpu <= workers cgroup cpu
+PASS stage3-S1-P0-mid-s11-r540-sessions-20261115: complete cost for every executed operation
+PASS stage3-S1-P0-mid-s11-r540-sessions-20261115: footprint_executed ⊆ requested
+PASS stage3-S1-P0-mid-s11-r540-sessions-20261115: K2+K1 > 0 and class K1
+PASS stage3-S1-P0-mid-s11-r540-sessions-20261115: complete history timing coverage
+PASS stage3-S1-P0-mid-s11-r540-sessions-20261115: no operation older than R (or counted)
+PASS stage3-S1-P0-mid-s11-r540-sessions-20261115: no runner/infrastructure errors
+PASS stage3-S1-P0-mid-s11-r540-sessions-20261115: history <= verified point (1452 / 1.51 MB)
+PASS stage3-S1-P0-mid-s11-r540-sessions-20261115: dense history upper bound <= 1452
+PASS stage3-S2-P0-mid-s11-r540-sessions-20261115: finished, invariants_ok
+PASS stage3-S2-P0-mid-s11-r540-sessions-20261115: validation.ok
+PASS stage3-S2-P0-mid-s11-r540-sessions-20261115: stream freshness fully observed
+PASS stage3-S2-P0-mid-s11-r540-sessions-20261115: sum cpu_ms <= app cpu
+PASS stage3-S2-P0-mid-s11-r540-sessions-20261115: app cpu <= workers cgroup cpu
+PASS stage3-S2-P0-mid-s11-r540-sessions-20261115: complete cost for every executed operation
+PASS stage3-S2-P0-mid-s11-r540-sessions-20261115: footprint_executed ⊆ requested
+PASS stage3-S2-P0-mid-s11-r540-sessions-20261115: K2+K1 > 0 and class K2
+PASS stage3-S2-P0-mid-s11-r540-sessions-20261115: complete history timing coverage
+PASS stage3-S2-P0-mid-s11-r540-sessions-20261115: no operation older than R (or counted)
+PASS stage3-S2-P0-mid-s11-r540-sessions-20261115: no runner/infrastructure errors
+PASS stage3-S2-P0-mid-s11-r540-sessions-20261115: history <= verified point (1452 / 1.51 MB)
+PASS stage3-S2-P0-mid-s11-r540-sessions-20261115: dense history upper bound <= 1452
+PASS stage3-S3-P0-mid-s11-r540-sessions-20261115: finished, invariants_ok
+PASS stage3-S3-P0-mid-s11-r540-sessions-20261115: validation.ok
+PASS stage3-S3-P0-mid-s11-r540-sessions-20261115: stream freshness fully observed
+PASS stage3-S3-P0-mid-s11-r540-sessions-20261115: sum cpu_ms <= app cpu
+PASS stage3-S3-P0-mid-s11-r540-sessions-20261115: app cpu <= workers cgroup cpu
+PASS stage3-S3-P0-mid-s11-r540-sessions-20261115: complete cost for every executed operation
+PASS stage3-S3-P0-mid-s11-r540-sessions-20261115: footprint_executed ⊆ requested
+PASS stage3-S3-P0-mid-s11-r540-sessions-20261115: K2+K1 > 0 and class K2
+PASS stage3-S3-P0-mid-s11-r540-sessions-20261115: complete history timing coverage
+PASS stage3-S3-P0-mid-s11-r540-sessions-20261115: no operation older than R (or counted)
+PASS stage3-S3-P0-mid-s11-r540-sessions-20261115: no runner/infrastructure errors
+PASS stage3-S3-P0-mid-s11-r540-sessions-20261115: history <= verified point (1452 / 1.51 MB)
+PASS stage3-S3-P0-mid-s11-r540-sessions-20261115: dense history upper bound <= 1452
+PASS determinism: identical intents
+PASS retention: nonempty timing coverage
+PASS retention: measured lower bound <= configured R
+PASS retention: configured R <= measured upper bound
+PASS retention: D_max <= 349 s (else author decision)
+{
+ "d_max_s": 38.7,
+ "d_max_op": "stage3-S4-P0-mid-s11-r540-sessions-20261115-batch_merge-0020",
+ "d_max_run": "stage3-S4-P0-mid-s11-r540-sessions-20261115",
+ "top5": [
+  [
+   38.7,
+   "stage3-S4-P0-mid-s11-r540-sessions-20261115-batch_merge-0020"
+  ],
+  [
+   35.4,
+   "stage3-S4-P0-mid-s11-r540-sessions-20261115-batch_merge-0007"
+  ],
+  [
+   35.1,
+   "stage3-S4-P0-mid-s11-r540-sessions-20261115-batch_merge-0003"
+  ],
+  [
+   34.8,
+   "stage3-S4-P0-mid-s11-r540-sessions-20261115-batch_merge-0027"
+  ],
+  [
+   34.2,
+   "stage3-S4-P0-mid-s11-r540-sessions-20261115-batch_merge-0006"
+  ]
+ ],
+ "num_retries": 4,
+ "R_low_s (2·D_max + (n+1)·hold)": 377.3,
+ "R_low_single_hold_s": 137.3,
+ "S1_commit_rate_per_s": 2.215822703919725,
+ "R_high_verified_point_s": 595.3,
+ "R_high_B_s": 752.3,
+ "author_stop (D_max > 349 s)": false
+}

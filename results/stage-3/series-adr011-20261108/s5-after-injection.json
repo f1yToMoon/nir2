@@ -1,0 +1,26 @@
+{
+  "baseline_before": {
+    "commit_attempts": 217,
+    "commit_events": 187,
+    "ops": 53,
+    "current_snapshot_id": 4761866938134643853
+  },
+  "baseline_after": {
+    "commit_attempts": 217,
+    "commit_events": 187,
+    "ops": 53,
+    "current_snapshot_id": 4761866938134643853
+  },
+  "baseline_unchanged": true,
+  "probe_run_id": "stage3-it-1794140205056048307",
+  "probe_commit_attempts": 26,
+  "invariant_faults": [
+    "duplicate_row",
+    "lost_row",
+    "extra_update",
+    "retained_deleted_row",
+    "aborted_row",
+    "lineage"
+  ],
+  "all_specific_checks_passed": true
+}

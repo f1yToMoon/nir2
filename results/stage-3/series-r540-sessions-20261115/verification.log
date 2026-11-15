@@ -1,0 +1,268 @@
+/home/an/nir/results/stage-3/series-r540-sessions-20261115/verify_evidence.py:68: Pandas4Warning: The 'float_precision' argument is deprecated. Use the default float precision instead.
+  for frame in pd.read_csv(target / name, chunksize=500_000, float_precision="round_trip"):
+/home/an/nir/results/stage-3/series-r540-sessions-20261115/verify_evidence.py:68: Pandas4Warning: The 'float_precision' argument is deprecated. Use the default float precision instead.
+  for frame in pd.read_csv(target / name, chunksize=500_000, float_precision="round_trip"):
+/home/an/nir/results/stage-3/series-r540-sessions-20261115/verify_evidence.py:68: Pandas4Warning: The 'float_precision' argument is deprecated. Use the default float precision instead.
+  for frame in pd.read_csv(target / name, chunksize=500_000, float_precision="round_trip"):
+/home/an/nir/results/stage-3/series-r540-sessions-20261115/verify_evidence.py:68: Pandas4Warning: The 'float_precision' argument is deprecated. Use the default float precision instead.
+  for frame in pd.read_csv(target / name, chunksize=500_000, float_precision="round_trip"):
+/home/an/nir/results/stage-3/series-r540-sessions-20261115/verify_evidence.py:68: Pandas4Warning: The 'float_precision' argument is deprecated. Use the default float precision instead.
+  for frame in pd.read_csv(target / name, chunksize=500_000, float_precision="round_trip"):
+/home/an/nir/results/stage-3/series-r540-sessions-20261115/verify_evidence.py:68: Pandas4Warning: The 'float_precision' argument is deprecated. Use the default float precision instead.
+  for frame in pd.read_csv(target / name, chunksize=500_000, float_precision="round_trip"):
+/home/an/nir/results/stage-3/series-r540-sessions-20261115/verify_evidence.py:68: Pandas4Warning: The 'float_precision' argument is deprecated. Use the default float precision instead.
+  for frame in pd.read_csv(target / name, chunksize=500_000, float_precision="round_trip"):
+/home/an/nir/results/stage-3/series-r540-sessions-20261115/verify_evidence.py:68: Pandas4Warning: The 'float_precision' argument is deprecated. Use the default float precision instead.
+  for frame in pd.read_csv(target / name, chunksize=500_000, float_precision="round_trip"):
+/home/an/nir/results/stage-3/series-r540-sessions-20261115/verify_evidence.py:68: Pandas4Warning: The 'float_precision' argument is deprecated. Use the default float precision instead.
+  for frame in pd.read_csv(target / name, chunksize=500_000, float_precision="round_trip"):
+/home/an/nir/results/stage-3/series-r540-sessions-20261115/verify_evidence.py:68: Pandas4Warning: The 'float_precision' argument is deprecated. Use the default float precision instead.
+  for frame in pd.read_csv(target / name, chunksize=500_000, float_precision="round_trip"):
+/home/an/nir/results/stage-3/series-r540-sessions-20261115/verify_evidence.py:68: Pandas4Warning: The 'float_precision' argument is deprecated. Use the default float precision instead.
+  for frame in pd.read_csv(target / name, chunksize=500_000, float_precision="round_trip"):
+/home/an/nir/results/stage-3/series-r540-sessions-20261115/verify_evidence.py:68: Pandas4Warning: The 'float_precision' argument is deprecated. Use the default float precision instead.
+  for frame in pd.read_csv(target / name, chunksize=500_000, float_precision="round_trip"):
+/home/an/nir/results/stage-3/series-r540-sessions-20261115/verify_evidence.py:68: Pandas4Warning: The 'float_precision' argument is deprecated. Use the default float precision instead.
+  for frame in pd.read_csv(target / name, chunksize=500_000, float_precision="round_trip"):
+/home/an/nir/results/stage-3/series-r540-sessions-20261115/verify_evidence.py:68: Pandas4Warning: The 'float_precision' argument is deprecated. Use the default float precision instead.
+  for frame in pd.read_csv(target / name, chunksize=500_000, float_precision="round_trip"):
+/home/an/nir/results/stage-3/series-r540-sessions-20261115/verify_evidence.py:68: Pandas4Warning: The 'float_precision' argument is deprecated. Use the default float precision instead.
+  for frame in pd.read_csv(target / name, chunksize=500_000, float_precision="round_trip"):
+/home/an/nir/results/stage-3/series-r540-sessions-20261115/verify_evidence.py:68: Pandas4Warning: The 'float_precision' argument is deprecated. Use the default float precision instead.
+  for frame in pd.read_csv(target / name, chunksize=500_000, float_precision="round_trip"):
+/home/an/nir/results/stage-3/series-r540-sessions-20261115/verify_evidence.py:68: Pandas4Warning: The 'float_precision' argument is deprecated. Use the default float precision instead.
+  for frame in pd.read_csv(target / name, chunksize=500_000, float_precision="round_trip"):
+/home/an/nir/results/stage-3/series-r540-sessions-20261115/verify_evidence.py:68: Pandas4Warning: The 'float_precision' argument is deprecated. Use the default float precision instead.
+  for frame in pd.read_csv(target / name, chunksize=500_000, float_precision="round_trip"):
+/home/an/nir/results/stage-3/series-r540-sessions-20261115/verify_evidence.py:68: Pandas4Warning: The 'float_precision' argument is deprecated. Use the default float precision instead.
+  for frame in pd.read_csv(target / name, chunksize=500_000, float_precision="round_trip"):
+/home/an/nir/results/stage-3/series-r540-sessions-20261115/verify_evidence.py:68: Pandas4Warning: The 'float_precision' argument is deprecated. Use the default float precision instead.
+  for frame in pd.read_csv(target / name, chunksize=500_000, float_precision="round_trip"):
+/home/an/nir/results/stage-3/series-r540-sessions-20261115/verify_evidence.py:68: Pandas4Warning: The 'float_precision' argument is deprecated. Use the default float precision instead.
+  for frame in pd.read_csv(target / name, chunksize=500_000, float_precision="round_trip"):
+/home/an/nir/results/stage-3/series-r540-sessions-20261115/verify_evidence.py:68: Pandas4Warning: The 'float_precision' argument is deprecated. Use the default float precision instead.
+  for frame in pd.read_csv(target / name, chunksize=500_000, float_precision="round_trip"):
+/home/an/nir/results/stage-3/series-r540-sessions-20261115/verify_evidence.py:68: Pandas4Warning: The 'float_precision' argument is deprecated. Use the default float precision instead.
+  for frame in pd.read_csv(target / name, chunksize=500_000, float_precision="round_trip"):
+/home/an/nir/results/stage-3/series-r540-sessions-20261115/verify_evidence.py:68: Pandas4Warning: The 'float_precision' argument is deprecated. Use the default float precision instead.
+  for frame in pd.read_csv(target / name, chunksize=500_000, float_precision="round_trip"):
+/home/an/nir/results/stage-3/series-r540-sessions-20261115/verify_evidence.py:68: Pandas4Warning: The 'float_precision' argument is deprecated. Use the default float precision instead.
+  for frame in pd.read_csv(target / name, chunksize=500_000, float_precision="round_trip"):
+/home/an/nir/results/stage-3/series-r540-sessions-20261115/verify_evidence.py:68: Pandas4Warning: The 'float_precision' argument is deprecated. Use the default float precision instead.
+  for frame in pd.read_csv(target / name, chunksize=500_000, float_precision="round_trip"):
+/home/an/nir/results/stage-3/series-r540-sessions-20261115/verify_evidence.py:68: Pandas4Warning: The 'float_precision' argument is deprecated. Use the default float precision instead.
+  for frame in pd.read_csv(target / name, chunksize=500_000, float_precision="round_trip"):
+/home/an/nir/results/stage-3/series-r540-sessions-20261115/verify_evidence.py:68: Pandas4Warning: The 'float_precision' argument is deprecated. Use the default float precision instead.
+  for frame in pd.read_csv(target / name, chunksize=500_000, float_precision="round_trip"):
+/home/an/nir/results/stage-3/series-r540-sessions-20261115/verify_evidence.py:68: Pandas4Warning: The 'float_precision' argument is deprecated. Use the default float precision instead.
+  for frame in pd.read_csv(target / name, chunksize=500_000, float_precision="round_trip"):
+/home/an/nir/results/stage-3/series-r540-sessions-20261115/verify_evidence.py:68: Pandas4Warning: The 'float_precision' argument is deprecated. Use the default float precision instead.
+  for frame in pd.read_csv(target / name, chunksize=500_000, float_precision="round_trip"):
+/home/an/nir/results/stage-3/series-r540-sessions-20261115/verify_evidence.py:68: Pandas4Warning: The 'float_precision' argument is deprecated. Use the default float precision instead.
+  for frame in pd.read_csv(target / name, chunksize=500_000, float_precision="round_trip"):
+/home/an/nir/results/stage-3/series-r540-sessions-20261115/verify_evidence.py:68: Pandas4Warning: The 'float_precision' argument is deprecated. Use the default float precision instead.
+  for frame in pd.read_csv(target / name, chunksize=500_000, float_precision="round_trip"):
+/home/an/nir/results/stage-3/series-r540-sessions-20261115/verify_evidence.py:68: Pandas4Warning: The 'float_precision' argument is deprecated. Use the default float precision instead.
+  for frame in pd.read_csv(target / name, chunksize=500_000, float_precision="round_trip"):
+/home/an/nir/results/stage-3/series-r540-sessions-20261115/verify_evidence.py:68: Pandas4Warning: The 'float_precision' argument is deprecated. Use the default float precision instead.
+  for frame in pd.read_csv(target / name, chunksize=500_000, float_precision="round_trip"):
+/home/an/nir/results/stage-3/series-r540-sessions-20261115/verify_evidence.py:68: Pandas4Warning: The 'float_precision' argument is deprecated. Use the default float precision instead.
+  for frame in pd.read_csv(target / name, chunksize=500_000, float_precision="round_trip"):
+/home/an/nir/results/stage-3/series-r540-sessions-20261115/verify_evidence.py:68: Pandas4Warning: The 'float_precision' argument is deprecated. Use the default float precision instead.
+  for frame in pd.read_csv(target / name, chunksize=500_000, float_precision="round_trip"):
+/home/an/nir/results/stage-3/series-r540-sessions-20261115/verify_evidence.py:68: Pandas4Warning: The 'float_precision' argument is deprecated. Use the default float precision instead.
+  for frame in pd.read_csv(target / name, chunksize=500_000, float_precision="round_trip"):
+/home/an/nir/results/stage-3/series-r540-sessions-20261115/verify_evidence.py:68: Pandas4Warning: The 'float_precision' argument is deprecated. Use the default float precision instead.
+  for frame in pd.read_csv(target / name, chunksize=500_000, float_precision="round_trip"):
+/home/an/nir/results/stage-3/series-r540-sessions-20261115/verify_evidence.py:68: Pandas4Warning: The 'float_precision' argument is deprecated. Use the default float precision instead.
+  for frame in pd.read_csv(target / name, chunksize=500_000, float_precision="round_trip"):
+/home/an/nir/results/stage-3/series-r540-sessions-20261115/verify_evidence.py:68: Pandas4Warning: The 'float_precision' argument is deprecated. Use the default float precision instead.
+  for frame in pd.read_csv(target / name, chunksize=500_000, float_precision="round_trip"):
+/home/an/nir/results/stage-3/series-r540-sessions-20261115/verify_evidence.py:68: Pandas4Warning: The 'float_precision' argument is deprecated. Use the default float precision instead.
+  for frame in pd.read_csv(target / name, chunksize=500_000, float_precision="round_trip"):
+/home/an/nir/results/stage-3/series-r540-sessions-20261115/verify_evidence.py:68: Pandas4Warning: The 'float_precision' argument is deprecated. Use the default float precision instead.
+  for frame in pd.read_csv(target / name, chunksize=500_000, float_precision="round_trip"):
+/home/an/nir/results/stage-3/series-r540-sessions-20261115/verify_evidence.py:68: Pandas4Warning: The 'float_precision' argument is deprecated. Use the default float precision instead.
+  for frame in pd.read_csv(target / name, chunksize=500_000, float_precision="round_trip"):
+/home/an/nir/results/stage-3/series-r540-sessions-20261115/verify_evidence.py:68: Pandas4Warning: The 'float_precision' argument is deprecated. Use the default float precision instead.
+  for frame in pd.read_csv(target / name, chunksize=500_000, float_precision="round_trip"):
+/home/an/nir/results/stage-3/series-r540-sessions-20261115/verify_evidence.py:68: Pandas4Warning: The 'float_precision' argument is deprecated. Use the default float precision instead.
+  for frame in pd.read_csv(target / name, chunksize=500_000, float_precision="round_trip"):
+/home/an/nir/results/stage-3/series-r540-sessions-20261115/verify_evidence.py:68: Pandas4Warning: The 'float_precision' argument is deprecated. Use the default float precision instead.
+  for frame in pd.read_csv(target / name, chunksize=500_000, float_precision="round_trip"):
+/home/an/nir/results/stage-3/series-r540-sessions-20261115/verify_evidence.py:68: Pandas4Warning: The 'float_precision' argument is deprecated. Use the default float precision instead.
+  for frame in pd.read_csv(target / name, chunksize=500_000, float_precision="round_trip"):
+/home/an/nir/results/stage-3/series-r540-sessions-20261115/verify_evidence.py:68: Pandas4Warning: The 'float_precision' argument is deprecated. Use the default float precision instead.
+  for frame in pd.read_csv(target / name, chunksize=500_000, float_precision="round_trip"):
+/home/an/nir/results/stage-3/series-r540-sessions-20261115/verify_evidence.py:68: Pandas4Warning: The 'float_precision' argument is deprecated. Use the default float precision instead.
+  for frame in pd.read_csv(target / name, chunksize=500_000, float_precision="round_trip"):
+{
+  "stage3-S4-P0-mid-s11-r540-sessions-20261115": {
+    "git_sha": "764d95fc0b33a42fab35305a1b6fe19371c9ef49",
+    "verified_hashes": 87,
+    "stream_rows": 3517600,
+    "p95_from_full_csv_s": 14.533032011985778,
+    "p99_from_full_csv_s": 15.134038472175597,
+    "max_from_full_csv_s": 16.166669130325317,
+    "p95_recorded_s": 14.533032011985778,
+    "history": {
+      "unique_additions": 130,
+      "unique_removals": 89,
+      "lower": {
+        "peak_snapshots": 48,
+        "at": "2026-11-15 12:29:39.694685+00:00",
+        "final_snapshots": 42
+      },
+      "upper": {
+        "peak_snapshots": 48,
+        "at": "2026-11-15 12:29:39.667268+00:00",
+        "final_snapshots": 42
+      }
+    },
+    "observed_final_snapshots": 42
+  },
+  "stage3-S5-P0-mid-s11-r540-sessions-20261115": {
+    "git_sha": "764d95fc0b33a42fab35305a1b6fe19371c9ef49",
+    "verified_hashes": 74,
+    "stream_rows": 3340600,
+    "p95_from_full_csv_s": 9.721097767353058,
+    "p99_from_full_csv_s": 10.120963099002838,
+    "max_from_full_csv_s": 10.497765302658081,
+    "p95_recorded_s": 9.721097767353058,
+    "history": {
+      "unique_additions": 187,
+      "unique_removals": 125,
+      "lower": {
+        "peak_snapshots": 71,
+        "at": "2026-11-15 12:55:46.071849+00:00",
+        "final_snapshots": 63
+      },
+      "upper": {
+        "peak_snapshots": 71,
+        "at": "2026-11-15 12:55:46.053634+00:00",
+        "final_snapshots": 63
+      }
+    },
+    "observed_final_snapshots": 63
+  },
+  "stage3-S0-P0-mid-s1-r540-sessions-20261115": {
+    "git_sha": "1f506a610ac9bafa27311f8ae75c86557e94de83",
+    "verified_hashes": 57,
+    "stream_rows": 1670300,
+    "p95_from_full_csv_s": 9.613282513618469,
+    "p99_from_full_csv_s": 10.013257033824921,
+    "max_from_full_csv_s": 10.391151666641235,
+    "p95_recorded_s": 9.613282513618469,
+    "history": {
+      "unique_additions": 179,
+      "unique_removals": 121,
+      "lower": {
+        "peak_snapshots": 67,
+        "at": "2026-11-15 13:27:54.171706+00:00",
+        "final_snapshots": 59
+      },
+      "upper": {
+        "peak_snapshots": 67,
+        "at": "2026-11-15 13:27:54.161992+00:00",
+        "final_snapshots": 59
+      }
+    },
+    "observed_final_snapshots": 59
+  },
+  "stage3-S0-P0-mid-s1-rep-r540-sessions-20261115": {
+    "git_sha": "1f506a610ac9bafa27311f8ae75c86557e94de83",
+    "verified_hashes": 57,
+    "stream_rows": 1670600,
+    "p95_from_full_csv_s": 9.647354197502136,
+    "p99_from_full_csv_s": 10.047050747871399,
+    "max_from_full_csv_s": 10.39676308631897,
+    "p95_recorded_s": 9.647354197502136,
+    "history": {
+      "unique_additions": 179,
+      "unique_removals": 121,
+      "lower": {
+        "peak_snapshots": 67,
+        "at": "2026-11-15 13:57:08.533994+00:00",
+        "final_snapshots": 59
+      },
+      "upper": {
+        "peak_snapshots": 67,
+        "at": "2026-11-15 13:57:08.523927+00:00",
+        "final_snapshots": 59
+      }
+    },
+    "observed_final_snapshots": 59
+  },
+  "stage3-S1-P0-mid-s11-r540-sessions-20261115": {
+    "git_sha": "1f506a610ac9bafa27311f8ae75c86557e94de83",
+    "verified_hashes": 67,
+    "stream_rows": 5355700,
+    "p95_from_full_csv_s": 5.072331440448761,
+    "p99_from_full_csv_s": 5.3825944519042945,
+    "max_from_full_csv_s": 9.408675909042358,
+    "p95_recorded_s": 5.072331440448761,
+    "history": {
+      "unique_additions": 3694,
+      "unique_removals": 2493,
+      "lower": {
+        "peak_snapshots": 1327,
+        "at": "2026-11-15 14:28:18.788913+00:00",
+        "final_snapshots": 1202
+      },
+      "upper": {
+        "peak_snapshots": 1327,
+        "at": "2026-11-15 14:28:18.750123+00:00",
+        "final_snapshots": 1202
+      }
+    },
+    "observed_final_snapshots": 1202
+  },
+  "stage3-S2-P0-mid-s11-r540-sessions-20261115": {
+    "git_sha": "1f506a610ac9bafa27311f8ae75c86557e94de83",
+    "verified_hashes": 77,
+    "stream_rows": 3367400,
+    "p95_from_full_csv_s": 9.698565244674683,
+    "p99_from_full_csv_s": 10.099099640846251,
+    "max_from_full_csv_s": 10.241273641586304,
+    "p95_recorded_s": 9.698565244674683,
+    "history": {
+      "unique_additions": 187,
+      "unique_removals": 124,
+      "lower": {
+        "peak_snapshots": 70,
+        "at": "2026-11-15 15:01:20.459517+00:00",
+        "final_snapshots": 64
+      },
+      "upper": {
+        "peak_snapshots": 70,
+        "at": "2026-11-15 15:01:20.448899+00:00",
+        "final_snapshots": 64
+      }
+    },
+    "observed_final_snapshots": 64
+  },
+  "stage3-S3-P0-mid-s11-r540-sessions-20261115": {
+    "git_sha": "1f506a610ac9bafa27311f8ae75c86557e94de83",
+    "verified_hashes": 98,
+    "stream_rows": 3340400,
+    "p95_from_full_csv_s": 9.637423050403594,
+    "p99_from_full_csv_s": 10.037319211959838,
+    "max_from_full_csv_s": 10.22979211807251,
+    "p95_recorded_s": 9.637423050403594,
+    "history": {
+      "unique_additions": 213,
+      "unique_removals": 143,
+      "lower": {
+        "peak_snapshots": 85,
+        "at": "2026-11-15 15:29:57.060743+00:00",
+        "final_snapshots": 71
+      },
+      "upper": {
+        "peak_snapshots": 85,
+        "at": "2026-11-15 15:29:57.051002+00:00",
+        "final_snapshots": 71
+      }
+    },
+    "observed_final_snapshots": 71
+  }
+}

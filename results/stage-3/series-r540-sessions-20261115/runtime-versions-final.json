@@ -1,0 +1,13 @@
+{
+  "python": "3.10.12 (main, Aug 15 2025, 14:32:43) [GCC 11.4.0]",
+  "pyspark": "4.0.1",
+  "packages": {
+    "pyiceberg": "0.12.0",
+    "numpy": "2.2.6",
+    "pandas": "2.3.3",
+    "psycopg": "3.3.6",
+    "fastavro": "1.12.2",
+    "pytest": "9.1.1"
+  },
+  "pyspark_packaging": "provided by Spark image, no importlib distribution metadata"
+}

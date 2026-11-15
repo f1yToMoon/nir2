@@ -1,0 +1,19 @@
+{
+  "runs": [
+    "stage3-S0-P0-mid-s1-adr011-20261108",
+    "stage3-S0-P0-mid-s1-rep-adr011-20261108"
+  ],
+  "n_a": 11,
+  "n_b": 11,
+  "all_fields_except_run_specific_op_id_equal": true,
+  "compared_fields": [
+    "footprint",
+    "op_key",
+    "op_seed",
+    "op_type",
+    "seq",
+    "sla_s",
+    "t_offset_s"
+  ],
+  "both_runs_must_still_finish_validation": true
+}

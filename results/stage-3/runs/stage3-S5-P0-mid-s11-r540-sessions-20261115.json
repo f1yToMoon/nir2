@@ -1,0 +1,257 @@
+{
+ "run_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115",
+ "stream_freshness": {
+  "complete": true,
+  "n_expected": 3340600,
+  "n_samples": 3340600,
+  "missing": 0,
+  "p95_s": 9.721097767353058,
+  "errors": [],
+  "unresolved_snapshots": {},
+  "n_snapshots": 168,
+  "observer_cpu_s": 10.19236708800001,
+  "clock": "producer UTC time.time \u2192 successful commit_attempts.responded_at"
+ },
+ "scenario": "S5_compliance_delete",
+ "variant": null,
+ "level": "mid",
+ "seed": 11,
+ "policy": "P0",
+ "git_sha": "764d95fc0b33a42fab35305a1b6fe19371c9ef49",
+ "t0": "2026-11-15T12:35:51.898638+00:00",
+ "t_end": "2026-11-15T13:04:24.507101+00:00",
+ "intents": 25,
+ "overrun_after_cooldown": [],
+ "streams": {
+  "kafka": [
+   {
+    "stream": "ingest",
+    "produced": 3340600,
+    "errors": []
+   }
+  ],
+  "flink": [
+   {
+    "final_lag": 0,
+    "job_id": "469c237a1e139a2fd7a321ca71bdfed6",
+    "checkpoints": {
+     "restored": 0,
+     "total": 170,
+     "in_progress": 0,
+     "completed": 170,
+     "failed": 0
+    }
+   }
+  ],
+  "agents": []
+ },
+ "invariants": {
+  "ledger_row_counts": {
+   "ok": true,
+   "partitions_checked": 292,
+   "mismatches": {},
+   "n_mismatches": 0,
+   "rows_by_origin": {
+    "golden": 30000000,
+    "stream": 3340600,
+    "merge": 66000
+   },
+   "journal_physical_records": 33406600,
+   "snapshot_total_records": 33406600,
+   "table_live_rows": 33406600,
+   "journal_commits": 187
+  },
+  "no_duplicate_event_ids": {
+   "ok": true,
+   "duplicates": 0,
+   "rows": 33406600
+  },
+  "committed_ops_in_lineage": {
+   "ok": true,
+   "lineage_len": 187,
+   "lineage_error": null,
+   "committed_checked": 19,
+   "missing": [],
+   "n_missing": 0
+  },
+  "aborted_ops_absent": {
+   "ok": true,
+   "failed_ops": 6,
+   "snapshots_in_lineage": [],
+   "aborted_rows_checked": 12000,
+   "aborted_rows_present": 0,
+   "lineage_error": null
+  },
+  "version_monotonic": {
+   "ok": true,
+   "rows_checked": 33406600,
+   "rows_expected_updated": 260626,
+   "mismatches": 0
+  },
+  "ok": true
+ },
+ "orphans": {
+  "orphan_files": 0,
+  "orphan_bytes": 0,
+  "old_metadata_json": 105,
+  "listed_since_start": 2664
+ },
+ "spark_app_totals": {
+  "cpu_ms": 1960516,
+  "run_ms": 2539818,
+  "stages": 580
+ },
+ "health": {
+  "samples": 59,
+  "errors": [],
+  "max_snapshots": 68,
+  "max_metadata_bytes": 84501
+ },
+ "cooldown_s": 120.0,
+ "warmup_s": 180.0,
+ "duration_s": 1500.0,
+ "validation": {
+  "ok": true,
+  "incomplete_cost": [],
+  "runner_errors": []
+ },
+ "summary": {
+  "run_id": "stage3-S5-P0-mid-s11-r540-sessions-20261115",
+  "n_ops": 25,
+  "n_k2": 6,
+  "n_k1_fail": 0,
+  "n_base_expired": 0,
+  "n_history_unresolved": 0,
+  "n_errors": 0,
+  "wasted_cpu_s": 202.571,
+  "useful_cpu_s": 141.883,
+  "wasted_cpu_base_expired_s": 0.0,
+  "wasted_share": 0.5880930399995354,
+  "background_cpu_s": 55.309,
+  "wasted_bytes": 3057590873,
+  "goodput_commits_per_min": 0.76,
+  "commit_lat_p50_ms": 25.141000000000002,
+  "commit_lat_p95_ms": 29.975199999999994,
+  "commit_lat_p99_ms": 33.54784,
+  "delay_p95_s": 4.236459399999989,
+  "sla_violations": 0,
+  "debt_mean": 0.9995098046213803,
+  "debt_max": 1.0,
+  "orphan_bytes": 0,
+  "stream_freshness_p95_s": 9.721097767353058,
+  "detail": {
+   "stream_freshness": {
+    "complete": true,
+    "n_expected": 3340600,
+    "n_samples": 3340600,
+    "missing": 0,
+    "p95_s": 9.721097767353058,
+    "errors": [],
+    "unresolved_snapshots": {},
+    "n_snapshots": 168,
+    "observer_cpu_s": 10.19236708800001,
+    "clock": "producer UTC time.time \u2192 successful commit_attempts.responded_at"
+   },
+   "outcomes": {
+    "committed": 19,
+    "data_conflict": 6
+   },
+   "per_op": {
+    "cdc_merge": {
+     "op_type": "cow_dml",
+     "n": 13,
+     "outcomes": {
+      "committed": 11,
+      "data_conflict": 2
+     },
+     "d_exec_s": {
+      "n": 13,
+      "max": 7.7,
+      "p50": 3.7,
+      "p95": 6.139999999999996
+     },
+     "d_hist_s": {
+      "n": 13,
+      "max": 14.8,
+      "p50": 9.4,
+      "p95": 14.079999999999998
+     },
+     "cpu_s": {
+      "n": 13,
+      "max": 12.9,
+      "p50": 6.2,
+      "p95": 12.36
+     },
+     "attempts_max": 1
+    },
+    "gdpr_delete": {
+     "op_type": "cow_dml",
+     "n": 4,
+     "outcomes": {
+      "data_conflict": 4
+     },
+     "d_exec_s": {
+      "n": 4,
+      "max": 17.3,
+      "p50": 11.5,
+      "p95": 16.82
+     },
+     "d_hist_s": {
+      "n": 4,
+      "max": 26.9,
+      "p50": 18.4,
+      "p95": 25.654999999999998
+     },
+     "cpu_s": {
+      "n": 4,
+      "max": 57.4,
+      "p50": 43.05,
+      "p95": 55.3
+     },
+     "attempts_max": 0
+    },
+    "compaction": {
+     "op_type": "rewrite_data",
+     "n": 8,
+     "outcomes": {
+      "committed": 8
+     },
+     "d_exec_s": {
+      "n": 8,
+      "max": 6.1,
+      "p50": 2.95,
+      "p95": 5.119999999999998
+     },
+     "d_hist_s": {
+      "n": 8,
+      "max": 6.8,
+      "p50": 3.8,
+      "p95": 5.889999999999999
+     },
+     "cpu_s": {
+      "n": 8,
+      "max": 9.1,
+      "p50": 8.3,
+      "p95": 9.065
+     },
+     "attempts_max": 1
+    }
+   },
+   "background_expire": {
+    "n": 28,
+    "d_exec_max_s": 4.234864,
+    "d_exec_p50_s": 1.3378714999999999,
+    "late_max_s": 4.4,
+    "outcomes": {
+     "committed": 28
+    },
+    "cpu_s": 55.309
+   },
+   "d_hist_max_s": 26.918439,
+   "max_snapshots": 68,
+   "max_metadata_bytes": 84501,
+   "policy": "P0",
+   "scenario": "S5_compliance_delete"
+  }
+ }
+}

@@ -1,0 +1,62 @@
+[
+  {
+    "container": "nir-capl-1",
+    "configured_image": "nir/capl:dev",
+    "image_id": "sha256:6bece1df8509c01f87eea4a7e6b646bd17bce9bffc8ca0788abaf2b1a2a38b28",
+    "memory_limit_bytes": 1610612736
+  },
+  {
+    "container": "nir-catalog-1",
+    "configured_image": "apache/iceberg-rest-fixture:latest@sha256:db8de90b5b7693d4ac334c336f91d9bbe320d7b19f4f514d26de84cdfbcbfe8d",
+    "image_id": "sha256:7ea2ad86a944938e5508721416e7c3f2b9b0b1bdfd63392d475bdaacba9a3cee",
+    "memory_limit_bytes": 1073741824
+  },
+  {
+    "container": "nir-runner-1",
+    "configured_image": "nir/spark:dev",
+    "image_id": "sha256:e08a8356e5b7502461ffea19cc309cd35a3718a66ca08aa6fe8f520257d7f7ef",
+    "memory_limit_bytes": 5368709120
+  },
+  {
+    "container": "nir-spark-worker-1-1",
+    "configured_image": "nir/spark:dev",
+    "image_id": "sha256:f422855ebca1512590f228130a38b0e278cef724dd91eaab8cc329987d6bf0c3",
+    "memory_limit_bytes": 7516192768
+  },
+  {
+    "container": "nir-spark-worker-2-1",
+    "configured_image": "nir/spark:dev",
+    "image_id": "sha256:f422855ebca1512590f228130a38b0e278cef724dd91eaab8cc329987d6bf0c3",
+    "memory_limit_bytes": 7516192768
+  },
+  {
+    "container": "nir-flink-jobmanager-1",
+    "configured_image": "nir/flink:dev",
+    "image_id": "sha256:1a65d2a8311eae563b497299917f3a5d604a692320adcbe8506407e01a37591b",
+    "memory_limit_bytes": 1342177280
+  },
+  {
+    "container": "nir-flink-taskmanager-1",
+    "configured_image": "nir/flink:dev",
+    "image_id": "sha256:1a65d2a8311eae563b497299917f3a5d604a692320adcbe8506407e01a37591b",
+    "memory_limit_bytes": 3221225472
+  },
+  {
+    "container": "nir-s3-1",
+    "configured_image": "chrislusf/seaweedfs:4.48",
+    "image_id": "sha256:7b5ca1f11aa4c91593612d2d4a9e253ec9152a4bd13a19e551290a042a4c52f5",
+    "memory_limit_bytes": 3221225472
+  },
+  {
+    "container": "nir-kafka-1",
+    "configured_image": "apache/kafka:3.9.1",
+    "image_id": "sha256:44a48f9d78af26959fa4d61accb9be35f939a79bfdae05cad6df4baca8e22eeb",
+    "memory_limit_bytes": 1342177280
+  },
+  {
+    "container": "nir-postgres-1",
+    "configured_image": "postgres:16",
+    "image_id": "sha256:066167ff39c2a612402ce99b734ea1cff92a9d1f2ac52f697a5f0384f0d88d6b",
+    "memory_limit_bytes": 1073741824
+  }
+]

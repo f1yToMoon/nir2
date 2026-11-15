@@ -1,0 +1,12 @@
+{
+  "source_sha": "7faa3edbbf1c63889af8280232d2662e01a92e33",
+  "tests": 10,
+  "failed": 10,
+  "failure_classes": {
+    "invalid_finished_not_rejected": 8,
+    "valid_skip_does_not_close_DB": 2
+  },
+  "real_DB_or_Spark_used": false,
+  "cases_sha256": "3a94ed80296307580ea7278da05e899299deecff40132bffb739fb9de2aee3c6",
+  "fix_deferred_until_fresh_ID_series_finished": true
+}

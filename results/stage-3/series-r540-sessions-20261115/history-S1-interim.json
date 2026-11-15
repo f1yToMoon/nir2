@@ -1,0 +1,24 @@
+{
+  "run_id": "stage3-S1-P0-mid-s11-r540-sessions-20261115",
+  "interim_only": true,
+  "at_utc": "2026-11-15 14:26:13.817046+00:00",
+  "requests": 1563,
+  "bounds": {
+    "unique_additions": 1552,
+    "unique_removals": 242,
+    "lower": {
+      "peak_snapshots": 1325,
+      "at": "2026-11-15 14:25:19.181226+00:00",
+      "final_snapshots": 1311
+    },
+    "upper": {
+      "peak_snapshots": 1325,
+      "at": "2026-11-15 14:25:19.142776+00:00",
+      "final_snapshots": 1311
+    }
+  },
+  "observed_max": {
+    "snapshots": 1269,
+    "metadata_bytes": 1267654
+  }
+}

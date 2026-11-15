@@ -1,0 +1,231 @@
+{
+ "run_id": "stage3-S2-P0-mid-s11-r540-sessions-20261115",
+ "stream_freshness": {
+  "complete": true,
+  "n_expected": 3367400,
+  "n_samples": 3367400,
+  "missing": 0,
+  "p95_s": 9.698565244674683,
+  "errors": [],
+  "unresolved_snapshots": {},
+  "n_snapshots": 169,
+  "observer_cpu_s": 10.901782039000002,
+  "clock": "producer UTC time.time \u2192 successful commit_attempts.responded_at"
+ },
+ "scenario": "S2_compaction_vs_cdc_merge",
+ "variant": null,
+ "level": "mid",
+ "seed": 11,
+ "policy": "P0",
+ "git_sha": "1f506a610ac9bafa27311f8ae75c86557e94de83",
+ "t0": "2026-11-15T14:44:26.039262+00:00",
+ "t_end": "2026-11-15T15:13:12.061452+00:00",
+ "intents": 28,
+ "overrun_after_cooldown": [],
+ "streams": {
+  "kafka": [
+   {
+    "stream": "ingest",
+    "produced": 3367400,
+    "errors": []
+   }
+  ],
+  "flink": [
+   {
+    "final_lag": 0,
+    "job_id": "1ab3596b9b049a082523067e1dbddab6",
+    "checkpoints": {
+     "restored": 0,
+     "total": 172,
+     "in_progress": 0,
+     "completed": 172,
+     "failed": 0
+    }
+   }
+  ],
+  "agents": []
+ },
+ "invariants": {
+  "ledger_row_counts": {
+   "ok": true,
+   "partitions_checked": 290,
+   "mismatches": {},
+   "n_mismatches": 0,
+   "rows_by_origin": {
+    "golden": 30000000,
+    "stream": 3367400,
+    "merge": 80000
+   },
+   "journal_physical_records": 33447400,
+   "snapshot_total_records": 33447400,
+   "table_live_rows": 33447400,
+   "journal_commits": 187
+  },
+  "no_duplicate_event_ids": {
+   "ok": true,
+   "duplicates": 0,
+   "rows": 33447400
+  },
+  "committed_ops_in_lineage": {
+   "ok": true,
+   "lineage_len": 187,
+   "lineage_error": null,
+   "committed_checked": 18,
+   "missing": [],
+   "n_missing": 0
+  },
+  "aborted_ops_absent": {
+   "ok": true,
+   "failed_ops": 10,
+   "snapshots_in_lineage": [],
+   "aborted_rows_checked": 100000,
+   "aborted_rows_present": 0,
+   "lineage_error": null
+  },
+  "version_monotonic": {
+   "ok": true,
+   "rows_checked": 33447400,
+   "rows_expected_updated": 315126,
+   "mismatches": 0
+  },
+  "ok": true
+ },
+ "orphans": {
+  "orphan_files": 0,
+  "orphan_bytes": 0,
+  "old_metadata_json": 105,
+  "listed_since_start": 2863
+ },
+ "spark_app_totals": {
+  "cpu_ms": 2673563,
+  "run_ms": 4269886,
+  "stages": 633
+ },
+ "health": {
+  "samples": 58,
+  "errors": [],
+  "max_snapshots": 68,
+  "max_metadata_bytes": 84302
+ },
+ "cooldown_s": 120.0,
+ "warmup_s": 180.0,
+ "duration_s": 1500.0,
+ "validation": {
+  "ok": true,
+  "incomplete_cost": [],
+  "runner_errors": []
+ },
+ "summary": {
+  "run_id": "stage3-S2-P0-mid-s11-r540-sessions-20261115",
+  "n_ops": 28,
+  "n_k2": 10,
+  "n_k1_fail": 0,
+  "n_base_expired": 0,
+  "n_history_unresolved": 0,
+  "n_errors": 0,
+  "wasted_cpu_s": 109.561,
+  "useful_cpu_s": 155.94,
+  "wasted_cpu_base_expired_s": 0.0,
+  "wasted_share": 0.4126575794441453,
+  "background_cpu_s": 58.153,
+  "wasted_bytes": 1085028831,
+  "goodput_commits_per_min": 0.72,
+  "commit_lat_p50_ms": 22.723999999999997,
+  "commit_lat_p95_ms": 39.27324999999999,
+  "commit_lat_p99_ms": 44.220249999999986,
+  "delay_p95_s": 18.603324249999993,
+  "sla_violations": 0,
+  "debt_mean": 0.9994252462154445,
+  "debt_max": 1.0,
+  "orphan_bytes": 0,
+  "stream_freshness_p95_s": 9.698565244674683,
+  "detail": {
+   "stream_freshness": {
+    "complete": true,
+    "n_expected": 3367400,
+    "n_samples": 3367400,
+    "missing": 0,
+    "p95_s": 9.698565244674683,
+    "errors": [],
+    "unresolved_snapshots": {},
+    "n_snapshots": 169,
+    "observer_cpu_s": 10.901782039000002,
+    "clock": "producer UTC time.time \u2192 successful commit_attempts.responded_at"
+   },
+   "outcomes": {
+    "data_conflict": 10,
+    "committed": 18
+   },
+   "per_op": {
+    "cdc_merge": {
+     "op_type": "cow_dml",
+     "n": 18,
+     "outcomes": {
+      "data_conflict": 10,
+      "committed": 8
+     },
+     "d_exec_s": {
+      "n": 18,
+      "max": 14.6,
+      "p50": 6.1,
+      "p95": 13.665
+     },
+     "d_hist_s": {
+      "n": 18,
+      "max": 24.6,
+      "p50": 13.9,
+      "p95": 18.73499999999999
+     },
+     "cpu_s": {
+      "n": 18,
+      "max": 19.9,
+      "p50": 9.85,
+      "p95": 18.369999999999997
+     },
+     "attempts_max": 1
+    },
+    "compaction": {
+     "op_type": "rewrite_data",
+     "n": 10,
+     "outcomes": {
+      "committed": 10
+     },
+     "d_exec_s": {
+      "n": 10,
+      "max": 4.3,
+      "p50": 3.0,
+      "p95": 3.9849999999999994
+     },
+     "d_hist_s": {
+      "n": 10,
+      "max": 9.0,
+      "p50": 7.35,
+      "p95": 8.549999999999999
+     },
+     "cpu_s": {
+      "n": 10,
+      "max": 10.5,
+      "p50": 7.85,
+      "p95": 10.184999999999999
+     },
+     "attempts_max": 1
+    }
+   },
+   "background_expire": {
+    "n": 28,
+    "d_exec_max_s": 7.732544,
+    "d_exec_p50_s": 1.4648775,
+    "late_max_s": 8.0,
+    "outcomes": {
+     "committed": 28
+    },
+    "cpu_s": 58.153
+   },
+   "d_hist_max_s": 24.587512,
+   "max_snapshots": 68,
+   "max_metadata_bytes": 84302,
+   "policy": "P0",
+   "scenario": "S2_compaction_vs_cdc_merge"
+  }
+ }
+}

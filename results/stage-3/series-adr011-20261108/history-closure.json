@@ -1,0 +1,37 @@
+{
+  "stage3-S4-P0-mid-s11-adr011-20261108": {
+    "journal_final": 46,
+    "observed_final": 46,
+    "equal": true
+  },
+  "stage3-S5-P0-mid-s11-adr011-20261108": {
+    "journal_final": 71,
+    "observed_final": 71,
+    "equal": true
+  },
+  "stage3-S0-P0-mid-s1-adr011-20261108": {
+    "journal_final": 65,
+    "observed_final": 65,
+    "equal": true
+  },
+  "stage3-S0-P0-mid-s1-rep-adr011-20261108": {
+    "journal_final": 65,
+    "observed_final": 65,
+    "equal": true
+  },
+  "stage3-S1-P0-mid-s11-adr011-20261108": {
+    "journal_final": 1341,
+    "observed_final": 1341,
+    "equal": true
+  },
+  "stage3-S2-P0-mid-s11-adr011-20261108": {
+    "journal_final": 68,
+    "observed_final": 68,
+    "equal": true
+  },
+  "stage3-S3-P0-mid-s11-adr011-20261108": {
+    "journal_final": 76,
+    "observed_final": 76,
+    "equal": true
+  }
+}

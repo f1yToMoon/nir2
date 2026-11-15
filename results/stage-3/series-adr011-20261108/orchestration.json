@@ -1,0 +1,11 @@
+{
+  "outer_shell_pid": 58242,
+  "first_series_shell_pid": 58243,
+  "outer_shell_state": "SIGCONT after S5 validation and 19 integration passes",
+  "reason": "Run stage3 fault injection on finished new S5 before S0 resets bench.events; resume outer with SIGCONT only after inspection",
+  "measurement_source_sha": "844d033e984247f9cc67f84e2e76b8e240ca955a",
+  "first_series_session": 26641,
+  "boundary_watch_session": 97446,
+  "resumed_after_S5_injection": true,
+  "second_invocation_sha": "7faa3edbbf1c63889af8280232d2662e01a92e33"
+}

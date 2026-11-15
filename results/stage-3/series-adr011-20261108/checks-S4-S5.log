@@ -1,0 +1,61 @@
+PASS stage3-S4-P0-mid-s11-adr011-20261108: finished, invariants_ok
+PASS stage3-S4-P0-mid-s11-adr011-20261108: validation.ok
+PASS stage3-S4-P0-mid-s11-adr011-20261108: stream freshness fully observed
+PASS stage3-S4-P0-mid-s11-adr011-20261108: sum cpu_ms <= app cpu
+PASS stage3-S4-P0-mid-s11-adr011-20261108: app cpu <= workers cgroup cpu
+PASS stage3-S4-P0-mid-s11-adr011-20261108: complete cost for every executed operation
+PASS stage3-S4-P0-mid-s11-adr011-20261108: footprint_executed ⊆ requested
+PASS stage3-S4-P0-mid-s11-adr011-20261108: K2+K1 > 0 and class K2
+PASS stage3-S4-P0-mid-s11-adr011-20261108: complete history timing coverage
+PASS stage3-S4-P0-mid-s11-adr011-20261108: no operation older than R (or counted)
+PASS stage3-S4-P0-mid-s11-adr011-20261108: no runner/infrastructure errors
+PASS stage3-S4-P0-mid-s11-adr011-20261108: history <= verified point (1452 / 1.51 MB)
+PASS stage3-S5-P0-mid-s11-adr011-20261108: finished, invariants_ok
+PASS stage3-S5-P0-mid-s11-adr011-20261108: validation.ok
+PASS stage3-S5-P0-mid-s11-adr011-20261108: stream freshness fully observed
+PASS stage3-S5-P0-mid-s11-adr011-20261108: sum cpu_ms <= app cpu
+PASS stage3-S5-P0-mid-s11-adr011-20261108: app cpu <= workers cgroup cpu
+PASS stage3-S5-P0-mid-s11-adr011-20261108: complete cost for every executed operation
+PASS stage3-S5-P0-mid-s11-adr011-20261108: footprint_executed ⊆ requested
+PASS stage3-S5-P0-mid-s11-adr011-20261108: K2+K1 > 0 and class K2
+PASS stage3-S5-P0-mid-s11-adr011-20261108: complete history timing coverage
+PASS stage3-S5-P0-mid-s11-adr011-20261108: no operation older than R (or counted)
+PASS stage3-S5-P0-mid-s11-adr011-20261108: no runner/infrastructure errors
+PASS stage3-S5-P0-mid-s11-adr011-20261108: history <= verified point (1452 / 1.51 MB)
+PASS retention: nonempty timing coverage
+PASS retention: measured lower bound <= configured R
+PASS retention: D_max <= 349 s (else author decision)
+{
+ "d_max_s": 37.4,
+ "d_max_op": "stage3-S4-P0-mid-s11-adr011-20261108-batch_merge-0008",
+ "d_max_run": "stage3-S4-P0-mid-s11-adr011-20261108",
+ "top5": [
+  [
+   37.4,
+   "stage3-S4-P0-mid-s11-adr011-20261108-batch_merge-0008"
+  ],
+  [
+   37.3,
+   "stage3-S4-P0-mid-s11-adr011-20261108-batch_merge-0020"
+  ],
+  [
+   37.1,
+   "stage3-S4-P0-mid-s11-adr011-20261108-batch_merge-0027"
+  ],
+  [
+   36.6,
+   "stage3-S4-P0-mid-s11-adr011-20261108-batch_merge-0010"
+  ],
+  [
+   36.0,
+   "stage3-S4-P0-mid-s11-adr011-20261108-batch_merge-0024"
+  ]
+ ],
+ "num_retries": 4,
+ "R_low_s (2·D_max + (n+1)·hold)": 374.7,
+ "R_low_single_hold_s": 134.7,
+ "S1_commit_rate_per_s": null,
+ "R_high_verified_point_s": null,
+ "R_high_B_s": null,
+ "author_stop (D_max > 349 s)": false
+}

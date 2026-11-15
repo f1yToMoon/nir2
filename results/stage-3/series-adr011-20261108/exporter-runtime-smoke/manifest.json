@@ -1,0 +1,104 @@
+{
+  "stage3-tech-S4-adr011-120s-20261108": {
+    "format_version": 2,
+    "git_sha": "844d033e984247f9cc67f84e2e76b8e240ca955a",
+    "source_pickle_sha256": "16f47e07cd37a483c26e323398a7a644ca501596f600a9a29cbc798fca2339ab",
+    "stream_events": 220800,
+    "files": {
+      "runs.json.gz": {
+        "rows": 1,
+        "sha256": "22a39bbe0aedb1b79acf6bc8033648ca1c6c69699d7e5349c509d4fa6dc79b91",
+        "uncompressed_sha256": "8f18590bce62188ddbb3b16c4161b024e8f3f2777fd9620fc6736bc0e79ce35f"
+      },
+      "ops.json.gz": {
+        "rows": 4,
+        "sha256": "fcb16a60b3004cf41c2560637ffc798daf4fcea87f5c5555764e9a5661220e26",
+        "uncompressed_sha256": "82602728ed3eb15d824151a25c9345df9d63fcab7eca861d8111eb192c47d2ed"
+      },
+      "commit_attempts.json.gz": {
+        "rows": 11,
+        "sha256": "6cdec89e055e71339742c89e11940ad5802f8403384d4d904d42cb94a28788b8",
+        "uncompressed_sha256": "879cee58e3535bd30f70e648ee2025300dc3d0472f338a9507fe5d9fe1221430"
+      },
+      "commit_events.json.gz": {
+        "rows": 9,
+        "sha256": "4aa3e3b6e4656236cbe95434348df2b2f23a709ff0cd24b60efab0d69fa4e512",
+        "uncompressed_sha256": "31c3a2533a5873a173ce7dd066ecaaab83961a3ff3df88fd29a468f9d83e4d05"
+      },
+      "commit_partitions.json.gz": {
+        "rows": 264,
+        "sha256": "ebba1d357304098df0e57d5e1530f19aa6e6295d9b552ff17d244e65042c6729",
+        "uncompressed_sha256": "6bf6d84b8e919f0cbcd383fa3d2782d06fe0af6e32438997943e50c5c8f3839b"
+      },
+      "table_health.json.gz": {
+        "rows": 1920,
+        "sha256": "aad316700c1a99c5de0f9f21878b2846c3029b5e4632350bae85d17f18c6050c",
+        "uncompressed_sha256": "ad03eff98a8a4cff436905aef28c9d2301f63193e7c3ccc7d212b600f117f4d9"
+      },
+      "table_meta.json.gz": {
+        "rows": 8,
+        "sha256": "9de451f01f3c5b63aa52b01d1d2647e9860d6ee50170996c2c8e052b0d4cf3cb",
+        "uncompressed_sha256": "18e4da35291eaa0b07c0b92c62b05909789409f6c20b6d42552274899f4420c0"
+      },
+      "orphan_scan.json.gz": {
+        "rows": 1,
+        "sha256": "f7300cd4f55dfd0890b53a60748c69bbb50dc86d8f7b7b66ee266216d1f68e1d",
+        "uncompressed_sha256": "a817664c16d202a6f4647ca7e2b934e567392abe05dfaf2861c03c677a59c71d"
+      },
+      "run_summary.json.gz": {
+        "rows": 1,
+        "sha256": "3915e2cdbe4a4867583ea9ba6d1eda9e51e9fb6e2d4dd32f506e0d1749999f2c",
+        "uncompressed_sha256": "4e894a5d8c3cc76708910eb5f6fe8982d6b8eacad1520acd174894a8d1e82e0c"
+      },
+      "intents.json.gz": {
+        "rows": 2,
+        "sha256": "1f63c9189eda247746a80f1ddb0432cdb666baef88db145c429161c4f68dbf83",
+        "uncompressed_sha256": "9d446d744fda9e58f83ed216bb2746e8dd83121bfe1226bd9aa00c6fff7cd884"
+      },
+      "journals/stage3-tech-S4-adr011-120s-20261108-batch_merge-0000.json.gz": {
+        "rows": 1,
+        "sha256": "1c586057a3c54e41eccd0406f4a0ca99d932abceed0c296c7ab42767e5c01d59",
+        "uncompressed_sha256": "33bd14eb69e42af2d0068c46a783a9f94e5ccc4cae8e6836a52b58c1713f5450"
+      },
+      "journals/stage3-tech-S4-adr011-120s-20261108-bg_expire-0000.json.gz": {
+        "rows": 1,
+        "sha256": "e674e8fc8aea3f872bac46f20bb2e9a63abb702ff7a3699436cdb5c4d2dfe1d7",
+        "uncompressed_sha256": "73706a4d39b03efff800ba0c92186ab610f1fbfeff89336bdac5d1b04dd22226"
+      },
+      "journals/stage3-tech-S4-adr011-120s-20261108-bg_expire-0001.json.gz": {
+        "rows": 1,
+        "sha256": "bb5f1b21130b19c58f230f3f3ea7b52962f8eaaf796834a2a2b305a6a535e77c",
+        "uncompressed_sha256": "209f26b26a84f760371c27616ddad996b6e2bc1c80fb8b7a7ca4db42656a91ce"
+      },
+      "journals/stage3-tech-S4-adr011-120s-20261108-reprocess_day-0000.json.gz": {
+        "rows": 1,
+        "sha256": "c5535a61a4561236ef0957688b23d78c93a3e078511612f03ed2def2b93c0478",
+        "uncompressed_sha256": "5df18aab332eb3e02d52271bc8da131944da73a04b4bc1cc3914d5424927d4c6"
+      },
+      "run-result.json.gz": {
+        "rows": 1,
+        "sha256": "482592d825d20ce7e28f0e276dbfcf701368dbddac2da2ca6926ec4e8df88b59",
+        "uncompressed_sha256": "2b06dd48b6eb798ccda7213f4043f59b6b5356276d47c9a704f663db03a68bf4"
+      },
+      "golden-data.json.gz": {
+        "rows": 1,
+        "sha256": "ef62eb125882debb41060e67260a121cee967f2262fa44d56d2cd92ed4c29f68",
+        "uncompressed_sha256": "0590de41635bbca5b1ccd5fcadebac5333dff7d6a8cd08b74bc2fee233e889b7"
+      },
+      "ledger.json.gz": {
+        "rows": 1,
+        "sha256": "3db68b9a1f048e0452d5840164427202ec531e8d354b2c36500f756457023f6e",
+        "uncompressed_sha256": "24493e253ece60a88073c982188b219b32d2927d5b3fdaa17817621c7cbd4a0b"
+      },
+      "stream-00-0000.csv.gz": {
+        "rows": 220800,
+        "sha256": "1166f6dfe2084b86488c19afaa66ef395d80f033c4ed67d7fa8f37ccc59da932"
+      },
+      "stream-sources.json.gz": {
+        "rows": 1,
+        "sha256": "b8419e54c9fbc9cc619be79fef83aedc53b3d8f15d2bdbce11e71feaa79216e3",
+        "uncompressed_sha256": "8ad390650a7d802ec031d6aa798441e8ef359dbc7b217ec4161293da9cf0107d"
+      }
+    }
+  }
+}

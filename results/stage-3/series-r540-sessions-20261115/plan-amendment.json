@@ -1,0 +1,23 @@
+{
+  "base_sha": "764d95fc0b33a42fab35305a1b6fe19371c9ef49",
+  "source_sha": "1f506a610ac9bafa27311f8ae75c86557e94de83",
+  "unchanged_paths": [
+    "src",
+    "scripts",
+    "config",
+    "infra",
+    "api",
+    "schemas",
+    "Makefile",
+    "pyproject.toml"
+  ],
+  "measurement_diff_exit": 0,
+  "reason": "Unconditional retained-deleted invariant test; runner, measurement scripts and workload configuration unchanged. Original five-type probe rejection preserved.",
+  "runs": {
+    "stage3-S0-P0-mid-s1-r540-sessions-20261115": "1f506a610ac9bafa27311f8ae75c86557e94de83",
+    "stage3-S0-P0-mid-s1-rep-r540-sessions-20261115": "1f506a610ac9bafa27311f8ae75c86557e94de83",
+    "stage3-S1-P0-mid-s11-r540-sessions-20261115": "1f506a610ac9bafa27311f8ae75c86557e94de83",
+    "stage3-S2-P0-mid-s11-r540-sessions-20261115": "1f506a610ac9bafa27311f8ae75c86557e94de83",
+    "stage3-S3-P0-mid-s11-r540-sessions-20261115": "1f506a610ac9bafa27311f8ae75c86557e94de83"
+  }
+}

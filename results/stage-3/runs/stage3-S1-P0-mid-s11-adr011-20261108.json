@@ -1,0 +1,212 @@
+{
+ "run_id": "stage3-S1-P0-mid-s11-adr011-20261108",
+ "stream_freshness": {
+  "complete": true,
+  "n_expected": 5367600,
+  "n_samples": 5367600,
+  "missing": 0,
+  "p95_s": 5.06618411540985,
+  "errors": [],
+  "unresolved_snapshots": {},
+  "n_snapshots": 3688,
+  "observer_cpu_s": 200.43299902099974,
+  "clock": "producer UTC time.time \u2192 successful commit_attempts.responded_at"
+ },
+ "scenario": "S1_compaction_vs_stream_append",
+ "variant": null,
+ "level": "mid",
+ "seed": 11,
+ "policy": "P0",
+ "git_sha": "7faa3edbbf1c63889af8280232d2662e01a92e33",
+ "t0": "2026-11-08T13:20:55.167821+00:00",
+ "t_end": "2026-11-08T13:49:25.224694+00:00",
+ "intents": 13,
+ "overrun_after_cooldown": [],
+ "streams": {
+  "kafka": [
+   {
+    "stream": "ingest_flink",
+    "produced": 5032500,
+    "errors": []
+   }
+  ],
+  "flink": [
+   {
+    "final_lag": 0,
+    "job_id": "59f799db5ab572fb5b22b53fc9f25ea4",
+    "checkpoints": {
+     "restored": 0,
+     "total": 340,
+     "in_progress": 0,
+     "completed": 340,
+     "failed": 0
+    }
+   }
+  ],
+  "agents": [
+   {
+    "stream": "agents",
+    "ok": 3351,
+    "failed": 1,
+    "errors": [
+     "An error occurred while calling o50976.append.\n: org.apache.iceberg.exceptions.CommitFailedException: Commit failed: Requirement failed: branch main has changed: expected id 5973874974374840923 != 8788618031757498960\n\tat org.apache.iceberg.rest.ErrorHandlers$CommitErrorHandler.accept(ErrorHandlers.j"
+    ]
+   }
+  ]
+ },
+ "invariants": {
+  "ledger_row_counts": {
+   "ok": true,
+   "partitions_checked": 296,
+   "mismatches": {},
+   "n_mismatches": 0,
+   "rows_by_origin": {
+    "agent": 335100,
+    "stream": 5032500,
+    "golden": 30000000
+   },
+   "journal_physical_records": 35367600,
+   "snapshot_total_records": 35367600,
+   "table_live_rows": 35367600,
+   "journal_commits": 3701
+  },
+  "no_duplicate_event_ids": {
+   "ok": true,
+   "duplicates": 0,
+   "rows": 35367600
+  },
+  "committed_ops_in_lineage": {
+   "ok": true,
+   "lineage_len": 3701,
+   "lineage_error": null,
+   "committed_checked": 13,
+   "missing": [],
+   "n_missing": 0
+  },
+  "aborted_ops_absent": {
+   "ok": true,
+   "failed_ops": 0,
+   "snapshots_in_lineage": [],
+   "aborted_rows_checked": 0,
+   "aborted_rows_present": 0,
+   "lineage_error": null
+  },
+  "version_monotonic": {
+   "ok": true,
+   "rows_checked": 35367600,
+   "rows_expected_updated": 0,
+   "mismatches": 0
+  },
+  "ok": true
+ },
+ "orphans": {
+  "orphan_files": 0,
+  "orphan_bytes": 0,
+  "old_metadata_json": 3701,
+  "listed_since_start": 40066
+ },
+ "spark_app_totals": {
+  "cpu_ms": 1350581,
+  "run_ms": 5205784,
+  "stages": 7229
+ },
+ "health": {
+  "samples": 59,
+  "errors": [],
+  "max_snapshots": 1405,
+  "max_metadata_bytes": 1393275
+ },
+ "cooldown_s": 120.0,
+ "warmup_s": 180.0,
+ "duration_s": 1500.0,
+ "validation": {
+  "ok": true,
+  "incomplete_cost": [],
+  "runner_errors": []
+ },
+ "summary": {
+  "run_id": "stage3-S1-P0-mid-s11-adr011-20261108",
+  "n_ops": 13,
+  "n_k2": 0,
+  "n_k1_fail": 0,
+  "n_base_expired": 0,
+  "n_history_unresolved": 0,
+  "n_errors": 0,
+  "wasted_cpu_s": 0.0,
+  "useful_cpu_s": 301.875,
+  "wasted_cpu_base_expired_s": 0.0,
+  "wasted_share": 0.0,
+  "background_cpu_s": 348.023,
+  "wasted_bytes": 0,
+  "goodput_commits_per_min": 0.52,
+  "commit_lat_p50_ms": 353.693,
+  "commit_lat_p95_ms": 1003.9609999999992,
+  "commit_lat_p99_ms": 1250.9113999999995,
+  "delay_p95_s": 0.14508980000000002,
+  "sla_violations": 0,
+  "debt_mean": 0.9995943909717877,
+  "debt_max": 1.0,
+  "orphan_bytes": 0,
+  "stream_freshness_p95_s": 5.06618411540985,
+  "detail": {
+   "stream_freshness": {
+    "complete": true,
+    "n_expected": 5367600,
+    "n_samples": 5367600,
+    "missing": 0,
+    "p95_s": 5.06618411540985,
+    "errors": [],
+    "unresolved_snapshots": {},
+    "n_snapshots": 3688,
+    "observer_cpu_s": 200.43299902099974,
+    "clock": "producer UTC time.time \u2192 successful commit_attempts.responded_at"
+   },
+   "outcomes": {
+    "committed": 13
+   },
+   "per_op": {
+    "compaction_hot": {
+     "op_type": "rewrite_data",
+     "n": 13,
+     "outcomes": {
+      "committed": 13
+     },
+     "d_exec_s": {
+      "n": 13,
+      "max": 17.4,
+      "p50": 11.1,
+      "p95": 17.34
+     },
+     "d_hist_s": {
+      "n": 13,
+      "max": 18.2,
+      "p50": 11.5,
+      "p95": 17.84
+     },
+     "cpu_s": {
+      "n": 13,
+      "max": 34.9,
+      "p50": 23.0,
+      "p95": 33.76
+     },
+     "attempts_max": 4
+    }
+   },
+   "background_expire": {
+    "n": 28,
+    "d_exec_max_s": 13.755948,
+    "d_exec_p50_s": 11.2148475,
+    "late_max_s": 14.3,
+    "outcomes": {
+     "committed": 28
+    },
+    "cpu_s": 348.023
+   },
+   "d_hist_max_s": 18.184187,
+   "max_snapshots": 1405,
+   "max_metadata_bytes": 1393275,
+   "policy": "P0",
+   "scenario": "S1_compaction_vs_stream_append"
+  }
+ }
+}

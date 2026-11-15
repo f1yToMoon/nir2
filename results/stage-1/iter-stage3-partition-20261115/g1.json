@@ -1,0 +1,97 @@
+{
+ "groups": {
+  "компакция x CoW DML": {
+   "members": [],
+   "confirmed": false
+  },
+  "компакция x MoR DML": {
+   "members": [],
+   "confirmed": false
+  },
+  "DML x append (serializable)": {
+   "members": [],
+   "confirmed": false
+  },
+  "DML x DML": {
+   "members": [
+    {
+     "case": "cow_dml_x_mor_merge_serializable_v2_ovpartition",
+     "k2": 20,
+     "valid": 20,
+     "confirmed": true
+    },
+    {
+     "case": "cow_dml_x_mor_merge_serializable_v3_ovpartition",
+     "k2": 20,
+     "valid": 20,
+     "confirmed": true
+    },
+    {
+     "case": "cow_dml_x_mor_update_serializable_v2_ovpartition",
+     "k2": 20,
+     "valid": 20,
+     "confirmed": true
+    },
+    {
+     "case": "cow_dml_x_mor_update_serializable_v3_ovpartition",
+     "k2": 20,
+     "valid": 20,
+     "confirmed": true
+    }
+   ],
+   "confirmed": true
+  }
+ },
+ "hypothesis": {
+  "fd593a5": {
+   "ref": "fd593a5",
+   "original_only": true,
+   "trial_match": 0,
+   "trial_total": 0,
+   "trial_rate": 0.0,
+   "pairs_match": 0,
+   "pairs_total": 0,
+   "mismatches": [],
+   "no_hypothesis": [],
+   "not_conclusive": []
+  },
+  "c6e9a4e": {
+   "ref": "c6e9a4e",
+   "original_only": true,
+   "trial_match": 0,
+   "trial_total": 0,
+   "trial_rate": 0.0,
+   "pairs_match": 0,
+   "pairs_total": 0,
+   "mismatches": [],
+   "no_hypothesis": [],
+   "not_conclusive": []
+  }
+ },
+ "hypothesis_with_mapped": {
+  "fd593a5": {
+   "ref": "fd593a5",
+   "original_only": false,
+   "trial_match": 80,
+   "trial_total": 80,
+   "trial_rate": 1.0,
+   "pairs_match": 4,
+   "pairs_total": 4,
+   "mismatches": [],
+   "no_hypothesis": [],
+   "not_conclusive": []
+  },
+  "c6e9a4e": {
+   "ref": "c6e9a4e",
+   "original_only": false,
+   "trial_match": 80,
+   "trial_total": 80,
+   "trial_rate": 1.0,
+   "pairs_match": 4,
+   "pairs_total": 4,
+   "mismatches": [],
+   "no_hypothesis": [],
+   "not_conclusive": []
+  }
+ }
+}

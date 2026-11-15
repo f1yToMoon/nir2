@@ -1,0 +1,86 @@
+{
+  "stage3-S4-P0-mid-s11-r540-sessions-20261115": {
+    "n_background": 30,
+    "background_cpu_s": 52.49,
+    "controlled_cpu_s": 520.406,
+    "unexecuted_empty_footprint_noops": 0,
+    "duration_max_s": 12.23846,
+    "start_lag_max_s": 0.025134,
+    "finish_lag_max_s": 12.262965,
+    "overlapping_background_pairs": 0,
+    "pairwise_overlap_seconds": 55.265827999999985,
+    "note": "Pairwise intersections may overlap each other; no causal slowdown is inferred."
+  },
+  "stage3-S5-P0-mid-s11-r540-sessions-20261115": {
+    "n_background": 28,
+    "background_cpu_s": 55.309,
+    "controlled_cpu_s": 344.454,
+    "unexecuted_empty_footprint_noops": 0,
+    "duration_max_s": 4.234864,
+    "start_lag_max_s": 0.023728,
+    "finish_lag_max_s": 4.255976,
+    "overlapping_background_pairs": 0,
+    "pairwise_overlap_seconds": 0,
+    "note": "Pairwise intersections may overlap each other; no causal slowdown is inferred."
+  },
+  "stage3-S0-P0-mid-s1-r540-sessions-20261115": {
+    "n_background": 28,
+    "background_cpu_s": 42.983,
+    "controlled_cpu_s": 107.266,
+    "unexecuted_empty_footprint_noops": 0,
+    "duration_max_s": 2.198359,
+    "start_lag_max_s": 0.019477,
+    "finish_lag_max_s": 2.208543,
+    "overlapping_background_pairs": 0,
+    "pairwise_overlap_seconds": 0,
+    "note": "Pairwise intersections may overlap each other; no causal slowdown is inferred."
+  },
+  "stage3-S0-P0-mid-s1-rep-r540-sessions-20261115": {
+    "n_background": 28,
+    "background_cpu_s": 43.463,
+    "controlled_cpu_s": 106.887,
+    "unexecuted_empty_footprint_noops": 0,
+    "duration_max_s": 2.232035,
+    "start_lag_max_s": 0.01366,
+    "finish_lag_max_s": 2.240374,
+    "overlapping_background_pairs": 0,
+    "pairwise_overlap_seconds": 0,
+    "note": "Pairwise intersections may overlap each other; no causal slowdown is inferred."
+  },
+  "stage3-S1-P0-mid-s11-r540-sessions-20261115": {
+    "n_background": 28,
+    "background_cpu_s": 322.615,
+    "controlled_cpu_s": 297.149,
+    "unexecuted_empty_footprint_noops": 0,
+    "duration_max_s": 11.617844,
+    "start_lag_max_s": 0.067595,
+    "finish_lag_max_s": 11.655521,
+    "overlapping_background_pairs": 0,
+    "pairwise_overlap_seconds": 7.622828999999999,
+    "note": "Pairwise intersections may overlap each other; no causal slowdown is inferred."
+  },
+  "stage3-S2-P0-mid-s11-r540-sessions-20261115": {
+    "n_background": 28,
+    "background_cpu_s": 58.153,
+    "controlled_cpu_s": 265.501,
+    "unexecuted_empty_footprint_noops": 0,
+    "duration_max_s": 7.732544,
+    "start_lag_max_s": 0.026409,
+    "finish_lag_max_s": 7.754835,
+    "overlapping_background_pairs": 0,
+    "pairwise_overlap_seconds": 5.475566,
+    "note": "Pairwise intersections may overlap each other; no causal slowdown is inferred."
+  },
+  "stage3-S3-P0-mid-s11-r540-sessions-20261115": {
+    "n_background": 28,
+    "background_cpu_s": 57.286,
+    "controlled_cpu_s": 160.244,
+    "unexecuted_empty_footprint_noops": 1,
+    "duration_max_s": 2.330093,
+    "start_lag_max_s": 0.023065,
+    "finish_lag_max_s": 2.338589,
+    "overlapping_background_pairs": 0,
+    "pairwise_overlap_seconds": 1.144021,
+    "note": "Pairwise intersections may overlap each other; no causal slowdown is inferred."
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "series-adr011-20261108/evidence": {
+    "verified_files": 517,
+    "all_hashes_match": true
+  },
+  "diagnostic-r540-20261115/evidence": {
+    "verified_files": 85,
+    "all_hashes_match": true
+  }
+}

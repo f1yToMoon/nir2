@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/home/an/nir/results/stage-3/series-r540-20261108/maintenance_summary.py", line 37, in <module>
+    'controlled_cpu_s': sum(o['cpu_ms'] for o in ctl) / 1000,
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: unsupported operand type(s) for +: 'int' and 'NoneType'
