@@ -1,0 +1,102 @@
+.FF                                                                      [100%]
+=================================== FAILURES ===================================
+_____ test_manifest_decoder_buffers_once_and_rejects_unknown_enums[status] _____
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x73a000523790>
+bad_field = 'status'
+
+    @pytest.mark.parametrize('bad_field', [None, 'status', 'content'])
+    def test_manifest_decoder_buffers_once_and_rejects_unknown_enums(monkeypatch: Any, bad_field: Any) -> None:
+        import io
+    
+        import fastavro
+        from pyiceberg.table import StaticTable
+    
+        schema = {'type': 'record', 'name': 'entry', 'fields': [
+            {'name': 'status', 'type': 'int'},
+            {'name': 'data_file', 'type': {'type': 'record', 'name': 'file', 'fields': [
+                {'name': 'content', 'type': 'int'}, {'name': 'file_size_in_bytes', 'type': 'long'},
+                {'name': 'partition', 'type': {'type': 'record', 'name': 'part', 'fields': [
+                    {'name': 'dt', 'type': {'type': 'int', 'logicalType': 'date'}},
+                    {'name': 'key_bucket', 'type': 'int'}]}}]}}]}
+        from datetime import date
+        rows = [dict(status=status, data_file=dict(content=content, file_size_in_bytes=size,
+                    partition=dict(dt=date(2026, 1, 1), key_bucket=0)))
+                for status, content, size in [(0, 0, 10), (1, 0, 20), (1, 1, 30), (1, 2, 40), (2, 0, 50)]]
+        if bad_field == 'status':
+            rows[0]['status'] = 3
+        elif bad_field == 'content':
+            rows[0]['data_file']['content'] = 3
+        buffer = io.BytesIO()
+        fastavro.writer(buffer, schema, rows)
+        payload = buffer.getvalue()
+        reads = []
+    
+        class Source(io.BytesIO):
+            def read(self, size: int = -1) -> bytes:
+                reads.append(size)
+                assert size == -1, 'Use a single full object read, not S3 reads for individual Avro fields'
+                return super().read(size)
+    
+        manifests = [SimpleNamespace(manifest_path='s3://bucket/manifest')]
+        table = SimpleNamespace(io=SimpleNamespace(new_input=lambda _: SimpleNamespace(open=lambda: Source(payload))),
+                                current_snapshot=lambda: SimpleNamespace(manifests=lambda _: manifests))
+        monkeypatch.setattr(StaticTable, 'from_metadata', lambda *_a, **_k: table)
+        cache: dict[str, Any] = {}
+        if bad_field:
+>           with pytest.raises(ValueError, match='manifest'):
+E           Failed: DID NOT RAISE ValueError
+
+tests/unit/test_runner_health.py:154: Failed
+____ test_manifest_decoder_buffers_once_and_rejects_unknown_enums[content] _____
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x73a005b89b90>
+bad_field = 'content'
+
+    @pytest.mark.parametrize('bad_field', [None, 'status', 'content'])
+    def test_manifest_decoder_buffers_once_and_rejects_unknown_enums(monkeypatch: Any, bad_field: Any) -> None:
+        import io
+    
+        import fastavro
+        from pyiceberg.table import StaticTable
+    
+        schema = {'type': 'record', 'name': 'entry', 'fields': [
+            {'name': 'status', 'type': 'int'},
+            {'name': 'data_file', 'type': {'type': 'record', 'name': 'file', 'fields': [
+                {'name': 'content', 'type': 'int'}, {'name': 'file_size_in_bytes', 'type': 'long'},
+                {'name': 'partition', 'type': {'type': 'record', 'name': 'part', 'fields': [
+                    {'name': 'dt', 'type': {'type': 'int', 'logicalType': 'date'}},
+                    {'name': 'key_bucket', 'type': 'int'}]}}]}}]}
+        from datetime import date
+        rows = [dict(status=status, data_file=dict(content=content, file_size_in_bytes=size,
+                    partition=dict(dt=date(2026, 1, 1), key_bucket=0)))
+                for status, content, size in [(0, 0, 10), (1, 0, 20), (1, 1, 30), (1, 2, 40), (2, 0, 50)]]
+        if bad_field == 'status':
+            rows[0]['status'] = 3
+        elif bad_field == 'content':
+            rows[0]['data_file']['content'] = 3
+        buffer = io.BytesIO()
+        fastavro.writer(buffer, schema, rows)
+        payload = buffer.getvalue()
+        reads = []
+    
+        class Source(io.BytesIO):
+            def read(self, size: int = -1) -> bytes:
+                reads.append(size)
+                assert size == -1, 'Use a single full object read, not S3 reads for individual Avro fields'
+                return super().read(size)
+    
+        manifests = [SimpleNamespace(manifest_path='s3://bucket/manifest')]
+        table = SimpleNamespace(io=SimpleNamespace(new_input=lambda _: SimpleNamespace(open=lambda: Source(payload))),
+                                current_snapshot=lambda: SimpleNamespace(manifests=lambda _: manifests))
+        monkeypatch.setattr(StaticTable, 'from_metadata', lambda *_a, **_k: table)
+        cache: dict[str, Any] = {}
+        if bad_field:
+>           with pytest.raises(ValueError, match='manifest'):
+E           Failed: DID NOT RAISE ValueError
+
+tests/unit/test_runner_health.py:154: Failed
+=========================== short test summary info ============================
+FAILED tests/unit/test_runner_health.py::test_manifest_decoder_buffers_once_and_rejects_unknown_enums[status]
+FAILED tests/unit/test_runner_health.py::test_manifest_decoder_buffers_once_and_rejects_unknown_enums[content]
+2 failed, 1 passed, 9 deselected in 0.56s

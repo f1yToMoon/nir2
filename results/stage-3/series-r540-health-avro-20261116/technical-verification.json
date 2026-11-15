@@ -1,0 +1,28 @@
+{
+  "validation": {
+    "ok": true,
+    "incomplete_cost": [],
+    "runner_errors": []
+  },
+  "coverage": {
+    "ok": true,
+    "samples": 7,
+    "interval_s": 30,
+    "jitter_budget_s": 1.0,
+    "max_gap_s": 30.207867,
+    "missed_intervals": 0,
+    "gaps_s": [
+      29.626751,
+      30.003484,
+      30.207867,
+      29.793242,
+      29.995431,
+      12.431652,
+      0.39382,
+      0.005297
+    ],
+    "invalid_timestamps": []
+  },
+  "metadata_versions": 11,
+  "byte_bound": 19168
+}

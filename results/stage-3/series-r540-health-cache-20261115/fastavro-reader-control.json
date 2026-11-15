@@ -1,0 +1,38 @@
+{
+  "reader_sha256": "701a3551ef32e8da06b4520e7c29a9e8955c0cad394c8395d69a008991374d7c",
+  "all_counters_equal": true,
+  "samples": [
+    {
+      "snapshot": 7686714733195074874,
+      "old_cold_seconds": 1.2140863630011154,
+      "fastavro_cold_seconds": 1.8421563420015445,
+      "partitions": 240,
+      "data_files": 10140,
+      "delete_files": 0
+    },
+    {
+      "snapshot": 7686714733195074874,
+      "old_cold_seconds": 0.8055618299986236,
+      "fastavro_cold_seconds": 1.8801117520015396,
+      "partitions": 240,
+      "data_files": 10140,
+      "delete_files": 0
+    },
+    {
+      "snapshot": 6645969590036271939,
+      "old_cold_seconds": 0.734485766999569,
+      "fastavro_cold_seconds": 1.8209552599982999,
+      "partitions": 240,
+      "data_files": 10172,
+      "delete_files": 0
+    },
+    {
+      "snapshot": 6645969590036271939,
+      "old_cold_seconds": 0.7502334780001547,
+      "fastavro_cold_seconds": 1.8774023469995882,
+      "partitions": 240,
+      "data_files": 10172,
+      "delete_files": 0
+    }
+  ]
+}

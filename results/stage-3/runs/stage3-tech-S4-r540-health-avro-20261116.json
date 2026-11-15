@@ -1,0 +1,377 @@
+{
+ "run_id": "stage3-tech-S4-r540-health-avro-20261116",
+ "stream_freshness": {
+  "complete": true,
+  "n_expected": 229200,
+  "n_samples": 229200,
+  "missing": 0,
+  "p95_s": 14.38411841392517,
+  "errors": [],
+  "unresolved_snapshots": {},
+  "n_snapshots": 8,
+  "observer_cpu_s": 0.6015325270000002,
+  "clock": "producer UTC time.time \u2192 successful commit_attempts.responded_at"
+ },
+ "scenario": "S4_merge_vs_stream_serializable",
+ "variant": null,
+ "level": "mid",
+ "seed": 11,
+ "policy": "P0",
+ "git_sha": "89e8dd0cd3d95200d7893ee191f19aacbc04df7a",
+ "t0": "2026-11-15T21:31:13.821304+00:00",
+ "t_end": "2026-11-15T21:33:56.278848+00:00",
+ "intents": 2,
+ "overrun_after_cooldown": [],
+ "streams": {
+  "kafka": [
+   {
+    "stream": "ingest",
+    "produced": 229200,
+    "errors": []
+   }
+  ],
+  "flink": [
+   {
+    "final_lag": 0,
+    "job_id": "df1f327fd4135bb1f3f5dfa867e19e6c",
+    "checkpoints": {
+     "restored": 0,
+     "total": 11,
+     "in_progress": 0,
+     "completed": 11,
+     "failed": 0
+    }
+   }
+  ],
+  "agents": []
+ },
+ "invariants": {
+  "ledger_row_counts": {
+   "ok": true,
+   "partitions_checked": 272,
+   "mismatches": {},
+   "n_mismatches": 0,
+   "rows_by_origin": {
+    "golden": 30000000,
+    "stream": 229200
+   },
+   "journal_physical_records": 30229200,
+   "snapshot_total_records": 30229200,
+   "table_live_rows": 30229200,
+   "journal_commits": 9
+  },
+  "no_duplicate_event_ids": {
+   "ok": true,
+   "duplicates": 0,
+   "rows": 30229200
+  },
+  "committed_ops_in_lineage": {
+   "ok": true,
+   "lineage_len": 9,
+   "lineage_error": null,
+   "committed_checked": 1,
+   "missing": [],
+   "n_missing": 0
+  },
+  "aborted_ops_absent": {
+   "ok": true,
+   "failed_ops": 1,
+   "snapshots_in_lineage": [],
+   "aborted_rows_checked": 50000,
+   "aborted_rows_present": 0,
+   "lineage_error": null
+  },
+  "version_monotonic": {
+   "ok": true,
+   "rows_checked": 30229200,
+   "rows_expected_updated": 0,
+   "mismatches": 0
+  },
+  "ok": true
+ },
+ "orphans": {
+  "orphan_files": 0,
+  "orphan_bytes": 0,
+  "old_metadata_json": 0,
+  "listed_since_start": 335
+ },
+ "spark_app_totals": {
+  "cpu_ms": 192768,
+  "run_ms": 499528,
+  "stages": 48
+ },
+ "health": {
+  "samples": 7,
+  "errors": [],
+  "coverage": {
+   "ok": true,
+   "samples": 7,
+   "interval_s": 30.0,
+   "jitter_budget_s": 1.0,
+   "max_gap_s": 30.207867,
+   "missed_intervals": 0,
+   "gaps_s": [
+    29.626751,
+    30.003484,
+    30.207867,
+    29.793242,
+    29.995431,
+    12.431652,
+    0.39382,
+    0.005297
+   ]
+  },
+  "max_snapshots": 10,
+  "max_metadata_bytes": 19168
+ },
+ "metadata_inventory": {
+  "complete": true,
+  "files": [
+   {
+    "location": "s3://warehouse/bench/events/metadata/00042-66505b83-41f6-4d1e-b8ec-e41c589cd4c4.metadata.json",
+    "bytes": 8819,
+    "sha256": "07df58699cac5ea4092cff146f01b976eddc81540572fbb38a054b235f52cc3b",
+    "archive": "07df58699cac5ea4092cff146f01b976eddc81540572fbb38a054b235f52cc3b.json.gz",
+    "current_snapshot_id": 6712778488404766195,
+    "delete_after_commit_enabled": false
+   },
+   {
+    "location": "s3://warehouse/bench/events/metadata/00043-dde9fbc4-65a9-4535-a7dd-23a742bc4449.metadata.json",
+    "bytes": 9957,
+    "sha256": "2ff64028d76800ebaaef1491fb53f8b62f99a83f863744f73203dbc0880be4a6",
+    "archive": "2ff64028d76800ebaaef1491fb53f8b62f99a83f863744f73203dbc0880be4a6.json.gz",
+    "current_snapshot_id": 7014777869945754921,
+    "delete_after_commit_enabled": false
+   },
+   {
+    "location": "s3://warehouse/bench/events/metadata/00043-f8eefc2b-8951-44e0-84d9-2619c3679b99.metadata.json",
+    "bytes": 8962,
+    "sha256": "b372fda312b801f0432fa958fa3b0aea6d298c7268d1d64b12f340e5a43c03a0",
+    "archive": "b372fda312b801f0432fa958fa3b0aea6d298c7268d1d64b12f340e5a43c03a0.json.gz",
+    "current_snapshot_id": 6712778488404766195,
+    "delete_after_commit_enabled": false
+   },
+   {
+    "location": "s3://warehouse/bench/events/metadata/00044-d23bca93-1b6b-4f29-a3b3-02d195f4b524.metadata.json",
+    "bytes": 11090,
+    "sha256": "4c17a9b0433ff9c1c5d0b2f11be5ca3dc47cc380086c477347e20da6437e8c68",
+    "archive": "4c17a9b0433ff9c1c5d0b2f11be5ca3dc47cc380086c477347e20da6437e8c68.json.gz",
+    "current_snapshot_id": 933176274237424007,
+    "delete_after_commit_enabled": false
+   },
+   {
+    "location": "s3://warehouse/bench/events/metadata/00045-cb38f88a-a997-4a55-a33e-2f96ea03774f.metadata.json",
+    "bytes": 12229,
+    "sha256": "a08dcac41f7fe4abbfdf1b6391282fede6c18de4db92adfbb0b4b2f00384654b",
+    "archive": "a08dcac41f7fe4abbfdf1b6391282fede6c18de4db92adfbb0b4b2f00384654b.json.gz",
+    "current_snapshot_id": 4072210910245962137,
+    "delete_after_commit_enabled": false
+   },
+   {
+    "location": "s3://warehouse/bench/events/metadata/00046-a7a05e3a-9e6f-418f-a362-1cc26bb6ae23.metadata.json",
+    "bytes": 13367,
+    "sha256": "5de5436a65dc5b8fcbdafef43714e0493490c8717a48594a73fd839f5cc7a479",
+    "archive": "5de5436a65dc5b8fcbdafef43714e0493490c8717a48594a73fd839f5cc7a479.json.gz",
+    "current_snapshot_id": 7516730324197286159,
+    "delete_after_commit_enabled": false
+   },
+   {
+    "location": "s3://warehouse/bench/events/metadata/00047-4fe77e62-1edd-455b-85a9-914c2eee7c62.metadata.json",
+    "bytes": 14616,
+    "sha256": "a32bb6feaa6a7a2ace6c18a2e15dffbfd8c557d305ac43d0252a324bdb9862a5",
+    "archive": "a32bb6feaa6a7a2ace6c18a2e15dffbfd8c557d305ac43d0252a324bdb9862a5.json.gz",
+    "current_snapshot_id": 3153852307818694571,
+    "delete_after_commit_enabled": false
+   },
+   {
+    "location": "s3://warehouse/bench/events/metadata/00048-f7d432a3-bc7a-4d9c-bf2a-d9ede1b4f0a2.metadata.json",
+    "bytes": 15754,
+    "sha256": "c5b0e6e17dbc82063384db93989187dc5771dba6db6f843f4e985c410fa0c2d9",
+    "archive": "c5b0e6e17dbc82063384db93989187dc5771dba6db6f843f4e985c410fa0c2d9.json.gz",
+    "current_snapshot_id": 2714503715916853288,
+    "delete_after_commit_enabled": false
+   },
+   {
+    "location": "s3://warehouse/bench/events/metadata/00049-96ec1df4-c9eb-4842-9982-425daefef2ae.metadata.json",
+    "bytes": 16892,
+    "sha256": "0816a267aaf7ddf30b3ca58c9d1ad0845d552a428a01af57520e5849dea4cfb7",
+    "archive": "0816a267aaf7ddf30b3ca58c9d1ad0845d552a428a01af57520e5849dea4cfb7.json.gz",
+    "current_snapshot_id": 4687236955941796864,
+    "delete_after_commit_enabled": false
+   },
+   {
+    "location": "s3://warehouse/bench/events/metadata/00050-a5e640c0-5808-4ad1-92a1-e63b9c667ec5.metadata.json",
+    "bytes": 18030,
+    "sha256": "6e0af42bd8c28e21cf127871ab571333d2c588190337634d1b7289f8678bfc76",
+    "archive": "6e0af42bd8c28e21cf127871ab571333d2c588190337634d1b7289f8678bfc76.json.gz",
+    "current_snapshot_id": 4216301271185573269,
+    "delete_after_commit_enabled": false
+   },
+   {
+    "location": "s3://warehouse/bench/events/metadata/00051-e3989a98-ed0f-4a9b-8a28-8601a623aae9.metadata.json",
+    "bytes": 19168,
+    "sha256": "7031ea2792e0ea7ee5fe5bb9fa7333f4c1aee18d01a8eddef6dc4cad077f102b",
+    "archive": "7031ea2792e0ea7ee5fe5bb9fa7333f4c1aee18d01a8eddef6dc4cad077f102b.json.gz",
+    "current_snapshot_id": 4373025948352929390,
+    "delete_after_commit_enabled": false
+   }
+  ],
+  "listed": 11,
+  "required_locations": [
+   "s3://warehouse/bench/events/metadata/00042-66505b83-41f6-4d1e-b8ec-e41c589cd4c4.metadata.json",
+   "s3://warehouse/bench/events/metadata/00043-dde9fbc4-65a9-4535-a7dd-23a742bc4449.metadata.json",
+   "s3://warehouse/bench/events/metadata/00044-d23bca93-1b6b-4f29-a3b3-02d195f4b524.metadata.json",
+   "s3://warehouse/bench/events/metadata/00045-cb38f88a-a997-4a55-a33e-2f96ea03774f.metadata.json",
+   "s3://warehouse/bench/events/metadata/00046-a7a05e3a-9e6f-418f-a362-1cc26bb6ae23.metadata.json",
+   "s3://warehouse/bench/events/metadata/00047-4fe77e62-1edd-455b-85a9-914c2eee7c62.metadata.json",
+   "s3://warehouse/bench/events/metadata/00048-f7d432a3-bc7a-4d9c-bf2a-d9ede1b4f0a2.metadata.json",
+   "s3://warehouse/bench/events/metadata/00049-96ec1df4-c9eb-4842-9982-425daefef2ae.metadata.json",
+   "s3://warehouse/bench/events/metadata/00050-a5e640c0-5808-4ad1-92a1-e63b9c667ec5.metadata.json",
+   "s3://warehouse/bench/events/metadata/00051-e3989a98-ed0f-4a9b-8a28-8601a623aae9.metadata.json"
+  ],
+  "missing": [],
+  "delete_after_commit_enabled": false,
+  "max_metadata_bytes": 19168,
+  "method": "all_retained_metadata_versions_including_uncommitted_candidates"
+ },
+ "cooldown_s": 120.0,
+ "warmup_s": 0.0,
+ "duration_s": 120.0,
+ "validation": {
+  "ok": true,
+  "incomplete_cost": [],
+  "runner_errors": []
+ },
+ "summary": {
+  "run_id": "stage3-tech-S4-r540-health-avro-20261116",
+  "n_ops": 2,
+  "n_k2": 1,
+  "n_k1_fail": 0,
+  "n_base_expired": 0,
+  "n_history_unresolved": 0,
+  "n_errors": 0,
+  "wasted_cpu_s": 20.362,
+  "useful_cpu_s": 12.422,
+  "wasted_cpu_base_expired_s": 0.0,
+  "wasted_share": 0.6210956564177648,
+  "background_cpu_s": 8.104,
+  "wasted_bytes": 86795417,
+  "goodput_commits_per_min": 0.5,
+  "commit_lat_p50_ms": 70.50099999999999,
+  "commit_lat_p95_ms": 70.50099999999999,
+  "commit_lat_p99_ms": 70.50099999999999,
+  "delay_p95_s": 0.289037,
+  "sla_violations": 0,
+  "debt_mean": 1.0,
+  "debt_max": 1.0,
+  "orphan_bytes": 0,
+  "stream_freshness_p95_s": 14.38411841392517,
+  "detail": {
+   "stream_freshness": {
+    "complete": true,
+    "n_expected": 229200,
+    "n_samples": 229200,
+    "missing": 0,
+    "p95_s": 14.38411841392517,
+    "errors": [],
+    "unresolved_snapshots": {},
+    "n_snapshots": 8,
+    "observer_cpu_s": 0.6015325270000002,
+    "clock": "producer UTC time.time \u2192 successful commit_attempts.responded_at"
+   },
+   "outcomes": {
+    "data_conflict": 1,
+    "committed": 1
+   },
+   "per_op": {
+    "batch_merge": {
+     "op_type": "cow_dml",
+     "n": 1,
+     "outcomes": {
+      "data_conflict": 1
+     },
+     "d_exec_s": {
+      "n": 1,
+      "max": 15.2,
+      "p50": 15.2,
+      "p95": 15.2
+     },
+     "d_hist_s": {
+      "n": 1,
+      "max": 19.3,
+      "p50": 19.3,
+      "p95": 19.3
+     },
+     "cpu_s": {
+      "n": 1,
+      "max": 20.4,
+      "p50": 20.4,
+      "p95": 20.4
+     },
+     "attempts_max": 0
+    },
+    "reprocess_day": {
+     "op_type": "overwrite",
+     "n": 1,
+     "outcomes": {
+      "committed": 1
+     },
+     "d_exec_s": {
+      "n": 1,
+      "max": 5.6,
+      "p50": 5.6,
+      "p95": 5.6
+     },
+     "d_hist_s": {
+      "n": 1,
+      "max": 13.1,
+      "p50": 13.1,
+      "p95": 13.1
+     },
+     "cpu_s": {
+      "n": 1,
+      "max": 12.4,
+      "p50": 12.4,
+      "p95": 12.4
+     },
+     "attempts_max": 1
+    }
+   },
+   "background_expire": {
+    "n": 2,
+    "d_exec_max_s": 6.41783,
+    "d_exec_p50_s": 3.9790620000000003,
+    "late_max_s": 7.0,
+    "outcomes": {
+     "committed": 2
+    },
+    "cpu_s": 8.104
+   },
+   "d_hist_max_s": 19.268485,
+   "max_snapshots": 10,
+   "observed_max_metadata_bytes": 19168,
+   "max_metadata_bytes": 19168,
+   "metadata_inventory_complete": true,
+   "health_coverage": {
+    "ok": true,
+    "samples": 7,
+    "interval_s": 30.0,
+    "jitter_budget_s": 1.0,
+    "max_gap_s": 30.207867,
+    "missed_intervals": 0,
+    "gaps_s": [
+     29.626751,
+     30.003484,
+     30.207867,
+     29.793242,
+     29.995431,
+     12.431652,
+     0.39382,
+     0.005297
+    ]
+   },
+   "policy": "P0",
+   "scenario": "S4_merge_vs_stream_serializable"
+  }
+ }
+}

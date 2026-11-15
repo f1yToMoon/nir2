@@ -1,0 +1,103 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+______ test_manifest_decoder_buffers_once_and_rejects_unknown_enums[None] ______
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7b487d2378d0>
+bad_field = None
+
+    @pytest.mark.parametrize('bad_field', [None, 'status', 'content'])
+    def test_manifest_decoder_buffers_once_and_rejects_unknown_enums(monkeypatch: Any, bad_field: Any) -> None:
+        import io
+    
+        import fastavro
+        from pyiceberg.table import StaticTable
+    
+        schema = {'type': 'record', 'name': 'entry', 'fields': [
+            {'name': 'status', 'type': 'int'},
+            {'name': 'data_file', 'type': {'type': 'record', 'name': 'file', 'fields': [
+                {'name': 'content', 'type': 'int'}, {'name': 'file_size_in_bytes', 'type': 'long'},
+                {'name': 'partition', 'type': {'type': 'record', 'name': 'part', 'fields': [
+                    {'name': 'dt', 'type': {'type': 'int', 'logicalType': 'date'}},
+                    {'name': 'key_bucket', 'type': 'int'}]}}]}}]}
+        from datetime import date
+        rows = [dict(status=status, data_file=dict(content=content, file_size_in_bytes=size,
+                    partition=dict(dt=date(2026, 1, 1), key_bucket=0)))
+                for status, content, size in [(0, 0, 10), (1, 0, 20), (1, 1, 30), (1, 2, 40), (2, 0, 50)]]
+        if bad_field == 'status':
+            rows[0]['status'] = 3
+        elif bad_field == 'content':
+            rows[0]['data_file']['content'] = 3
+        buffer = io.BytesIO()
+        fastavro.writer(buffer, schema, rows)
+        payload = buffer.getvalue()
+        reads = []
+    
+        class Source(io.BytesIO):
+            def read(self, size: int = -1) -> bytes:
+                reads.append(size)
+                assert size == -1, 'Use a single full object read, not S3 reads for individual Avro fields'
+                return super().read(size)
+    
+        manifests = [SimpleNamespace(manifest_path='s3://bucket/manifest')]
+        file_io = SimpleNamespace(new_input=lambda _: SimpleNamespace(open=lambda: Source(payload)))
+        table = SimpleNamespace(io=file_io,
+                                current_snapshot=lambda: SimpleNamespace(manifests=lambda _: manifests))
+        monkeypatch.setattr(StaticTable, 'from_metadata', lambda *_a, **_k: table)
+        cache: dict[str, Any] = {}
+        if bad_field:
+            with pytest.raises(ValueError, match='manifest'):
+                health.inspect_partition_files(Env(), 'metadata', cache)
+            return
+        expected = {'dt=2026-01-01/key_bucket=0': dict(data_files=2, small_files=2,
+                                                    delete_files=2, total_bytes=100)}
+>       assert health.inspect_partition_files(Env(), 'metadata', cache) == expected
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/unit/test_runner_health.py:160: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../capl_health_unbuffered_before.py:163: in inspect_partition_files
+    cache.update(pool.map(inspect_manifest, missing))
+/home/an/.local/share/uv/python/cpython-3.11.18-linux-x86_64-gnu/lib/python3.11/concurrent/futures/_base.py:619: in result_iterator
+    yield _result_or_cancel(fs.pop())
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/home/an/.local/share/uv/python/cpython-3.11.18-linux-x86_64-gnu/lib/python3.11/concurrent/futures/_base.py:317: in _result_or_cancel
+    return fut.result(timeout)
+           ^^^^^^^^^^^^^^^^^^^
+/home/an/.local/share/uv/python/cpython-3.11.18-linux-x86_64-gnu/lib/python3.11/concurrent/futures/_base.py:449: in result
+    return self.__get_result()
+           ^^^^^^^^^^^^^^^^^^^
+/home/an/.local/share/uv/python/cpython-3.11.18-linux-x86_64-gnu/lib/python3.11/concurrent/futures/_base.py:401: in __get_result
+    raise self._exception
+/home/an/.local/share/uv/python/cpython-3.11.18-linux-x86_64-gnu/lib/python3.11/concurrent/futures/thread.py:58: in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../capl_health_unbuffered_before.py:139: in inspect_manifest
+    for entry in fastavro.reader(source):
+                 ^^^^^^^^^^^^^^^^^^^^^^^
+fastavro/_read.pyx:1144: in fastavro._read.reader.__init__
+    ???
+fastavro/_read.pyx:1071: in fastavro._read.file_reader.__init__
+    ???
+fastavro/_read.pyx:787: in fastavro._read._read_data
+    ???
+fastavro/_read.pyx:661: in fastavro._read.read_record
+    ???
+fastavro/_read.pyx:759: in fastavro._read._read_data
+    ???
+fastavro/_read.pyx:334: in fastavro._read.read_fixed
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <tests.unit.test_runner_health.test_manifest_decoder_buffers_once_and_rejects_unknown_enums.<locals>.Source object at 0x7b487c94d2b0>
+size = 4
+
+    def read(self, size: int = -1) -> bytes:
+        reads.append(size)
+>       assert size == -1, 'Use a single full object read, not S3 reads for individual Avro fields'
+E       AssertionError: Use a single full object read, not S3 reads for individual Avro fields
+E       assert 4 == -1
+
+tests/unit/test_runner_health.py:145: AssertionError
+=========================== short test summary info ============================
+FAILED tests/unit/test_runner_health.py::test_manifest_decoder_buffers_once_and_rejects_unknown_enums[None]
+1 failed in 0.36s

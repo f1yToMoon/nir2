@@ -1,0 +1,97 @@
+[
+  {
+    "source": "results/stage-3/health-avro-controls-20261116/native.log",
+    "sha256": "0f8f502f2225739517dc44f6071b537d33daaa949135d4f66210ca5e8586c31c",
+    "gzip": "results/stage-3/health-avro-controls-20261116/native.log.gz"
+  },
+  {
+    "source": "results/stage-3/health-avro-controls-20261116/selfcheck.log",
+    "sha256": "81d39ac29b9fea8bcb60808b4d16a5f55bb1aa4958fc4b767ac4a09c694ca015",
+    "gzip": "results/stage-3/health-avro-controls-20261116/selfcheck.log.gz"
+  },
+  {
+    "source": "results/stage-3/health-avro-controls-20261116/unbuffered-before.log",
+    "sha256": "5cd425687f1640bb669ffa37c0a5a4232496b1738b7b97d1719e2eb59614a98d",
+    "gzip": "results/stage-3/health-avro-controls-20261116/unbuffered-before.log.gz"
+  },
+  {
+    "source": "results/stage-3/health-avro-controls-20261116/enum-before.log",
+    "sha256": "ed6be4fc93eec99e300938c3edd570a1d9dd0296c4b90615c4b4cda2b766481e",
+    "gzip": "results/stage-3/health-avro-controls-20261116/enum-before.log.gz"
+  },
+  {
+    "source": "results/stage-3/health-avro-controls-20261116/unit-worktree.log",
+    "sha256": "b3dc2a8277ef3613fd2fd5a976616d5df60016b614a29be9012cf35bbd663dd8",
+    "gzip": "results/stage-3/health-avro-controls-20261116/unit-worktree.log.gz"
+  },
+  {
+    "source": "results/stage-3/series-r540-health-cache-20261115/cost-ui-S4-mid.json",
+    "sha256": "31c9ea76e94f2a40af95798f9762a98e7918367d4935cc105a3a8658bd400b4e",
+    "gzip": "results/stage-3/series-r540-health-cache-20261115/cost-ui-S4-mid.json.gz"
+  },
+  {
+    "source": "results/stage-3/series-r540-health-cache-20261115/technical-export.log",
+    "sha256": "4d858a493da3355564aff69154b0663e53e9e8a0c8b3c5b2fe405de58939df66",
+    "gzip": "results/stage-3/series-r540-health-cache-20261115/technical-export.log.gz"
+  },
+  {
+    "source": "results/stage-3/series-r540-health-cache-20261115/checks-diagnostic.log",
+    "sha256": "d452b4bfd82b627a6f38af26c757df48cc3d940caf92e90302cc9b4e34618b24",
+    "gzip": "results/stage-3/series-r540-health-cache-20261115/checks-diagnostic.log.gz"
+  },
+  {
+    "source": "results/stage-3/series-r540-health-cache-20261115/cost-ui-S4-early.stderr",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "gzip": "results/stage-3/series-r540-health-cache-20261115/cost-ui-S4-early.stderr.gz"
+  },
+  {
+    "source": "results/stage-3/series-r540-health-cache-20261115/technical.log",
+    "sha256": "b8531c629967430b32ccc2c5b2bbafb2dae63f0917d6d4d3f4111c8fd1936d87",
+    "gzip": "results/stage-3/series-r540-health-cache-20261115/technical.log.gz"
+  },
+  {
+    "source": "results/stage-3/series-r540-health-cache-20261115/export-diagnostic.log",
+    "sha256": "c09f440388899d4d041b915359d39b2b26190f3eac34bca2aa44574a5082b3fb",
+    "gzip": "results/stage-3/series-r540-health-cache-20261115/export-diagnostic.log.gz"
+  },
+  {
+    "source": "results/stage-3/series-r540-health-cache-20261115/cost-ui-S4-late.stderr",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "gzip": "results/stage-3/series-r540-health-cache-20261115/cost-ui-S4-late.stderr.gz"
+  },
+  {
+    "source": "results/stage-3/series-r540-health-cache-20261115/series.log",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "gzip": "results/stage-3/series-r540-health-cache-20261115/series.log.gz"
+  },
+  {
+    "source": "results/stage-3/series-r540-health-cache-20261115/cost-ui-S4-mid.stderr",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "gzip": "results/stage-3/series-r540-health-cache-20261115/cost-ui-S4-mid.stderr.gz"
+  },
+  {
+    "source": "results/stage-3/series-r540-health-cache-20261115/cost-ui-S4-early.json",
+    "sha256": "75a5b06c089a6eb179453b76265051ecc25f104a21fb318b64bf13c19d805867",
+    "gzip": "results/stage-3/series-r540-health-cache-20261115/cost-ui-S4-early.json.gz"
+  },
+  {
+    "source": "results/stage-3/series-r540-health-cache-20261115/ui-sampling.log",
+    "sha256": "8554a6fee466e0f876b5575017068895a41e86ec3a1c9d71576d973677c49b2f",
+    "gzip": "results/stage-3/series-r540-health-cache-20261115/ui-sampling.log.gz"
+  },
+  {
+    "source": "results/stage-3/series-r540-health-cache-20261115/cost-ui-S4-late.json",
+    "sha256": "014790db39e52b0d2a89c0ea471cc3f3520b2ff8cd21ed6055fde758bbb480cc",
+    "gzip": "results/stage-3/series-r540-health-cache-20261115/cost-ui-S4-late.json.gz"
+  },
+  {
+    "source": "results/stage-3/series-r540-health-avro-20261116/technical-export.log",
+    "sha256": "fba8eb97ebb9cfa68c2df36dcb18a377ce66fd2f72d1a157e7ff293050e0c92a",
+    "gzip": "results/stage-3/series-r540-health-avro-20261116/technical-export.log.gz"
+  },
+  {
+    "source": "results/stage-3/series-r540-health-avro-20261116/technical.log",
+    "sha256": "c8a7ce6dce0496dd2e7558ed10dfaa10cfd93b6161a9fcaab83e72f55c0c5a4a",
+    "gzip": "results/stage-3/series-r540-health-avro-20261116/technical.log.gz"
+  }
+]

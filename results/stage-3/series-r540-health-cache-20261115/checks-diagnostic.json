@@ -1,0 +1,271 @@
+{
+ "runs": {
+  "stage3-S4-P0-mid-s11-r540-health-cache-20261115": {
+   "scenario": "S4_merge_vs_stream_serializable",
+   "status": "finished",
+   "invariants_ok": true,
+   "git_sha": "9775b53c2c30177bc0d7682d9434b6317e7ddf5b",
+   "n_ops": 35,
+   "k2": 25,
+   "k1_fail": 0,
+   "k1_with_409": 0,
+   "outcomes": {
+    "committed": 10,
+    "data_conflict": 25
+   },
+   "background_expire": {
+    "n": 28,
+    "cpu_s": 54.472,
+    "outcomes": {
+     "committed": 28
+    },
+    "late_max_s": 11.7,
+    "d_exec_max_s": 11.467464,
+    "d_exec_p50_s": 6.605779
+   },
+   "commit_rate_per_s": 0.0784657038104754,
+   "R_s": 540.0,
+   "I_s": 60.0
+  }
+ },
+ "checks": {
+  "stage3-S4-P0-mid-s11-r540-health-cache-20261115: finished, invariants_ok": {
+   "ok": true,
+   "invariants": {
+    "ledger_row_counts": true,
+    "no_duplicate_event_ids": true,
+    "committed_ops_in_lineage": true,
+    "aborted_ops_absent": true,
+    "version_monotonic": true,
+    "ok": true
+   }
+  },
+  "stage3-S4-P0-mid-s11-r540-health-cache-20261115: validation.ok": {
+   "ok": false,
+   "validation": {
+    "ok": false,
+    "incomplete_cost": [],
+    "runner_errors": []
+   }
+  },
+  "stage3-S4-P0-mid-s11-r540-health-cache-20261115: stream freshness fully observed": {
+   "ok": true,
+   "freshness": {
+    "complete": true,
+    "n_expected": 3378200,
+    "n_samples": 3378200,
+    "missing": 0,
+    "p95_s": 14.545949041843414,
+    "errors": [],
+    "unresolved_snapshots": {},
+    "n_snapshots": 114,
+    "observer_cpu_s": 12.596679109000041,
+    "clock": "producer UTC time.time → successful commit_attempts.responded_at"
+   }
+  },
+  "stage3-S4-P0-mid-s11-r540-health-cache-20261115: sum cpu_ms <= app cpu": {
+   "ok": true,
+   "ops_cpu_ms": 590396,
+   "app_cpu_ms": 5906843,
+   "workers_cgroup_cpu_ms": 11569345,
+   "share_of_app": 0.1
+  },
+  "stage3-S4-P0-mid-s11-r540-health-cache-20261115: app cpu <= workers cgroup cpu": {
+   "ok": true,
+   "app_cpu_ms": 5906843,
+   "workers_cgroup_cpu_ms": 11569345
+  },
+  "stage3-S4-P0-mid-s11-r540-health-cache-20261115: complete cost for every executed operation": {
+   "ok": true,
+   "incomplete": []
+  },
+  "stage3-S4-P0-mid-s11-r540-health-cache-20261115: footprint_executed ⊆ requested": {
+   "ok": true,
+   "committed": 10,
+   "with_executed": 10,
+   "violations": []
+  },
+  "stage3-S4-P0-mid-s11-r540-health-cache-20261115: K2+K1 > 0 and class K2": {
+   "ok": true,
+   "k2": 25,
+   "k1_with_409": 0,
+   "k1_fail": 0,
+   "n_ops": 35,
+   "share": 0.714
+  },
+  "stage3-S4-P0-mid-s11-r540-health-cache-20261115: complete history timing coverage": {
+   "ok": true,
+   "expected": 35,
+   "observed": 35,
+   "missing_or_invalid": []
+  },
+  "stage3-S4-P0-mid-s11-r540-health-cache-20261115: no operation older than R (or counted)": {
+   "ok": true,
+   "R_s": 540.0,
+   "over_r": [],
+   "n_over_r": 0,
+   "base_expired": 0,
+   "history_unresolved": 0,
+   "errors": 0
+  },
+  "stage3-S4-P0-mid-s11-r540-health-cache-20261115: no runner/infrastructure errors": {
+   "ok": true,
+   "errors": []
+  },
+  "stage3-S4-P0-mid-s11-r540-health-cache-20261115: complete health sampling coverage": {
+   "ok": false,
+   "coverage": {
+    "ok": false,
+    "samples": 59,
+    "interval_s": 30.0,
+    "jitter_budget_s": 1.0,
+    "max_gap_s": 31.182191,
+    "missed_intervals": 3,
+    "gaps_s": [
+     29.380821,
+     30.004177,
+     29.994542,
+     30.005408,
+     29.995399,
+     30.005199,
+     29.995454,
+     29.999649,
+     30.507092,
+     29.496068,
+     29.997444,
+     30.000634,
+     30.001562,
+     30.000669,
+     29.997029,
+     31.182191,
+     28.845229,
+     30.000792,
+     31.064526,
+     28.941973,
+     29.984006,
+     30.004345,
+     30.000352,
+     29.999434,
+     30.007887,
+     30.00195,
+     29.968321,
+     30.003169,
+     30.887721,
+     29.139574,
+     29.981644,
+     30.014507,
+     30.003714,
+     29.993465,
+     29.99815,
+     30.176895,
+     29.82387,
+     30.004322,
+     29.999759,
+     31.01063,
+     29.073463,
+     29.9181,
+     29.991774,
+     29.990452,
+     30.50882,
+     29.500631,
+     30.00919,
+     30.062066,
+     30.918992,
+     29.805993,
+     29.618681,
+     30.594377,
+     29.020783,
+     29.977441,
+     29.987907,
+     30.009641,
+     29.971429,
+     27.318222,
+     0.644854,
+     0.005579
+    ],
+    "invalid_timestamps": []
+   }
+  },
+  "stage3-S4-P0-mid-s11-r540-health-cache-20261115: complete metadata version byte bound": {
+   "ok": true,
+   "complete": true,
+   "max_bytes": 62440,
+   "error": null
+  },
+  "stage3-S4-P0-mid-s11-r540-health-cache-20261115: history <= verified point (1452 / 1.51 MB)": {
+   "ok": true,
+   "max_snapshots": 46,
+   "max_metadata_bytes": 62440,
+   "B": [
+    1800,
+    1880000
+   ]
+  },
+  "stage3-S4-P0-mid-s11-r540-health-cache-20261115: dense history upper bound <= 1452": {
+   "ok": true,
+   "unique_additions": 124,
+   "unique_removals": 81,
+   "lower": {
+    "peak_snapshots": 46,
+    "at": "2026-11-15 18:55:24.173791+00:00",
+    "final_snapshots": 44
+   },
+   "upper": {
+    "peak_snapshots": 46,
+    "at": "2026-11-15 18:55:24.145200+00:00",
+    "final_snapshots": 44
+   }
+  },
+  "retention: nonempty timing coverage": {
+   "ok": true,
+   "n_observed": 35
+  },
+  "retention: measured lower bound <= configured R": {
+   "ok": true,
+   "lower_s": 381.3,
+   "configured_R_s": 540.0
+  },
+  "retention: D_max <= 349 s (else author decision)": {
+   "ok": true,
+   "d_max_s": 40.6
+  }
+ },
+ "retention": {
+  "d_max_s": 40.6,
+  "d_max_op": "stage3-S4-P0-mid-s11-r540-health-cache-20261115-batch_merge-0029",
+  "d_max_run": "stage3-S4-P0-mid-s11-r540-health-cache-20261115",
+  "top5": [
+   [
+    40.6,
+    "stage3-S4-P0-mid-s11-r540-health-cache-20261115-batch_merge-0029"
+   ],
+   [
+    39.8,
+    "stage3-S4-P0-mid-s11-r540-health-cache-20261115-batch_merge-0021"
+   ],
+   [
+    39.1,
+    "stage3-S4-P0-mid-s11-r540-health-cache-20261115-batch_merge-0013"
+   ],
+   [
+    36.9,
+    "stage3-S4-P0-mid-s11-r540-health-cache-20261115-batch_merge-0005"
+   ],
+   [
+    36.8,
+    "stage3-S4-P0-mid-s11-r540-health-cache-20261115-batch_merge-0026"
+   ]
+  ],
+  "num_retries": 4,
+  "R_low_s (2·D_max + (n+1)·hold)": 381.3,
+  "R_low_single_hold_s": 141.3,
+  "S1_commit_rate_per_s": null,
+  "R_high_verified_point_s": null,
+  "R_high_B_s": null,
+  "author_stop (D_max > 349 s)": false
+ },
+ "failed": [
+  "stage3-S4-P0-mid-s11-r540-health-cache-20261115: validation.ok",
+  "stage3-S4-P0-mid-s11-r540-health-cache-20261115: complete health sampling coverage"
+ ]
+}

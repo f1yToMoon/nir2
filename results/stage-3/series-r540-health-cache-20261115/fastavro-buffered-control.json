@@ -1,0 +1,38 @@
+{
+  "reader_sha256": "52dd55f88017513dde253e4478e9f281b2b47e5c539bce2d3f79108feca9c583",
+  "all_counters_equal": true,
+  "samples": [
+    {
+      "snapshot": 4377086187665563213,
+      "old_cold_seconds": 1.3006062950007617,
+      "fastavro_buffered_cold_seconds": 0.3682279419990664,
+      "partitions": 240,
+      "data_files": 10300,
+      "delete_files": 0
+    },
+    {
+      "snapshot": 4377086187665563213,
+      "old_cold_seconds": 0.8339532200006943,
+      "fastavro_buffered_cold_seconds": 0.46273554599974887,
+      "partitions": 240,
+      "data_files": 10300,
+      "delete_files": 0
+    },
+    {
+      "snapshot": 2105980117943544758,
+      "old_cold_seconds": 0.7580239750022884,
+      "fastavro_buffered_cold_seconds": 0.45837350100191543,
+      "partitions": 240,
+      "data_files": 10332,
+      "delete_files": 0
+    },
+    {
+      "snapshot": 2105980117943544758,
+      "old_cold_seconds": 0.7568733510015591,
+      "fastavro_buffered_cold_seconds": 0.4226397080019524,
+      "partitions": 240,
+      "data_files": 10332,
+      "delete_files": 0
+    }
+  ]
+}
