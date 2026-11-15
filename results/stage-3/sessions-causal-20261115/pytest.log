@@ -1,0 +1,88 @@
+.F..                                                                     [100%]
+=================================== FAILURES ===================================
+_______________ test_stage3_runtime_filter_ownership[False-True] _______________
+
+spark = <pyspark.sql.session.SparkSession object at 0x707e12ff0f70>
+cached = True, separate = False
+
+    @pytest.mark.parametrize("cached", [False, True])
+    @pytest.mark.parametrize("separate", [False, True])
+    def test_stage3_runtime_filter_ownership(spark: Any, cached: bool, separate: bool) -> None:
+        """A scan must keep its read snapshot; another session must see fresh commits.
+    
+        cache=false reproduces even with separate sessions (eager refresh of the SAME
+        SparkTable). cache=true alone still fails if another thread refreshes that
+        session's cached Table. Only both ownership boundaries preserve the scan.
+        """
+        session = spark.newSession()
+        session.conf.set("spark.sql.catalog.s0.cache-enabled", str(cached).lower())
+        other = session.newSession() if separate else session
+        name = f"stage3_it.sessions_{int(cached)}_{int(separate)}"
+        table = f"s0.{name}"
+        jvm, gateway = spark._jvm, spark.sparkContext._gateway
+        options = jvm.org.apache.spark.sql.util.CaseInsensitiveStringMap(
+            jvm.java.util.HashMap())
+        identifier = jvm.org.apache.spark.sql.connector.catalog.Identifier.of(
+            gateway.new_array(jvm.java.lang.String, 0), "unused")
+        namespace = gateway.new_array(jvm.java.lang.String, 1)
+        namespace[0] = "stage3_it"
+        identifier = jvm.org.apache.spark.sql.connector.catalog.Identifier.of(
+            namespace, name.split(".")[1])
+        out: dict[str, Any] = {"cached": cached, "separate": separate}
+        session.sql("CREATE NAMESPACE IF NOT EXISTS s0.stage3_it")
+        session.sql(f"CREATE TABLE {table} (id BIGINT) USING iceberg")
+        try:
+            session.sql(f"INSERT INTO {table} VALUES (1)")
+            base = load_table_state(Env(), name).current_snapshot_id
+            catalog = session._jsparkSession.sessionState().catalogManager().catalog("s0")
+            target = catalog.loadTable(identifier)
+            scan = target.newScanBuilder(options).buildCopyOnWriteScan()
+            # External writer, then another query's metadata loading in this or a
+            # private session. No table/client source is changed.
+            writer = spark.newSession()
+            writer.sql(f"INSERT INTO lake.{name} VALUES (2)")
+            current = load_table_state(Env(), name).current_snapshot_id
+            assert current != base
+            other.catalog.refreshTable(table)
+            assert other.sql(f"SELECT count(*) FROM {table}").first()[0] == 2
+            # The uncached SparkTable refreshes eagerly even when another session
+            # owns the intervening query.
+            target.newScanBuilder(options)
+            predicates = gateway.new_array(
+                jvm.org.apache.spark.sql.connector.expressions.filter.Predicate, 0)
+            types = gateway.new_array(jvm.java.lang.Class, 1)
+            types[0] = jvm.java.lang.Class.forName(
+                "[Lorg.apache.spark.sql.connector.expressions.filter.Predicate;")
+            method = scan.getClass().getMethod("filter", types)
+            method.setAccessible(True)
+            args = gateway.new_array(jvm.java.lang.Object, 1)
+            args[0] = predicates
+            try:
+                method.invoke(scan, args)
+                out["filter"] = "stable"
+            except Exception as exc:
+                out["filter"] = str(exc)
+            out.update(base=base, current=current)
+            if cached and separate:
+                assert out["filter"] == "stable", out
+            else:
+>               assert "Runtime file filtering is not possible" in out["filter"], out
+E               AssertionError: {'cached': True, 'separate': False, 'filter': 'stable', 'base': 1200393916611292895, ...}
+E               assert 'Runtime file filtering is not possible' in 'stable'
+
+tests/integration/test_runner_sessions_stage3.py:85: AssertionError
+=============================== warnings summary ===============================
+../usr/local/lib/python3.10/dist-packages/_pytest/config/__init__.py:1464
+  /usr/local/lib/python3.10/dist-packages/_pytest/config/__init__.py:1464: PytestConfigWarning: Unknown config option: asyncio_default_fixture_loop_scope
+  
+    self._warn_or_fail_if_strict(f"Unknown config option: {key}\n")
+
+../usr/local/lib/python3.10/dist-packages/_pytest/config/__init__.py:1464
+  /usr/local/lib/python3.10/dist-packages/_pytest/config/__init__.py:1464: PytestConfigWarning: Unknown config option: asyncio_mode
+  
+    self._warn_or_fail_if_strict(f"Unknown config option: {key}\n")
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/integration/test_runner_sessions_stage3.py::test_stage3_runtime_filter_ownership[False-True]
+1 failed, 3 passed, 2 warnings in 21.54s

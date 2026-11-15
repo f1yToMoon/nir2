@@ -63,7 +63,11 @@ def test_stage3_effects_ignore_unread_append(spark: Any, mode: str, statement: s
 
     def pending() -> None:
         try:
-            frame = spark.sql(sql)
+            # Same ownership as OpExecutor: fresh session and cached target,
+            # uncached admin lake. The concurrent writer uses the parent.
+            operation = spark.newSession()
+            operation.conf.set("spark.sql.catalog.s0.cache-enabled", "true")
+            frame = operation.sql(sql)
             frame.collect()
             out["physical_plan"] = frame._jdf.queryExecution().executedPlan().treeString()
             out["frame"] = frame

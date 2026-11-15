@@ -21,7 +21,7 @@ import json
 import re
 import time
 import traceback
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
@@ -372,6 +372,16 @@ class OpExecutor:
     # ── main entry ──
     def execute(self, op: ControlledOp | None, intent: Intent, op_index: int, *, controlled: bool,
                 writer_class: str, intent_at: datetime, pool: str) -> OpResult:
+        # An operation owns its catalog objects and temporary views. Never change
+        # self.ctx in place: this executor is called concurrently. newSession()
+        # shares SparkContext/FAIR pools and cost tags; stop() would stop the run.
+        child = OpExecutor(replace(self.ctx, spark=self.ctx.spark.newSession()),
+                           self.slots, self.maint_slots)
+        return child._execute(op, intent, op_index, controlled=controlled,
+                              writer_class=writer_class, intent_at=intent_at, pool=pool)
+
+    def _execute(self, op: ControlledOp | None, intent: Intent, op_index: int, *, controlled: bool,
+                 writer_class: str, intent_at: datetime, pool: str) -> OpResult:
         ctx = self.ctx
         op_cfg = op
         assert op_cfg is not None
@@ -394,6 +404,11 @@ class OpExecutor:
         pool_slots = self.slots if controlled else self.maint_slots
         with pool_slots.lease(intent.op_id, intent.op_type) as slot:
             row["slot"] = slot
+            # Iceberg SparkTable(cache=false) refreshes the SAME Table during
+            # newScanBuilder, invalidating a pinned CoW scan (ADR-013). Cache is
+            # confined to this operation's fresh session. The admin lake catalog
+            # stays uncached for planning sources and exact time-travel effects.
+            ctx.spark.conf.set(f"spark.sql.catalog.{slot}.cache-enabled", "true")
             try:
                 stt = load_table_state(ctx.env, ctx.table)
                 planning = stt.current_snapshot_id
