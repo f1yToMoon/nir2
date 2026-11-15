@@ -110,3 +110,55 @@ def test_first_deadline_is_anchored_to_initial_acquisition(
     monkeypatch.setattr(health.time, 'monotonic', lambda: 100.0)
     sampler._loop()
     assert waits == [expected_wait]  # Include nonzero initial acquisition, not just zero-duration reads.
+
+
+@pytest.mark.parametrize('bad_field', [None, 'status', 'content'])
+def test_manifest_decoder_buffers_once_and_rejects_unknown_enums(monkeypatch: Any, bad_field: Any) -> None:
+    import io
+
+    import fastavro
+    from pyiceberg.table import StaticTable
+
+    schema = {'type': 'record', 'name': 'entry', 'fields': [
+        {'name': 'status', 'type': 'int'},
+        {'name': 'data_file', 'type': {'type': 'record', 'name': 'file', 'fields': [
+            {'name': 'content', 'type': 'int'}, {'name': 'file_size_in_bytes', 'type': 'long'},
+            {'name': 'partition', 'type': {'type': 'record', 'name': 'part', 'fields': [
+                {'name': 'dt', 'type': {'type': 'int', 'logicalType': 'date'}},
+                {'name': 'key_bucket', 'type': 'int'}]}}]}}]}
+    from datetime import date
+    rows = [dict(status=status, data_file=dict(content=content, file_size_in_bytes=size,
+                partition=dict(dt=date(2026, 1, 1), key_bucket=0)))
+            for status, content, size in [(0, 0, 10), (1, 0, 20), (1, 1, 30), (1, 2, 40), (2, 0, 50)]]
+    if bad_field == 'status':
+        rows[0]['status'] = 3
+    elif bad_field == 'content':
+        rows[0]['data_file']['content'] = 3
+    buffer = io.BytesIO()
+    fastavro.writer(buffer, schema, rows)
+    payload = buffer.getvalue()
+    reads = []
+
+    class Source(io.BytesIO):
+        def read(self, size: int = -1) -> bytes:
+            reads.append(size)
+            assert size == -1, 'Use a single full object read, not S3 reads for individual Avro fields'
+            return super().read(size)
+
+    manifests = [SimpleNamespace(manifest_path='s3://bucket/manifest')]
+    file_io = SimpleNamespace(new_input=lambda _: SimpleNamespace(open=lambda: Source(payload)))
+    table = SimpleNamespace(io=file_io,
+                            current_snapshot=lambda: SimpleNamespace(manifests=lambda _: manifests))
+    monkeypatch.setattr(StaticTable, 'from_metadata', lambda *_a, **_k: table)
+    cache: dict[str, Any] = {}
+    if bad_field:
+        with pytest.raises(ValueError, match='manifest'):
+            health.inspect_partition_files(Env(), 'metadata', cache)
+        return
+    expected = {'dt=2026-01-01/key_bucket=0': dict(data_files=2, small_files=2,
+                                                delete_files=2, total_bytes=100)}
+    assert health.inspect_partition_files(Env(), 'metadata', cache) == expected
+    assert health.inspect_partition_files(Env(), 'metadata', cache) == expected
+    assert reads == [-1]
+    manifests.clear()
+    assert health.inspect_partition_files(Env(), 'metadata', cache) == {}

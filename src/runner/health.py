@@ -11,6 +11,7 @@ delete_files_topn.
 from __future__ import annotations
 
 import contextlib
+import io
 import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
@@ -20,6 +21,7 @@ from typing import Any
 
 from runner.db import DB
 from runner.env import Env
+from runner.intents import partition_str
 from runner.ops.executor import load_table_state
 
 SMALL_FILE_BYTES = 32 * 1024 * 1024
@@ -131,14 +133,28 @@ def inspect_partition_files(env: Env, metadata_location: str,
     missing = [m for m in manifests if m.manifest_path not in cache]
 
     def inspect_manifest(manifest: Any) -> tuple[str, dict[str, dict[str, int]]]:
-        spec = table.specs()[manifest.partition_spec_id]
+        import fastavro
         grouped: dict[str, dict[str, int]] = {}
-        for entry in manifest.fetch_manifest_entry(table.io, discard_deleted=True):
-            file = entry.data_file
-            label = spec.partition_to_path(file.partition, table.schema())
-            v = grouped.setdefault(label, dict(data_files=0, small_files=0, delete_files=0, total_bytes=0))
-            size = int(file.file_size_in_bytes)
-            if int(file.content) == 0:
+        labels: dict[tuple[Any, Any], str] = {}
+        with table.io.new_input(manifest.manifest_path).open() as source:
+            payload = source.read()
+        for entry in fastavro.reader(io.BytesIO(payload)):
+            if entry['status'] not in (0, 1, 2):
+                raise ValueError('Unknown manifest entry status')
+            if entry['status'] == 2:
+                continue  # DELETED; EXISTING=0 and ADDED=1 are live in this manifest.
+            file = entry['data_file']
+            if file['content'] not in (0, 1, 2):
+                raise ValueError('Unknown manifest file content')
+            part = file['partition']
+            key = (part['dt'], part['key_bucket'])
+            label = labels.get(key)
+            if label is None:
+                label = labels[key] = partition_str(*key)
+            v = grouped.setdefault(label, dict(data_files=0, small_files=0,
+                                                delete_files=0, total_bytes=0))
+            size = int(file['file_size_in_bytes'])
+            if int(file['content']) == 0:
                 v['data_files'] += 1
                 v['small_files'] += size < SMALL_FILE_BYTES
             else:

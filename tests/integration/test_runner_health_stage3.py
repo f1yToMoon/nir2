@@ -84,12 +84,12 @@ def test_stage3_health_native_metadata(format_version: int, monkeypatch: pytest.
         assert meta['current_snapshot_id'] != concurrent['state'].current_snapshot_id
         assert sampler.partition_stats() == expected
         assert meta['sample_started_at'] <= meta['metadata_observed_at'] <= meta['at']
-        from pyiceberg.manifest import ManifestFile
+        import fastavro
         assert sampler._manifest_cache
         with monkeypatch.context() as patch:
             def forbid_reread(*_args: Any, **_kwargs: Any) -> Any:
                 raise AssertionError('An immutable cached manifest was read again')
-            patch.setattr(ManifestFile, 'fetch_manifest_entry', forbid_reread)
+            patch.setattr(fastavro, 'reader', forbid_reread)
             assert inspect_files(env, st.metadata_location, sampler._manifest_cache) == expected
         fresh = inspect_files(env, concurrent['state'].metadata_location, sampler._manifest_cache)
         assert fresh == spark_reference() and fresh != expected
