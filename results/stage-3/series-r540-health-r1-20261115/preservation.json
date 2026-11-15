@@ -1,0 +1,7 @@
+{
+  "qualification_ok": false,
+  "files_verified": 234,
+  "all_hashes_match": true,
+  "reason": "6 health intervals exceed the fixed 31s bound",
+  "export_before_next_reset": true
+}

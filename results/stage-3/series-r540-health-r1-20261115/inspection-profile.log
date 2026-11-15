@@ -1,0 +1,31 @@
+s3://warehouse/bench/events/metadata/00073-9da9e625-7f75-4510-95fc-db62386098d1.metadata.json
+         727463 function calls (706746 primitive calls) in 1.571 seconds
+
+   Ordered by: cumulative time
+   List reduced from 3762 to 22 due to restriction <22>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        1    0.229    0.229    1.573    1.573 /workspace/src/runner/health.py:111(inspect_partition_files)
+        1    0.001    0.001    0.860    0.860 /usr/local/lib/python3.10/dist-packages/pyiceberg/table/inspect.py:884(files)
+        1    0.001    0.001    0.859    0.859 /usr/local/lib/python3.10/dist-packages/pyiceberg/table/inspect.py:854(_files)
+       88    0.000    0.000    0.849    0.010 /usr/lib/python3.10/threading.py:288(wait)
+      324    0.848    0.003    0.848    0.003 {method 'acquire' of '_thread.lock' objects}
+       72    0.000    0.000    0.795    0.011 /usr/lib/python3.10/concurrent/futures/_base.py:614(result_iterator)
+       71    0.000    0.000    0.795    0.011 /usr/lib/python3.10/concurrent/futures/_base.py:316(_result_or_cancel)
+       71    0.000    0.000    0.795    0.011 /usr/lib/python3.10/concurrent/futures/_base.py:430(result)
+    533/6    0.002    0.000    0.472    0.079 <frozen importlib._bootstrap>:1022(_find_and_load)
+    529/5    0.001    0.000    0.472    0.094 <frozen importlib._bootstrap>:987(_find_and_load_unlocked)
+    515/7    0.001    0.000    0.471    0.067 <frozen importlib._bootstrap>:664(_load_unlocked)
+    437/6    0.001    0.000    0.470    0.078 <frozen importlib._bootstrap_external>:877(exec_module)
+    669/8    0.000    0.000    0.470    0.059 <frozen importlib._bootstrap>:233(_call_with_frames_removed)
+    695/6    0.011    0.000    0.469    0.078 {built-in method builtins.exec}
+        1    0.000    0.000    0.245    0.245 /usr/local/lib/python3.10/dist-packages/pyiceberg/table/__init__.py:1975(from_metadata)
+        1    0.000    0.000    0.237    0.237 /usr/local/lib/python3.10/dist-packages/pyiceberg/table/__init__.py:1(<module>)
+     11/8    0.000    0.000    0.232    0.029 /usr/lib/python3.10/importlib/__init__.py:108(import_module)
+     11/8    0.000    0.000    0.232    0.029 <frozen importlib._bootstrap>:1038(_gcd_import)
+        2    0.000    0.000    0.226    0.113 /usr/local/lib/python3.10/dist-packages/pyiceberg/io/__init__.py:369(load_file_io)
+        2    0.000    0.000    0.226    0.113 /usr/local/lib/python3.10/dist-packages/pyiceberg/io/__init__.py:352(_infer_file_io_from_scheme)
+        2    0.000    0.000    0.226    0.113 /usr/local/lib/python3.10/dist-packages/pyiceberg/io/__init__.py:335(_import_file_io)
+        1    0.000    0.000    0.225    0.225 /usr/local/lib/python3.10/dist-packages/pyiceberg/io/pyarrow.py:1(<module>)
+
+

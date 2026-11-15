@@ -1,0 +1,28 @@
+.F                                                                       [100%]
+=================================== FAILURES ===================================
+______ test_first_deadline_is_anchored_to_initial_acquisition[80.0-10.0] _______
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x75430d31e750>
+initial_start = 80.0, expected_wait = 10.0
+
+    @pytest.mark.parametrize('initial_start,expected_wait', [(90.0, 20.0), (80.0, 10.0)])
+    def test_first_deadline_is_anchored_to_initial_acquisition(
+            monkeypatch: Any, initial_start: float, expected_wait: float) -> None:
+        waits = []
+        sampler = health.HealthSampler(None, Env(), None, 'r', 'n.t', 30)
+        sampler._stats_at = 90.0
+        sampler._sample_started_monotonic = initial_start
+        sampler._stop = SimpleNamespace(wait=lambda delay: waits.append(delay) or True)
+        monkeypatch.setattr(health.time, 'monotonic', lambda: 100.0)
+        sampler._loop()
+>       assert waits == [expected_wait]  # Include nonzero initial acquisition, not just zero-duration reads.
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       assert [20.0] == [10.0]
+E         
+E         At index 0 diff: 20.0 != 10.0
+E         Use -v to get more diff
+
+tests/unit/test_runner_health.py:112: AssertionError
+=========================== short test summary info ============================
+FAILED tests/unit/test_runner_health.py::test_first_deadline_is_anchored_to_initial_acquisition[80.0-10.0]
+1 failed, 1 passed, 7 deselected in 0.29s

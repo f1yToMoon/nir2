@@ -1,0 +1,1 @@
+The initial importlib.metadata.version("pyspark") raised PackageNotFoundError: Spark is installed via its distribution, not pip metadata. Empty stdout preserved; successful runtime-versions.json uses pyspark.__version__. No measurement failed.

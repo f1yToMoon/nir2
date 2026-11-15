@@ -1,5 +1,17 @@
 # Передача этапа3: итоговый измерительный срез 15.11.2026
 
+**Актуально после полного контроля health:** отчёт§21. Полный S4 на e0c01c1
+не прошёл 1с-jitter:6gaps,max32,548526с;5invariants=true,runner_errors0.
+234файла/всеSHA сохранены доreset;148metadata дали62433Б против sampled60435Б.
+Исправление3f135180216ce831c01818b4140502f8fb3c5b6e: начало расписания от старта
+acquisition, кэш только агрегатов immutable manifests, свежие metadata/list.
+336unit/lint/mypy14/config21; nativev2/v3 2passed/30,97с с append/removal/no-reread.
+Короткий новыйS4 завершён:validation=true,5invariants,7samples/0missed,
+maxgap30,431921с,11metadata/max19169Б;31файл экспорта, времена/архивы перепроверены.
+Подготовка новой полной серии:
+results/stage-3/series-r540-health-cache-20261115/PREPARATION.md.
+Допуск/пороги не повышались. Формальных раундов1/3; следующий2. Ниже — история.
+
 **Актуально после независимого раунда1:** CHANGES_REQUESTED,3 MAJOR/2 MINOR,
 reviewed e0038188bcf61102d723a1326041563824b8972f; ревью сохранено d4efe911.
 Три MAJOR относятся к health: будущие metadata с прошлым at, пропуски30с,

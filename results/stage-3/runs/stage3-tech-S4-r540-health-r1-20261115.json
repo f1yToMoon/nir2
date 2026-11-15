@@ -1,0 +1,367 @@
+{
+ "run_id": "stage3-tech-S4-r540-health-r1-20261115",
+ "stream_freshness": {
+  "complete": true,
+  "n_expected": 227600,
+  "n_samples": 227600,
+  "missing": 0,
+  "p95_s": 14.254101181030274,
+  "errors": [],
+  "unresolved_snapshots": {},
+  "n_snapshots": 8,
+  "observer_cpu_s": 0.5707728919999997,
+  "clock": "producer UTC time.time \u2192 successful commit_attempts.responded_at"
+ },
+ "scenario": "S4_merge_vs_stream_serializable",
+ "variant": null,
+ "level": "mid",
+ "seed": 11,
+ "policy": "P0",
+ "git_sha": "68fc187d03eb1d1e6c17b3d076aee46ab8e03ffd",
+ "t0": "2026-11-15T17:26:12.971710+00:00",
+ "t_end": "2026-11-15T17:28:56.606834+00:00",
+ "intents": 2,
+ "overrun_after_cooldown": [],
+ "streams": {
+  "kafka": [
+   {
+    "stream": "ingest",
+    "produced": 227600,
+    "errors": []
+   }
+  ],
+  "flink": [
+   {
+    "final_lag": 0,
+    "job_id": "23d3eabe1e9d0fe097c488bbdd69e0b9",
+    "checkpoints": {
+     "restored": 0,
+     "total": 10,
+     "in_progress": 0,
+     "completed": 10,
+     "failed": 0
+    }
+   }
+  ],
+  "agents": []
+ },
+ "invariants": {
+  "ledger_row_counts": {
+   "ok": true,
+   "partitions_checked": 272,
+   "mismatches": {},
+   "n_mismatches": 0,
+   "rows_by_origin": {
+    "stream": 227600,
+    "golden": 30000000
+   },
+   "journal_physical_records": 30227600,
+   "snapshot_total_records": 30227600,
+   "table_live_rows": 30227600,
+   "journal_commits": 8
+  },
+  "no_duplicate_event_ids": {
+   "ok": true,
+   "duplicates": 0,
+   "rows": 30227600
+  },
+  "committed_ops_in_lineage": {
+   "ok": true,
+   "lineage_len": 8,
+   "lineage_error": null,
+   "committed_checked": 0,
+   "missing": [],
+   "n_missing": 0
+  },
+  "aborted_ops_absent": {
+   "ok": true,
+   "failed_ops": 2,
+   "snapshots_in_lineage": [],
+   "aborted_rows_checked": 50000,
+   "aborted_rows_present": 0,
+   "lineage_error": null
+  },
+  "version_monotonic": {
+   "ok": true,
+   "rows_checked": 30227600,
+   "rows_expected_updated": 0,
+   "mismatches": 0
+  },
+  "ok": true
+ },
+ "orphans": {
+  "orphan_files": 0,
+  "orphan_bytes": 0,
+  "old_metadata_json": 0,
+  "listed_since_start": 280
+ },
+ "spark_app_totals": {
+  "cpu_ms": 197180,
+  "run_ms": 407198,
+  "stages": 48
+ },
+ "health": {
+  "samples": 7,
+  "errors": [],
+  "coverage": {
+   "ok": true,
+   "samples": 7,
+   "interval_s": 30.0,
+   "jitter_budget_s": 1.0,
+   "max_gap_s": 30.998589,
+   "missed_intervals": 0,
+   "gaps_s": [
+    30.998589,
+    30.192865,
+    29.785759,
+    30.231221,
+    29.829707,
+    11.458435,
+    1.133768,
+    0.00478
+   ]
+  },
+  "max_snapshots": 9,
+  "max_metadata_bytes": 17919
+ },
+ "metadata_inventory": {
+  "complete": true,
+  "files": [
+   {
+    "location": "s3://warehouse/bench/events/metadata/00042-66505b83-41f6-4d1e-b8ec-e41c589cd4c4.metadata.json",
+    "bytes": 8819,
+    "sha256": "07df58699cac5ea4092cff146f01b976eddc81540572fbb38a054b235f52cc3b",
+    "archive": "07df58699cac5ea4092cff146f01b976eddc81540572fbb38a054b235f52cc3b.json.gz",
+    "current_snapshot_id": 6712778488404766195,
+    "delete_after_commit_enabled": false
+   },
+   {
+    "location": "s3://warehouse/bench/events/metadata/00043-64bb50ea-9cd4-46d7-a927-731b1a87b1d8.metadata.json",
+    "bytes": 9957,
+    "sha256": "41a4ff562876c67c8f12c2234c5834a1e5bf55331db7d3d233fb1c413c2515af",
+    "archive": "41a4ff562876c67c8f12c2234c5834a1e5bf55331db7d3d233fb1c413c2515af.json.gz",
+    "current_snapshot_id": 7909912350790510210,
+    "delete_after_commit_enabled": false
+   },
+   {
+    "location": "s3://warehouse/bench/events/metadata/00043-f8eefc2b-8951-44e0-84d9-2619c3679b99.metadata.json",
+    "bytes": 8962,
+    "sha256": "b372fda312b801f0432fa958fa3b0aea6d298c7268d1d64b12f340e5a43c03a0",
+    "archive": "b372fda312b801f0432fa958fa3b0aea6d298c7268d1d64b12f340e5a43c03a0.json.gz",
+    "current_snapshot_id": 6712778488404766195,
+    "delete_after_commit_enabled": false
+   },
+   {
+    "location": "s3://warehouse/bench/events/metadata/00044-6b647d10-458e-441f-b34c-fdffb380b0d9.metadata.json",
+    "bytes": 11095,
+    "sha256": "2d0a678d303feda51732a2668a2d3c5aa2a5fcfaaa88da564f36f4d37a3397fd",
+    "archive": "2d0a678d303feda51732a2668a2d3c5aa2a5fcfaaa88da564f36f4d37a3397fd.json.gz",
+    "current_snapshot_id": 1746116998668613009,
+    "delete_after_commit_enabled": false
+   },
+   {
+    "location": "s3://warehouse/bench/events/metadata/00045-42584a94-7d5f-4969-bb75-11145c1ebc14.metadata.json",
+    "bytes": 12233,
+    "sha256": "059bc6743b8b5ba4ba09a67467a24b029c4df482d71d37da08edf223a40cc491",
+    "archive": "059bc6743b8b5ba4ba09a67467a24b029c4df482d71d37da08edf223a40cc491.json.gz",
+    "current_snapshot_id": 9028846050916407887,
+    "delete_after_commit_enabled": false
+   },
+   {
+    "location": "s3://warehouse/bench/events/metadata/00046-82eba43a-ef7c-4ff1-b294-f759ea4fae3a.metadata.json",
+    "bytes": 13371,
+    "sha256": "c9ae36facc9e0c244eeeb09771467304f2cc55b7b84d710498518b642114cf96",
+    "archive": "c9ae36facc9e0c244eeeb09771467304f2cc55b7b84d710498518b642114cf96.json.gz",
+    "current_snapshot_id": 3675723034378255671,
+    "delete_after_commit_enabled": false
+   },
+   {
+    "location": "s3://warehouse/bench/events/metadata/00047-52c86275-3b00-43c4-a1e3-8a6750c9c460.metadata.json",
+    "bytes": 14509,
+    "sha256": "efd6e7dc47406b15ec26284b10fc061e6bf3594d6a3e21039cef2010e58c7a1f",
+    "archive": "efd6e7dc47406b15ec26284b10fc061e6bf3594d6a3e21039cef2010e58c7a1f.json.gz",
+    "current_snapshot_id": 7990357655789659017,
+    "delete_after_commit_enabled": false
+   },
+   {
+    "location": "s3://warehouse/bench/events/metadata/00048-014920a1-0e1f-4124-b46b-4ff6b40810eb.metadata.json",
+    "bytes": 15642,
+    "sha256": "16857fca82febfe5f3a2ffe0e132e5a9e4284e65005bc58297b5c07cef9761d7",
+    "archive": "16857fca82febfe5f3a2ffe0e132e5a9e4284e65005bc58297b5c07cef9761d7.json.gz",
+    "current_snapshot_id": 139169796912606042,
+    "delete_after_commit_enabled": false
+   },
+   {
+    "location": "s3://warehouse/bench/events/metadata/00049-d085419d-1779-4408-a1c2-009670de0a31.metadata.json",
+    "bytes": 16781,
+    "sha256": "693997b972a02c5c3931e3d747fc1bc0de33899ecdf01b52c12773fbd8a4a3b0",
+    "archive": "693997b972a02c5c3931e3d747fc1bc0de33899ecdf01b52c12773fbd8a4a3b0.json.gz",
+    "current_snapshot_id": 7963025422895140367,
+    "delete_after_commit_enabled": false
+   },
+   {
+    "location": "s3://warehouse/bench/events/metadata/00050-7507e68a-0894-438d-b23d-7ea63e4663c3.metadata.json",
+    "bytes": 17919,
+    "sha256": "8273fc81dafd0f70deece1dc1326efe0a6a46adee8be48411c498ada923a754e",
+    "archive": "8273fc81dafd0f70deece1dc1326efe0a6a46adee8be48411c498ada923a754e.json.gz",
+    "current_snapshot_id": 2374518523858323055,
+    "delete_after_commit_enabled": false
+   }
+  ],
+  "listed": 10,
+  "required_locations": [
+   "s3://warehouse/bench/events/metadata/00042-66505b83-41f6-4d1e-b8ec-e41c589cd4c4.metadata.json",
+   "s3://warehouse/bench/events/metadata/00043-64bb50ea-9cd4-46d7-a927-731b1a87b1d8.metadata.json",
+   "s3://warehouse/bench/events/metadata/00044-6b647d10-458e-441f-b34c-fdffb380b0d9.metadata.json",
+   "s3://warehouse/bench/events/metadata/00045-42584a94-7d5f-4969-bb75-11145c1ebc14.metadata.json",
+   "s3://warehouse/bench/events/metadata/00046-82eba43a-ef7c-4ff1-b294-f759ea4fae3a.metadata.json",
+   "s3://warehouse/bench/events/metadata/00047-52c86275-3b00-43c4-a1e3-8a6750c9c460.metadata.json",
+   "s3://warehouse/bench/events/metadata/00048-014920a1-0e1f-4124-b46b-4ff6b40810eb.metadata.json",
+   "s3://warehouse/bench/events/metadata/00049-d085419d-1779-4408-a1c2-009670de0a31.metadata.json",
+   "s3://warehouse/bench/events/metadata/00050-7507e68a-0894-438d-b23d-7ea63e4663c3.metadata.json"
+  ],
+  "missing": [],
+  "delete_after_commit_enabled": false,
+  "max_metadata_bytes": 17919,
+  "method": "all_retained_metadata_versions_including_uncommitted_candidates"
+ },
+ "cooldown_s": 120.0,
+ "warmup_s": 0.0,
+ "duration_s": 120.0,
+ "validation": {
+  "ok": true,
+  "incomplete_cost": [],
+  "runner_errors": []
+ },
+ "summary": {
+  "run_id": "stage3-tech-S4-r540-health-r1-20261115",
+  "n_ops": 2,
+  "n_k2": 2,
+  "n_k1_fail": 0,
+  "n_base_expired": 0,
+  "n_history_unresolved": 0,
+  "n_errors": 0,
+  "wasted_cpu_s": 32.402,
+  "useful_cpu_s": 0.0,
+  "wasted_cpu_base_expired_s": 0.0,
+  "wasted_share": 1.0,
+  "background_cpu_s": 7.819,
+  "wasted_bytes": 208303661,
+  "goodput_commits_per_min": 0.0,
+  "commit_lat_p50_ms": null,
+  "commit_lat_p95_ms": null,
+  "commit_lat_p99_ms": null,
+  "delay_p95_s": 0.24084404999999998,
+  "sla_violations": 0,
+  "debt_mean": 1.0,
+  "debt_max": 1.0,
+  "orphan_bytes": 0,
+  "stream_freshness_p95_s": 14.254101181030274,
+  "detail": {
+   "stream_freshness": {
+    "complete": true,
+    "n_expected": 227600,
+    "n_samples": 227600,
+    "missing": 0,
+    "p95_s": 14.254101181030274,
+    "errors": [],
+    "unresolved_snapshots": {},
+    "n_snapshots": 8,
+    "observer_cpu_s": 0.5707728919999997,
+    "clock": "producer UTC time.time \u2192 successful commit_attempts.responded_at"
+   },
+   "outcomes": {
+    "data_conflict": 2
+   },
+   "per_op": {
+    "batch_merge": {
+     "op_type": "cow_dml",
+     "n": 1,
+     "outcomes": {
+      "data_conflict": 1
+     },
+     "d_exec_s": {
+      "n": 1,
+      "max": 14.0,
+      "p50": 14.0,
+      "p95": 14.0
+     },
+     "d_hist_s": {
+      "n": 1,
+      "max": 21.3,
+      "p50": 21.3,
+      "p95": 21.3
+     },
+     "cpu_s": {
+      "n": 1,
+      "max": 20.0,
+      "p50": 20.0,
+      "p95": 20.0
+     },
+     "attempts_max": 0
+    },
+    "reprocess_day": {
+     "op_type": "overwrite",
+     "n": 1,
+     "outcomes": {
+      "data_conflict": 1
+     },
+     "d_exec_s": {
+      "n": 1,
+      "max": 5.1,
+      "p50": 5.1,
+      "p95": 5.1
+     },
+     "d_hist_s": {
+      "n": 1,
+      "max": 15.4,
+      "p50": 15.4,
+      "p95": 15.4
+     },
+     "cpu_s": {
+      "n": 1,
+      "max": 12.4,
+      "p50": 12.4,
+      "p95": 12.4
+     },
+     "attempts_max": 1
+    }
+   },
+   "background_expire": {
+    "n": 2,
+    "d_exec_max_s": 6.445876,
+    "d_exec_p50_s": 4.223979,
+    "late_max_s": 7.0,
+    "outcomes": {
+     "committed": 2
+    },
+    "cpu_s": 7.819
+   },
+   "d_hist_max_s": 21.265415,
+   "max_snapshots": 9,
+   "observed_max_metadata_bytes": 17919,
+   "max_metadata_bytes": 17919,
+   "metadata_inventory_complete": true,
+   "health_coverage": {
+    "ok": true,
+    "samples": 7,
+    "interval_s": 30.0,
+    "jitter_budget_s": 1.0,
+    "max_gap_s": 30.998589,
+    "missed_intervals": 0,
+    "gaps_s": [
+     30.998589,
+     30.192865,
+     29.785759,
+     30.231221,
+     29.829707,
+     11.458435,
+     1.133768,
+     0.00478
+    ]
+   },
+   "policy": "P0",
+   "scenario": "S4_merge_vs_stream_serializable"
+  }
+ }
+}

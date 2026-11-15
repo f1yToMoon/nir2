@@ -1,0 +1,42 @@
+{
+  "reader_sha256": "9b5623e4aa08a3694c30095aeeeccd8180c6c42932fe853d47122553a7fc3c57",
+  "all_counters_equal": true,
+  "samples": [
+    {
+      "snapshot": 7263895268909152100,
+      "old_seconds": 2.783317935998639,
+      "cached_seconds": 1.0130383809992054,
+      "manifests_cached": 79,
+      "partitions": 240,
+      "data_files": 10284,
+      "delete_files": 0
+    },
+    {
+      "snapshot": 7263895268909152100,
+      "old_seconds": 2.1459107709997625,
+      "cached_seconds": 0.02918208700066316,
+      "manifests_cached": 79,
+      "partitions": 240,
+      "data_files": 10284,
+      "delete_files": 0
+    },
+    {
+      "snapshot": 4993395521690048957,
+      "old_seconds": 2.2947815119987354,
+      "cached_seconds": 0.036711937998916255,
+      "manifests_cached": 80,
+      "partitions": 240,
+      "data_files": 10316,
+      "delete_files": 0
+    },
+    {
+      "snapshot": 4993395521690048957,
+      "old_seconds": 2.1601975779994973,
+      "cached_seconds": 0.016003208998881746,
+      "manifests_cached": 80,
+      "partitions": 240,
+      "data_files": 10316,
+      "delete_files": 0
+    }
+  ]
+}

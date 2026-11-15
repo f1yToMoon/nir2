@@ -1,0 +1,102 @@
+[
+  {
+    "source": "results/stage-3/health-cache-controls-20261115/deadline-before.log",
+    "sha256": "9130c00196fb7ea490a0516ad8d7644f01042f8d94528e88a61158c2f58a5f36",
+    "gzip": "results/stage-3/health-cache-controls-20261115/deadline-before.log.gz"
+  },
+  {
+    "source": "results/stage-3/health-cache-controls-20261115/native.log",
+    "sha256": "0202c5fd2e00357eba9da7f2ce0d325b3ced06e8d888ca00ae9e17426a313f16",
+    "gzip": "results/stage-3/health-cache-controls-20261115/native.log.gz"
+  },
+  {
+    "source": "results/stage-3/health-cache-controls-20261115/selfcheck.log",
+    "sha256": "06abb7acdd2a3c7c9698ab0f49a3e945f7d75a9a535d2adb741f0e864eecd768",
+    "gzip": "results/stage-3/health-cache-controls-20261115/selfcheck.log.gz"
+  },
+  {
+    "source": "results/stage-3/health-cache-controls-20261115/unit-after.log",
+    "sha256": "5d7a7ebbbb01a1cf258247b488943ea6fb3376bddcb315c99a6e34e62a659254",
+    "gzip": "results/stage-3/health-cache-controls-20261115/unit-after.log.gz"
+  },
+  {
+    "source": "results/stage-3/series-r540-health-r1-20261115/cost-ui-S4-mid.json",
+    "sha256": "96575af2fb2b2970b22dd8a50f872e338b11e3d2524301a74d570aea776ada00",
+    "gzip": "results/stage-3/series-r540-health-r1-20261115/cost-ui-S4-mid.json.gz"
+  },
+  {
+    "source": "results/stage-3/series-r540-health-r1-20261115/technical-export.log",
+    "sha256": "79190b4566705b2fa0823d24f827d85630102ca994c8dde5030f7b5f709fb395",
+    "gzip": "results/stage-3/series-r540-health-r1-20261115/technical-export.log.gz"
+  },
+  {
+    "source": "results/stage-3/series-r540-health-r1-20261115/checks-diagnostic.log",
+    "sha256": "739bd90b3abededa276ef424039112c47a42a8f54d210c695604a0ac53cfd03a",
+    "gzip": "results/stage-3/series-r540-health-r1-20261115/checks-diagnostic.log.gz"
+  },
+  {
+    "source": "results/stage-3/series-r540-health-r1-20261115/cost-ui-S4-early.stderr",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "gzip": "results/stage-3/series-r540-health-r1-20261115/cost-ui-S4-early.stderr.gz"
+  },
+  {
+    "source": "results/stage-3/series-r540-health-r1-20261115/technical.log",
+    "sha256": "9f54e9cb74ec4c4c8121e1a4e71c85df8af643899a77a7407384b77e8963f1cf",
+    "gzip": "results/stage-3/series-r540-health-r1-20261115/technical.log.gz"
+  },
+  {
+    "source": "results/stage-3/series-r540-health-r1-20261115/inspection-profile.log",
+    "sha256": "2e564fb59fc9b696ffe1a886c3da9d70b5959497815eea3ebb15839a46c434de",
+    "gzip": "results/stage-3/series-r540-health-r1-20261115/inspection-profile.log.gz"
+  },
+  {
+    "source": "results/stage-3/series-r540-health-r1-20261115/runtime-versions-attempt1.stdout",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "gzip": "results/stage-3/series-r540-health-r1-20261115/runtime-versions-attempt1.stdout.gz"
+  },
+  {
+    "source": "results/stage-3/series-r540-health-r1-20261115/export.log",
+    "sha256": "7f2f0a45cd9befb20c9f599fe71b634afa43b28a74bddb49f059e86f1b3b4f90",
+    "gzip": "results/stage-3/series-r540-health-r1-20261115/export.log.gz"
+  },
+  {
+    "source": "results/stage-3/series-r540-health-r1-20261115/cost-ui-S4-late.stderr",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "gzip": "results/stage-3/series-r540-health-r1-20261115/cost-ui-S4-late.stderr.gz"
+  },
+  {
+    "source": "results/stage-3/series-r540-health-r1-20261115/series.log",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "gzip": "results/stage-3/series-r540-health-r1-20261115/series.log.gz"
+  },
+  {
+    "source": "results/stage-3/series-r540-health-r1-20261115/cost-ui-S4-mid.stderr",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "gzip": "results/stage-3/series-r540-health-r1-20261115/cost-ui-S4-mid.stderr.gz"
+  },
+  {
+    "source": "results/stage-3/series-r540-health-r1-20261115/cost-ui-S4-early.json",
+    "sha256": "dfbdf5c493bc9733015dbf5615a91142c5a43b8658317593780bc4f86404cbf3",
+    "gzip": "results/stage-3/series-r540-health-r1-20261115/cost-ui-S4-early.json.gz"
+  },
+  {
+    "source": "results/stage-3/series-r540-health-r1-20261115/ui-sampling.log",
+    "sha256": "8554a6fee466e0f876b5575017068895a41e86ec3a1c9d71576d973677c49b2f",
+    "gzip": "results/stage-3/series-r540-health-r1-20261115/ui-sampling.log.gz"
+  },
+  {
+    "source": "results/stage-3/series-r540-health-r1-20261115/cost-ui-S4-late.json",
+    "sha256": "4f0b0fb57ca7847c2da85d875760b08f092a6e9a152a1deeec495bbab0747c72",
+    "gzip": "results/stage-3/series-r540-health-r1-20261115/cost-ui-S4-late.json.gz"
+  },
+  {
+    "source": "results/stage-3/series-r540-health-cache-20261115/technical-export.log",
+    "sha256": "4d858a493da3355564aff69154b0663e53e9e8a0c8b3c5b2fe405de58939df66",
+    "gzip": "results/stage-3/series-r540-health-cache-20261115/technical-export.log.gz"
+  },
+  {
+    "source": "results/stage-3/series-r540-health-cache-20261115/technical.log",
+    "sha256": "b8531c629967430b32ccc2c5b2bbafb2dae63f0917d6d4d3f4111c8fd1936d87",
+    "gzip": "results/stage-3/series-r540-health-cache-20261115/technical.log.gz"
+  }
+]

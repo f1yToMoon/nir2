@@ -1,0 +1,273 @@
+{
+ "runs": {
+  "stage3-S4-P0-mid-s11-r540-health-r1-20261115": {
+   "scenario": "S4_merge_vs_stream_serializable",
+   "status": "finished",
+   "invariants_ok": true,
+   "git_sha": "e0c01c163edee5c490d5d83637b83138697d8e20",
+   "n_ops": 35,
+   "k2": 25,
+   "k1_fail": 0,
+   "k1_with_409": 2,
+   "outcomes": {
+    "committed": 10,
+    "data_conflict": 25
+   },
+   "background_expire": {
+    "n": 29,
+    "cpu_s": 58.017,
+    "outcomes": {
+     "committed": 29
+    },
+    "late_max_s": 13.0,
+    "d_exec_max_s": 11.985769,
+    "d_exec_p50_s": 6.903569
+   },
+   "commit_rate_per_s": 0.07826129390022135,
+   "R_s": 540.0,
+   "I_s": 60.0
+  }
+ },
+ "checks": {
+  "stage3-S4-P0-mid-s11-r540-health-r1-20261115: finished, invariants_ok": {
+   "ok": true,
+   "invariants": {
+    "ledger_row_counts": true,
+    "no_duplicate_event_ids": true,
+    "committed_ops_in_lineage": true,
+    "aborted_ops_absent": true,
+    "version_monotonic": true,
+    "ok": true
+   }
+  },
+  "stage3-S4-P0-mid-s11-r540-health-r1-20261115: validation.ok": {
+   "ok": false,
+   "validation": {
+    "ok": false,
+    "incomplete_cost": [],
+    "runner_errors": []
+   }
+  },
+  "stage3-S4-P0-mid-s11-r540-health-r1-20261115: stream freshness fully observed": {
+   "ok": true,
+   "freshness": {
+    "complete": true,
+    "n_expected": 3451400,
+    "n_samples": 3451400,
+    "missing": 0,
+    "p95_s": 14.520546305179595,
+    "errors": [],
+    "unresolved_snapshots": {},
+    "n_snapshots": 116,
+    "observer_cpu_s": 13.671633773999991,
+    "clock": "producer UTC time.time → successful commit_attempts.responded_at"
+   }
+  },
+  "stage3-S4-P0-mid-s11-r540-health-r1-20261115: sum cpu_ms <= app cpu": {
+   "ok": true,
+   "ops_cpu_ms": 598410,
+   "app_cpu_ms": 6620609,
+   "workers_cgroup_cpu_ms": 13206517,
+   "share_of_app": 0.09
+  },
+  "stage3-S4-P0-mid-s11-r540-health-r1-20261115: app cpu <= workers cgroup cpu": {
+   "ok": true,
+   "app_cpu_ms": 6620609,
+   "workers_cgroup_cpu_ms": 13206517
+  },
+  "stage3-S4-P0-mid-s11-r540-health-r1-20261115: complete cost for every executed operation": {
+   "ok": true,
+   "incomplete": []
+  },
+  "stage3-S4-P0-mid-s11-r540-health-r1-20261115: footprint_executed ⊆ requested": {
+   "ok": true,
+   "committed": 10,
+   "with_executed": 10,
+   "violations": []
+  },
+  "stage3-S4-P0-mid-s11-r540-health-r1-20261115: K2+K1 > 0 and class K2": {
+   "ok": true,
+   "k2": 25,
+   "k1_with_409": 2,
+   "k1_fail": 0,
+   "n_ops": 35,
+   "share": 0.771
+  },
+  "stage3-S4-P0-mid-s11-r540-health-r1-20261115: complete history timing coverage": {
+   "ok": true,
+   "expected": 35,
+   "observed": 35,
+   "missing_or_invalid": []
+  },
+  "stage3-S4-P0-mid-s11-r540-health-r1-20261115: no operation older than R (or counted)": {
+   "ok": true,
+   "R_s": 540.0,
+   "over_r": [],
+   "n_over_r": 0,
+   "base_expired": 0,
+   "history_unresolved": 0,
+   "errors": 0
+  },
+  "stage3-S4-P0-mid-s11-r540-health-r1-20261115: no runner/infrastructure errors": {
+   "ok": true,
+   "errors": []
+  },
+  "stage3-S4-P0-mid-s11-r540-health-r1-20261115: complete health sampling coverage": {
+   "ok": false,
+   "coverage": {
+    "ok": false,
+    "samples": 61,
+    "interval_s": 30.0,
+    "jitter_budget_s": 1.0,
+    "max_gap_s": 32.548526,
+    "missed_intervals": 6,
+    "gaps_s": [
+     31.005309,
+     30.288657,
+     29.681595,
+     30.333371,
+     29.678483,
+     30.239748,
+     29.828971,
+     29.974466,
+     31.235056,
+     29.869217,
+     30.27857,
+     29.943835,
+     29.814962,
+     29.041685,
+     29.826654,
+     31.34777,
+     29.92836,
+     30.131386,
+     29.985016,
+     30.036157,
+     28.882399,
+     31.206562,
+     30.23499,
+     29.720163,
+     30.013551,
+     30.174268,
+     28.910922,
+     30.085081,
+     30.364942,
+     29.744321,
+     29.977741,
+     29.975322,
+     30.169895,
+     32.548526,
+     27.417217,
+     30.066659,
+     29.896504,
+     30.125962,
+     30.967619,
+     29.125549,
+     30.003801,
+     29.98648,
+     29.949226,
+     30.034736,
+     29.132523,
+     30.817676,
+     30.133358,
+     29.850779,
+     30.109661,
+     30.028233,
+     30.055365,
+     29.995869,
+     29.847451,
+     30.156948,
+     30.005369,
+     31.008994,
+     29.133601,
+     28.885662,
+     29.955989,
+     3.341957,
+     1.101949,
+     0.0052
+    ],
+    "invalid_timestamps": []
+   }
+  },
+  "stage3-S4-P0-mid-s11-r540-health-r1-20261115: complete metadata version byte bound": {
+   "ok": true,
+   "complete": true,
+   "max_bytes": 62433,
+   "error": null
+  },
+  "stage3-S4-P0-mid-s11-r540-health-r1-20261115: history <= verified point (1452 / 1.51 MB)": {
+   "ok": true,
+   "max_snapshots": 44,
+   "max_metadata_bytes": 62433,
+   "B": [
+    1800,
+    1880000
+   ]
+  },
+  "stage3-S4-P0-mid-s11-r540-health-r1-20261115: dense history upper bound <= 1452": {
+   "ok": true,
+   "unique_additions": 126,
+   "unique_removals": 86,
+   "lower": {
+    "peak_snapshots": 46,
+    "at": "2026-11-15 18:03:17.333414+00:00",
+    "final_snapshots": 41
+   },
+   "upper": {
+    "peak_snapshots": 46,
+    "at": "2026-11-15 18:03:17.319420+00:00",
+    "final_snapshots": 41
+   }
+  },
+  "retention: nonempty timing coverage": {
+   "ok": true,
+   "n_observed": 35
+  },
+  "retention: measured lower bound <= configured R": {
+   "ok": true,
+   "lower_s": 383.8,
+   "configured_R_s": 540.0
+  },
+  "retention: D_max <= 349 s (else author decision)": {
+   "ok": true,
+   "d_max_s": 41.9
+  }
+ },
+ "retention": {
+  "d_max_s": 41.9,
+  "d_max_op": "stage3-S4-P0-mid-s11-r540-health-r1-20261115-batch_merge-0029",
+  "d_max_run": "stage3-S4-P0-mid-s11-r540-health-r1-20261115",
+  "top5": [
+   [
+    41.9,
+    "stage3-S4-P0-mid-s11-r540-health-r1-20261115-batch_merge-0029"
+   ],
+   [
+    38.2,
+    "stage3-S4-P0-mid-s11-r540-health-r1-20261115-batch_merge-0014"
+   ],
+   [
+    37.5,
+    "stage3-S4-P0-mid-s11-r540-health-r1-20261115-batch_merge-0012"
+   ],
+   [
+    36.6,
+    "stage3-S4-P0-mid-s11-r540-health-r1-20261115-batch_merge-0008"
+   ],
+   [
+    34.1,
+    "stage3-S4-P0-mid-s11-r540-health-r1-20261115-batch_merge-0028"
+   ]
+  ],
+  "num_retries": 4,
+  "R_low_s (2·D_max + (n+1)·hold)": 383.8,
+  "R_low_single_hold_s": 143.8,
+  "S1_commit_rate_per_s": null,
+  "R_high_verified_point_s": null,
+  "R_high_B_s": null,
+  "author_stop (D_max > 349 s)": false
+ },
+ "failed": [
+  "stage3-S4-P0-mid-s11-r540-health-r1-20261115: validation.ok",
+  "stage3-S4-P0-mid-s11-r540-health-r1-20261115: complete health sampling coverage"
+ ]
+}
