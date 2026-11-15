@@ -50,25 +50,30 @@ def test_stage3_health_native_metadata(format_version: int, monkeypatch: pytest.
         spark.sql(f"INSERT INTO {table} SELECT id,97,DATE '2026-11-01' FROM range(10)")
         spark.sql(f'DELETE FROM {table} WHERE event_id=1')
         st = load_table_state(env, name)
-        expected: dict[str, dict[str, int]] = {}
-        for row in spark.sql(f'SELECT * FROM {table}.files').collect():
-            part = row['partition']
-            label = f"dt={part['dt']}/key_bucket={part['key_bucket']}"
-            v = expected.setdefault(label, dict(data_files=0, small_files=0, delete_files=0, total_bytes=0))
-            size = row['file_size_in_bytes']
-            v['data_files'] += row['content'] == 0
-            v['small_files'] += row['content'] == 0 and size < health.SMALL_FILE_BYTES
-            v['delete_files'] += row['content'] != 0
-            v['total_bytes'] += size
+        def spark_reference() -> dict[str, dict[str, int]]:
+            reference: dict[str, dict[str, int]] = {}
+            for row in spark.sql(f'SELECT * FROM {table}.files').collect():
+                part = row['partition']
+                label = f"dt={part['dt']}/key_bucket={part['key_bucket']}"
+                v = reference.setdefault(label, dict(data_files=0, small_files=0,
+                                                     delete_files=0, total_bytes=0))
+                size = row['file_size_in_bytes']
+                v['data_files'] += row['content'] == 0
+                v['small_files'] += row['content'] == 0 and size < health.SMALL_FILE_BYTES
+                v['delete_files'] += row['content'] != 0
+                v['total_bytes'] += size
+            return reference
+
+        expected = spark_reference()
         assert sum(v['delete_files'] for v in expected.values()) > 0
         inspect_files = health.inspect_partition_files
         concurrent: dict[str, Any] = {}
 
-        def commit_then_read(env: Env, location: str) -> dict[str, dict[str, int]]:
+        def commit_then_read(env: Env, location: str, cache: Any) -> dict[str, dict[str, int]]:
             assert location == st.metadata_location
             spark.sql(f"INSERT INTO {table} VALUES (11,98,DATE '2026-11-02')")
             concurrent['state'] = load_table_state(env, name)
-            return inspect_files(env, location)
+            return inspect_files(env, location, cache)
 
         monkeypatch.setattr(health, 'inspect_partition_files', commit_then_read)
         db = DB()
@@ -79,7 +84,24 @@ def test_stage3_health_native_metadata(format_version: int, monkeypatch: pytest.
         assert meta['current_snapshot_id'] != concurrent['state'].current_snapshot_id
         assert sampler.partition_stats() == expected
         assert meta['sample_started_at'] <= meta['metadata_observed_at'] <= meta['at']
-        inventory = capture_metadata_versions(env, concurrent['state'], started, out / 'metadata',
+        from pyiceberg.manifest import ManifestFile
+        assert sampler._manifest_cache
+        with monkeypatch.context() as patch:
+            def forbid_reread(*_args: Any, **_kwargs: Any) -> Any:
+                raise AssertionError('An immutable cached manifest was read again')
+            patch.setattr(ManifestFile, 'fetch_manifest_entry', forbid_reread)
+            assert inspect_files(env, st.metadata_location, sampler._manifest_cache) == expected
+        fresh = inspect_files(env, concurrent['state'].metadata_location, sampler._manifest_cache)
+        assert fresh == spark_reference() and fresh != expected
+        assert sum(v['data_files'] for v in fresh.values()) == (
+            sum(v['data_files'] for v in expected.values()) + 1)
+        spark.sql(f"DELETE FROM {table} WHERE dt=DATE '2026-11-02'")
+        removed = load_table_state(env, name)
+        after_removal = inspect_files(env, removed.metadata_location, sampler._manifest_cache)
+        assert after_removal == spark_reference() == expected
+        result.update(after_append=fresh, after_removal=after_removal,
+                      cached_manifest_count=len(sampler._manifest_cache))
+        inventory = capture_metadata_versions(env, removed, started, out / 'metadata',
                                               sampler.metadata_locations)
         assert inventory['complete']
         assert verify_metadata_inventory(inventory, out / 'metadata')['complete']

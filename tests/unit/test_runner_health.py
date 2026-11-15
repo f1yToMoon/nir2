@@ -99,11 +99,14 @@ def test_metadata_archive_bytes_are_verified(tmp_path: Any) -> None:
         verify_metadata_inventory(inv, tmp_path)
 
 
-def test_first_deadline_is_anchored_to_initial_acquisition(monkeypatch: Any) -> None:
+@pytest.mark.parametrize('initial_start,expected_wait', [(90.0, 20.0), (80.0, 10.0)])
+def test_first_deadline_is_anchored_to_initial_acquisition(
+        monkeypatch: Any, initial_start: float, expected_wait: float) -> None:
     waits = []
     sampler = health.HealthSampler(None, Env(), None, 'r', 'n.t', 30)
     sampler._stats_at = 90.0
+    sampler._sample_started_monotonic = initial_start
     sampler._stop = SimpleNamespace(wait=lambda delay: waits.append(delay) or True)
     monkeypatch.setattr(health.time, 'monotonic', lambda: 100.0)
     sampler._loop()
-    assert waits == [20.0]  # DB publication/thread startup must not shift the first deadline.
+    assert waits == [expected_wait]  # Include nonzero initial acquisition, not just zero-duration reads.
