@@ -24,20 +24,27 @@ def measured(monkeypatch: Any, tmp_path: Path) -> tuple[dict[str, Any], list[dic
                 footprint_executed=["a"], outcome_detail={}, error_class=None,
                 planning_snapshot_at=t, last_attempt_at=t + timedelta(seconds=1), finished_at=t)]
     result = {"validation": {"ok": True}, "stream_freshness": {"complete": True, "n_samples": 1},
-              "spark_app_totals": {"cpu_ms": 20}}
+              "spark_app_totals": {"cpu_ms": 20}, 't0': t.isoformat(), 't_end': t.isoformat()}
 
     class DB:
         def __init__(self, *_args: Any) -> None:
             pass
 
         def query(self, sql: str, _args: Any) -> Any:
+            if sql.startswith('SELECT at,sample_started_at'):
+                return [dict(at=t, sample_started_at=t, metadata_observed_at=t,
+                             current_snapshot_id=100, metadata_location='initial')]
+            if sql.startswith('SELECT forwarded_at,new_snapshot_id'):
+                return [dict(forwarded_at=t, new_snapshot_id=100)]
             if sql.startswith("SELECT snapshots,current_snapshot_id"):
                 return [{"snapshots": 1, "current_snapshot_id": 100}]
             if sql.startswith("SELECT forwarded_at,responded_at"):
                 return [{"forwarded_at": t, "responded_at": t, "new_snapshot_id": 101,
                          "removed_snapshot_ids": None}]
             if "run_summary" in sql:
-                return [{"detail": {"max_snapshots": 1, "max_metadata_bytes": 100}}]
+                return [{"detail": {"max_snapshots": 1, "max_metadata_bytes": 100,
+                                    "metadata_inventory_complete": True,
+                                    "health_coverage": {"ok": True}}}]
             if "commit_attempts" in sql:
                 return [{"n": 1, "s": 1}]
             if ".runs " in sql:
@@ -48,6 +55,9 @@ def measured(monkeypatch: Any, tmp_path: Path) -> tuple[dict[str, Any], list[dic
             return ops
 
     monkeypatch.setattr(checks, "DB", DB)
+    monkeypatch.setattr(checks, 'verify_metadata_inventory', lambda inv, *_: {
+        'complete': inv['complete'], 'max_metadata_bytes': inv.get('max_metadata_bytes', 100)})
+    result['metadata_inventory'] = {'complete': True}
     monkeypatch.setattr(checks, "RES", tmp_path)
     monkeypatch.setattr(checks, "_load", lambda _rid: result)
     return result, ops, tmp_path / "out.json"
@@ -61,6 +71,16 @@ def invoke(measured: Any) -> dict[str, Any]:
 
 def test_complete_run_passes(measured: Any) -> None:
     assert invoke(measured)["failed"] == []
+
+
+def test_incomplete_dense_metadata_inventory_fails(measured: Any) -> None:
+    measured[0]['metadata_inventory']['complete'] = False
+    assert any('metadata version byte bound' in x for x in invoke(measured)['failed'])
+
+
+def test_unsampled_metadata_byte_spike_fails(measured: Any) -> None:
+    measured[0]['metadata_inventory']['max_metadata_bytes'] = 1_510_001
+    assert any('history <= verified point' in x for x in invoke(measured)['failed'])
 
 
 @pytest.mark.parametrize("validation", [{"ok": False}, {}, {"ok": 1}])

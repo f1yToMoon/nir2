@@ -1,0 +1,22 @@
+{
+  "stage": 3,
+  "round": 1,
+  "role": "stage-reviewer",
+  "task": "/root/stage3_review_r1",
+  "fork_turns": "none",
+  "reviewed_commit": "e0038188bcf61102d723a1326041563824b8972f",
+  "parent_thread_id": "01a1b701-4fbe-7ae1-9927-8e21d08d9df5",
+  "child_thread_id": "01a1e023-bd57-79f1-beb8-ec2b01108440",
+  "depth": 1,
+  "installed_developer_instructions_verified": true,
+  "implementation_history_inherited": false,
+  "head_unchanged_during_review": true,
+  "result_received": true,
+  "verdict": "CHANGES_REQUESTED",
+  "blocker": 0,
+  "major": 3,
+  "minor": 2,
+  "review": "docs/reviews/stage-3-r1.md",
+  "review_commit": "d4efe91107fb6a42bd957707fff448e086cbe4ec",
+  "raw_session_not_published": true
+}

@@ -33,7 +33,7 @@ from runner import scenario as scn
 from runner.cost import CostReader
 from runner.db import DB
 from runner.env import REPO, Env, git_sha
-from runner.health import HealthSampler, _aws
+from runner.health import HealthSampler, _aws, health_coverage
 from runner.intents import Intent, generate
 from runner.invariants import Invariants, Ledger, orphan_scan
 from runner.ops.executor import OpExecutor, RunCtx, load_table_state, now
@@ -375,6 +375,10 @@ class Run:
         # 7. finalize operations, invariants, orphans
         self._footprints_executed(db)
         st = load_table_state(env, table)
+        from runner.metadata import capture_metadata_versions
+        metadata_inventory = capture_metadata_versions(env, st, t0, self.journal_dir / 'metadata',
+                                                       health.metadata_locations)
+        coverage = health_coverage(health.sample_times, t0, t_end, sc.runner.health_sample_interval_s)
         led = self._ledger(dg, gj, feeds, agents)
         ops_rows = [r.row for r in self.records + self.bg_records]
         import pickle
@@ -403,8 +407,10 @@ class Run:
                                     "errors": a.errors[:5]} for a in agents]},
             "invariants": inv_res, "orphans": orph, "spark_app_totals": app_totals,
             "health": {"samples": health.n, "errors": health.errors[:5],
+                       "coverage": coverage,
                        "max_snapshots": health.max_snapshots,
                        "max_metadata_bytes": health.max_metadata_bytes},
+            "metadata_inventory": metadata_inventory,
             "cooldown_s": sc.cooldown_s, "warmup_s": sc.warmup_s, "duration_s": sc.duration_s,
         })
         incomplete_cost = [r["op_id"] for r in ops_rows if r.get("outcome") != "noop"
@@ -414,6 +420,7 @@ class Run:
         self.results["validation"] = {
             "ok": bool(inv_res.get("ok")) and self.results["stream_freshness"]["complete"]
                   and not incomplete_cost and not runner_errors and not health.errors
+                  and coverage['ok'] and metadata_inventory['complete']
                   and all(not feed.errors for feed in feeds)
                   and all(fl["final_lag"] == 0 for fl in flink_out),
             "incomplete_cost": incomplete_cost, "runner_errors": runner_errors}

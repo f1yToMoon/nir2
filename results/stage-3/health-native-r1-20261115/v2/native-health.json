@@ -1,0 +1,70 @@
+{
+  "expected": {
+    "dt=2026-11-01/key_bucket=6": {
+      "data_files": 1,
+      "small_files": 1,
+      "delete_files": 1,
+      "total_bytes": 2688
+    }
+  },
+  "metadata": {
+    "run_id": "health-native-v2-1794763159976071210",
+    "table_name": "stage3_it.health_1794763159976071210",
+    "sample_started_at": "2026-11-15 17:19:31.819756+00:00",
+    "metadata_observed_at": "2026-11-15 17:19:31.822758+00:00",
+    "at": "2026-11-15 17:19:32.312812+00:00",
+    "current_snapshot_id": 86998981331827669,
+    "metadata_location": "s3://warehouse/stage3_it/health_1794763159976071210/metadata/00002-fc0534e3-a32b-41d2-aacf-45340219b263.metadata.json",
+    "snapshots": 2,
+    "metadata_bytes": 3333
+  },
+  "inventory": {
+    "complete": true,
+    "files": [
+      {
+        "location": "s3://warehouse/stage3_it/health_1794763159976071210/metadata/00000-1601cab0-49c4-4268-b5b6-6153e02caa7d.metadata.json",
+        "bytes": 990,
+        "sha256": "b74af840c26e671fc8c9557cf0102fc04a85ccebd30e599b5087e0243bbc01e2",
+        "archive": "b74af840c26e671fc8c9557cf0102fc04a85ccebd30e599b5087e0243bbc01e2.json.gz",
+        "current_snapshot_id": -1,
+        "delete_after_commit_enabled": false
+      },
+      {
+        "location": "s3://warehouse/stage3_it/health_1794763159976071210/metadata/00001-8cd60080-8e75-47aa-8c76-658cae6f5d99.metadata.json",
+        "bytes": 2157,
+        "sha256": "64183fff253109ea276f74c8dc4eea3abd1602a0a61faab89a06d77d351ae000",
+        "archive": "64183fff253109ea276f74c8dc4eea3abd1602a0a61faab89a06d77d351ae000.json.gz",
+        "current_snapshot_id": 991418402259094809,
+        "delete_after_commit_enabled": false
+      },
+      {
+        "location": "s3://warehouse/stage3_it/health_1794763159976071210/metadata/00002-fc0534e3-a32b-41d2-aacf-45340219b263.metadata.json",
+        "bytes": 3333,
+        "sha256": "22146bbdf383243626d4a0c4247b597f781416f78a30ef6d29d3e0e739f574df",
+        "archive": "22146bbdf383243626d4a0c4247b597f781416f78a30ef6d29d3e0e739f574df.json.gz",
+        "current_snapshot_id": 86998981331827669,
+        "delete_after_commit_enabled": false
+      },
+      {
+        "location": "s3://warehouse/stage3_it/health_1794763159976071210/metadata/00003-4d04285b-7eb6-4e92-9644-5ad9ac324006.metadata.json",
+        "bytes": 4469,
+        "sha256": "b8027ae931d8e1581e82a0b2c12efb06e8b7d8a583f9f9cdf37a3becb17bcf8e",
+        "archive": "b8027ae931d8e1581e82a0b2c12efb06e8b7d8a583f9f9cdf37a3becb17bcf8e.json.gz",
+        "current_snapshot_id": 280741373052405103,
+        "delete_after_commit_enabled": false
+      }
+    ],
+    "listed": 4,
+    "required_locations": [
+      "s3://warehouse/stage3_it/health_1794763159976071210/metadata/00000-1601cab0-49c4-4268-b5b6-6153e02caa7d.metadata.json",
+      "s3://warehouse/stage3_it/health_1794763159976071210/metadata/00001-8cd60080-8e75-47aa-8c76-658cae6f5d99.metadata.json",
+      "s3://warehouse/stage3_it/health_1794763159976071210/metadata/00002-fc0534e3-a32b-41d2-aacf-45340219b263.metadata.json",
+      "s3://warehouse/stage3_it/health_1794763159976071210/metadata/00003-4d04285b-7eb6-4e92-9644-5ad9ac324006.metadata.json"
+    ],
+    "missing": [],
+    "delete_after_commit_enabled": false,
+    "max_metadata_bytes": 4469,
+    "method": "all_retained_metadata_versions_including_uncommitted_candidates"
+  },
+  "concurrent_snapshot_id": 280741373052405103
+}

@@ -114,7 +114,13 @@ def compute_summary(db: Any, run_id: str, extra: dict[str, Any] | None = None) -
                                          "outcomes": _count(o["outcome"] for o in bg),
                                          "cpu_s": cpu(bg)},
                    "d_hist_max_s": max(d_hist_all) if d_hist_all else None,
-                   "max_snapshots": meta["snaps"], "max_metadata_bytes": meta["mb"],
+                   "max_snapshots": meta["snaps"],
+                   "observed_max_metadata_bytes": meta["mb"],
+                   "max_metadata_bytes": ((extra or {}).get('metadata_inventory') or {}).get(
+                       'max_metadata_bytes', meta['mb']),
+                   "metadata_inventory_complete": bool(((extra or {}).get('metadata_inventory') or {}).get(
+                       'complete')),
+                   "health_coverage": ((extra or {}).get('health') or {}).get('coverage'),
                    "policy": run["policy"], "scenario": run["scenario"]},
     }
     db.execute("DELETE FROM {s}.run_summary WHERE run_id = %s", [run_id])

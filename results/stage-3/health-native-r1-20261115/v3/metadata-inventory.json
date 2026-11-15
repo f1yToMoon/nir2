@@ -1,0 +1,48 @@
+{
+  "complete": true,
+  "files": [
+    {
+      "location": "s3://warehouse/stage3_it/health_1794763175736165009/metadata/00000-0d9fdd03-6171-4725-82d4-0a644b97046d.metadata.json",
+      "bytes": 1008,
+      "sha256": "d0e284cce9bd7c3b887173e7a6249c5f2c79be19ae4cb543bd4cbf3c4f3b90fe",
+      "archive": "d0e284cce9bd7c3b887173e7a6249c5f2c79be19ae4cb543bd4cbf3c4f3b90fe.json.gz",
+      "current_snapshot_id": null,
+      "delete_after_commit_enabled": false
+    },
+    {
+      "location": "s3://warehouse/stage3_it/health_1794763175736165009/metadata/00001-1dccb214-b812-4405-bae3-d631a2509a0a.metadata.json",
+      "bytes": 2212,
+      "sha256": "77bb0430fcb59b749faea4eb02c8b4ce6aefeafc66fdfa5a8dbab03ccbe8b5e2",
+      "archive": "77bb0430fcb59b749faea4eb02c8b4ce6aefeafc66fdfa5a8dbab03ccbe8b5e2.json.gz",
+      "current_snapshot_id": 3565611988136773582,
+      "delete_after_commit_enabled": false
+    },
+    {
+      "location": "s3://warehouse/stage3_it/health_1794763175736165009/metadata/00002-0d073d40-87fb-4a65-bb7d-087ebaa06a71.metadata.json",
+      "bytes": 3410,
+      "sha256": "bd41e6580dc08f799a4111038e32dcaacfc156fcd3f90d2701ec533d98be2bdc",
+      "archive": "bd41e6580dc08f799a4111038e32dcaacfc156fcd3f90d2701ec533d98be2bdc.json.gz",
+      "current_snapshot_id": 6402186080198306154,
+      "delete_after_commit_enabled": false
+    },
+    {
+      "location": "s3://warehouse/stage3_it/health_1794763175736165009/metadata/00003-c809a397-4cd0-427c-ab2c-8f144ad3f3a2.metadata.json",
+      "bytes": 4582,
+      "sha256": "1a15579328e1ddf6e87b4a9d1350ecd25236927196f32e9a42077ecece4a786f",
+      "archive": "1a15579328e1ddf6e87b4a9d1350ecd25236927196f32e9a42077ecece4a786f.json.gz",
+      "current_snapshot_id": 9061103929527402557,
+      "delete_after_commit_enabled": false
+    }
+  ],
+  "listed": 4,
+  "required_locations": [
+    "s3://warehouse/stage3_it/health_1794763175736165009/metadata/00000-0d9fdd03-6171-4725-82d4-0a644b97046d.metadata.json",
+    "s3://warehouse/stage3_it/health_1794763175736165009/metadata/00001-1dccb214-b812-4405-bae3-d631a2509a0a.metadata.json",
+    "s3://warehouse/stage3_it/health_1794763175736165009/metadata/00002-0d073d40-87fb-4a65-bb7d-087ebaa06a71.metadata.json",
+    "s3://warehouse/stage3_it/health_1794763175736165009/metadata/00003-c809a397-4cd0-427c-ab2c-8f144ad3f3a2.metadata.json"
+  ],
+  "missing": [],
+  "delete_after_commit_enabled": false,
+  "max_metadata_bytes": 4582,
+  "method": "all_retained_metadata_versions_including_uncommitted_candidates"
+}

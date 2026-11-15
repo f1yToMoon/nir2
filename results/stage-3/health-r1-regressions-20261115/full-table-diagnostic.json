@@ -1,0 +1,23 @@
+[
+  {
+    "seconds": 1.2282214330007264,
+    "partitions": 240,
+    "data_files": 7833,
+    "delete_files": 1467,
+    "snapshot": 8076526431259366069
+  },
+  {
+    "seconds": 0.8765706499980297,
+    "partitions": 240,
+    "data_files": 7833,
+    "delete_files": 1467,
+    "snapshot": 8076526431259366069
+  },
+  {
+    "seconds": 0.8596840479985985,
+    "partitions": 240,
+    "data_files": 7833,
+    "delete_files": 1467,
+    "snapshot": 8076526431259366069
+  }
+]

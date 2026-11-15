@@ -23,6 +23,11 @@ MIGRATIONS = (
         snapshots integer NOT NULL, metadata_bytes bigint NOT NULL,
         current_snapshot_id bigint, metadata_location text,
         PRIMARY KEY (run_id, table_name, at))""",
+    *tuple(f"ALTER TABLE {{s}}.{table} ADD COLUMN IF NOT EXISTS {column} {kind}"
+           for table in ('table_health', 'table_meta')
+           for column, kind in (('sample_started_at', 'timestamptz'),
+                                ('metadata_observed_at', 'timestamptz'),
+                                ('current_snapshot_id', 'bigint'), ('metadata_location', 'text'))),
     "ALTER TABLE {s}.run_summary ADD COLUMN IF NOT EXISTS n_base_expired integer",
     "ALTER TABLE {s}.run_summary ADD COLUMN IF NOT EXISTS n_history_unresolved integer",
     "ALTER TABLE {s}.run_summary ADD COLUMN IF NOT EXISTS n_errors integer",

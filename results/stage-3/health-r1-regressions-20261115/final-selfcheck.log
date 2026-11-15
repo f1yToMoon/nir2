@@ -1,0 +1,29 @@
+.venv/bin/ruff check src tests scripts/update_matrix.py scripts/capture_commit_fixtures.py \
+  scripts/overhead_enricher_ablation.py scripts/overhead_localization_blocks.py \
+  scripts/overhead_localization_timestamps.py scripts/grafana_check.py scripts/stage3_checks.py scripts/stage3_artifacts.py
+I001 [*] Import block is un-sorted or un-formatted
+  --> scripts/stage3_checks.py:33:1
+   |
+31 |   sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+32 |
+33 | / from runner.db import DB
+34 | | from runner.env import REPO, Env
+35 | | from runner.history import history_bounds
+36 | | from runner.health import validate_health_rows
+37 | | from runner.metadata import verify_metadata_inventory
+   | |_____________________________________________________^
+38 |
+39 |   RES = REPO / "results" / "stage-3"
+   |
+help: Organize imports
+   |
+34 | from runner.env import REPO, Env
+35 + from runner.health import validate_health_rows
+36 | from runner.history import history_bounds
+   - from runner.health import validate_health_rows
+37 | from runner.metadata import verify_metadata_inventory
+   |
+
+Found 1 error.
+[*] 1 fixable with `--fix`.
+make: *** [Makefile:124: lint] Error 1

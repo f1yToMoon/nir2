@@ -1,0 +1,96 @@
+FFFFF                                                                    [100%]
+=================================== FAILURES ===================================
+___________ test_delayed_spark_collect_must_not_backdate_rest_state ____________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x741c52d6c850>
+
+    def test_delayed_spark_collect_must_not_backdate_rest_state(monkeypatch: Any) -> None:
+        t0 = datetime(2026, 1, 1, tzinfo=UTC)
+        clock = [t0]
+    
+        class Clock:
+            @staticmethod
+            def now(_tz: Any) -> datetime:
+                return clock[0]
+    
+        class Rows:
+            def collect(self) -> list[Any]:
+                clock[0] += timedelta(seconds=151)
+                return []
+    
+        class DB:
+            rows: dict[str, list[Any]] = {}
+    
+            def insert_many(self, table: str, rows: list[Any]) -> None:
+                self.rows[table] = rows
+    
+        db = DB()
+        monkeypatch.setattr(health, "datetime", Clock)
+        monkeypatch.setattr(health, "job_scope", lambda *_: __import__('contextlib').nullcontext())
+        monkeypatch.setattr(health, "load_table_state", lambda *_: TableState(2, {2: {}}, "md", {}))
+        monkeypatch.setattr(health, "s3_object_size", lambda *_: 12)
+        sampler = health.HealthSampler(SimpleNamespace(sql=lambda _: Rows()), Env(), db, "r", "n.t", 30)
+        # New native metadata inspection must bypass this deliberately slow Spark collect.
+        if hasattr(health, "inspect_partition_files"):
+            monkeypatch.setattr(health, "inspect_partition_files", lambda *_: {})
+        sampler.sample()
+>       assert db.rows['table_meta'][0]['at'] == clock[0]
+E       assert datetime.datetime(2026, 1, 1, 0, 0, tzinfo=datetime.timezone.utc) == datetime.datetime(2026, 1, 1, 0, 2, 31, tzinfo=datetime.timezone.utc)
+
+tests/unit/test_runner_health.py:43: AssertionError
+______________ test_missed_health_intervals_are_rejected[59.4505] ______________
+
+gap = 59.4505
+
+    @pytest.mark.parametrize("gap", [59.4505, 158.434401])
+    def test_missed_health_intervals_are_rejected(gap: float) -> None:
+        t = datetime(2026, 1, 1, tzinfo=UTC)
+>       result = health.health_coverage([t, t + timedelta(seconds=gap)], t,
+                 ^^^^^^^^^^^^^^^^^^^^^^
+                                       t + timedelta(seconds=gap), 30)
+E       AttributeError: module 'runner.health' has no attribute 'health_coverage'
+
+tests/unit/test_runner_health.py:49: AttributeError
+____________ test_missed_health_intervals_are_rejected[158.434401] _____________
+
+gap = 158.434401
+
+    @pytest.mark.parametrize("gap", [59.4505, 158.434401])
+    def test_missed_health_intervals_are_rejected(gap: float) -> None:
+        t = datetime(2026, 1, 1, tzinfo=UTC)
+>       result = health.health_coverage([t, t + timedelta(seconds=gap)], t,
+                 ^^^^^^^^^^^^^^^^^^^^^^
+                                       t + timedelta(seconds=gap), 30)
+E       AttributeError: module 'runner.health' has no attribute 'health_coverage'
+
+tests/unit/test_runner_health.py:49: AttributeError
+_________________ test_health_coverage_checks_edges_and_jitter _________________
+
+    def test_health_coverage_checks_edges_and_jitter() -> None:
+        t = datetime(2026, 1, 1, tzinfo=UTC)
+        times = [t + timedelta(seconds=x) for x in (0, 30.001, 60.002, 90)]
+>       assert health.health_coverage(times, t, t + timedelta(seconds=90), 30)['ok']
+               ^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'runner.health' has no attribute 'health_coverage'
+
+tests/unit/test_runner_health.py:57: AttributeError
+_______ test_dense_metadata_bytes_detect_spike_between_periodic_samples ________
+
+    def test_dense_metadata_bytes_detect_spike_between_periodic_samples() -> None:
+>       from runner.metadata import metadata_bound
+E       ModuleNotFoundError: No module named 'runner.metadata'
+
+tests/unit/test_runner_health.py:63: ModuleNotFoundError
+=============================== warnings summary ===============================
+.venv/lib/python3.11/site-packages/_pytest/cacheprovider.py:439
+  /home/an/nir/.venv/lib/python3.11/site-packages/_pytest/cacheprovider.py:439: PytestCacheWarning: cache could not write path /home/an/nir/.pytest_cache/v/cache/lastfailed: [Errno 13] Permission denied: '/home/an/nir/.pytest_cache/v/cache/lastfailed'
+    config.cache.set("cache/lastfailed", current_lastfailed)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/unit/test_runner_health.py::test_delayed_spark_collect_must_not_backdate_rest_state
+FAILED tests/unit/test_runner_health.py::test_missed_health_intervals_are_rejected[59.4505]
+FAILED tests/unit/test_runner_health.py::test_missed_health_intervals_are_rejected[158.434401]
+FAILED tests/unit/test_runner_health.py::test_health_coverage_checks_edges_and_jitter
+FAILED tests/unit/test_runner_health.py::test_dense_metadata_bytes_detect_spike_between_periodic_samples
+5 failed, 1 warning in 0.16s

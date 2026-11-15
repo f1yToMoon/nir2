@@ -24,6 +24,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -31,7 +32,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from runner.db import DB
 from runner.env import REPO, Env
+from runner.health import validate_health_rows
 from runner.history import history_bounds
+from runner.metadata import verify_metadata_inventory
 
 RES = REPO / "results" / "stage-3"
 VERIFIED_SNAPSHOTS = 1452
@@ -163,9 +166,34 @@ def main(argv: list[str] | None = None) -> int:
         bgx = detail.get("background_expire") or {}
         info["background_expire"] = bgx
         # 7. history size
-        ms, mb = detail.get("max_snapshots"), detail.get("max_metadata_bytes")
+        try:
+            samples = db.query("SELECT at,sample_started_at,metadata_observed_at,current_snapshot_id,"
+                               "metadata_location FROM {s}.table_meta WHERE run_id=%s ORDER BY at", [rid])
+            timestamps = db.query("SELECT forwarded_at,new_snapshot_id FROM {s}.commit_attempts "
+                                  "WHERE run_id=%s AND http_status BETWEEN 200 AND 299", [rid])
+            actual_coverage = validate_health_rows(samples, timestamps, datetime.fromisoformat(res['t0']),
+                                                  datetime.fromisoformat(res['t_end']),
+                                                  float(sc_params.get('runner', {}).get(
+                                                      'health_sample_interval_s', 30)))
+        except (ValueError, KeyError, TypeError) as exc:
+            actual_coverage = {'ok': False, 'error': str(exc)}
+        check(f"{rid}: complete health sampling coverage",
+              bool(actual_coverage['ok']), coverage=actual_coverage)
+        try:
+            actual_bytes = verify_metadata_inventory(res['metadata_inventory'],
+                                                     REPO / 'data/runs' / rid / 'metadata')
+        except (OSError, ValueError, KeyError, TypeError) as exc:
+            actual_bytes = {'complete': False, 'error': str(exc)}
+        check(f"{rid}: complete metadata version byte bound",
+              actual_bytes['complete'] and actual_bytes.get('max_metadata_bytes') == detail.get(
+                  'max_metadata_bytes'),
+              complete=actual_bytes['complete'], max_bytes=actual_bytes.get('max_metadata_bytes'),
+              error=actual_bytes.get('error'))
+        ms = detail.get("max_snapshots")
+        mb = actual_bytes.get('max_metadata_bytes')
         check(f"{rid}: history <= verified point (1452 / 1.51 MB)",
-              ms is not None and ms <= VERIFIED_SNAPSHOTS and mb <= VERIFIED_METADATA_BYTES,
+              ms is not None and mb is not None and ms <= VERIFIED_SNAPSHOTS
+              and mb <= VERIFIED_METADATA_BYTES,
               max_snapshots=ms, max_metadata_bytes=mb, B=(B_SNAPSHOTS, B_BYTES))
         try:
             initial = db.query("SELECT snapshots,current_snapshot_id FROM {s}.table_meta "

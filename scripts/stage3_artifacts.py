@@ -123,6 +123,13 @@ def main() -> None:
             for journal in sorted(source.glob("*.json")):
                 if journal.name != "intents.json":
                     save_bytes(target, f"journals/{journal.name}.gz", journal.read_bytes(), 1, files)
+            for archive in sorted((source / 'metadata').glob('*.json.gz')):
+                name = 'metadata/' + archive.name
+                raw = archive.read_bytes()
+                (target / 'metadata').mkdir(exist_ok=True)
+                (target / name).write_bytes(raw)
+                files[name] = {'rows': 1, 'sha256': digest(target / name),
+                               'uncompressed_sha256': hashlib.sha256(gzip.decompress(raw)).hexdigest()}
             result = REPO / "results" / "stage-3" / "runs" / f"{rid}.json"
             save_bytes(target, "run-result.json.gz", result.read_bytes(), 1, files)
             golden = run[0]["params"]["golden"]["data"]
