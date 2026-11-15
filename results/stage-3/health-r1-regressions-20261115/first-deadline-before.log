@@ -1,0 +1,24 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+____________ test_first_deadline_is_anchored_to_initial_acquisition ____________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7589eef949d0>
+
+    def test_first_deadline_is_anchored_to_initial_acquisition(monkeypatch: Any) -> None:
+        waits = []
+        sampler = health.HealthSampler(None, Env(), None, 'r', 'n.t', 30)
+        sampler._stats_at = 90.0
+        sampler._stop = SimpleNamespace(wait=lambda delay: waits.append(delay) or True)
+        monkeypatch.setattr(health.time, 'monotonic', lambda: 100.0)
+        sampler._loop()
+>       assert waits == [20.0]  # DB publication/thread startup must not shift the first deadline.
+        ^^^^^^^^^^^^^^^^^^^^^^
+E       assert [30.0] == [20.0]
+E         
+E         At index 0 diff: 30.0 != 20.0
+E         Use -v to get more diff
+
+tests/unit/test_runner_health.py:109: AssertionError
+=========================== short test summary info ============================
+FAILED tests/unit/test_runner_health.py::test_first_deadline_is_anchored_to_initial_acquisition
+1 failed, 7 deselected in 0.16s

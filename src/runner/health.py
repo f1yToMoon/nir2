@@ -88,7 +88,7 @@ class HealthSampler:
         return dict(self._stats)
 
     def _loop(self) -> None:
-        deadline = time.monotonic() + self.interval_s
+        deadline = (self._stats_at or time.monotonic()) + self.interval_s
         while not self._stop.wait(max(0.0, deadline - time.monotonic())):
             try:
                 self.sample()

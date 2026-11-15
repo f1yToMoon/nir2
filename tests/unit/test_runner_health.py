@@ -97,3 +97,13 @@ def test_metadata_archive_bytes_are_verified(tmp_path: Any) -> None:
     entry['bytes'] = 100
     with pytest.raises(ValueError, match='bytes/hash mismatch'):
         verify_metadata_inventory(inv, tmp_path)
+
+
+def test_first_deadline_is_anchored_to_initial_acquisition(monkeypatch: Any) -> None:
+    waits = []
+    sampler = health.HealthSampler(None, Env(), None, 'r', 'n.t', 30)
+    sampler._stats_at = 90.0
+    sampler._stop = SimpleNamespace(wait=lambda delay: waits.append(delay) or True)
+    monkeypatch.setattr(health.time, 'monotonic', lambda: 100.0)
+    sampler._loop()
+    assert waits == [20.0]  # DB publication/thread startup must not shift the first deadline.
