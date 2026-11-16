@@ -1,0 +1,35 @@
+{
+  "at": "2026-11-16T20:02:56.713890+00:00",
+  "runs": {
+    "stage3-S4-P0-mid-s11-r540-health-processes-20261116": {
+      "verified_files": 235,
+      "stream_events": 3425200,
+      "metadata_versions": 149,
+      "metadata_bytes_upper_bound": 63558,
+      "health": {
+        "ok": true,
+        "samples": 60,
+        "interval_s": 30.0,
+        "jitter_budget_s": 1.0,
+        "max_gap_s": 30.634019,
+        "missed_intervals": 0
+      }
+    },
+    "stage3-S5-P0-mid-s11-r540-health-processes-20261116": {
+      "verified_files": 282,
+      "stream_events": 3357800,
+      "metadata_versions": 207,
+      "metadata_bytes_upper_bound": 85450,
+      "health": {
+        "ok": true,
+        "samples": 59,
+        "interval_s": 30.0,
+        "jitter_budget_s": 1.0,
+        "max_gap_s": 30.349017,
+        "missed_intervals": 0
+      }
+    }
+  },
+  "verified_files": 517,
+  "checks_passed": 33
+}

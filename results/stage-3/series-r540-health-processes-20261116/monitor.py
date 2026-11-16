@@ -21,4 +21,4 @@ if path:
     if p.returncode:print(p.stderr)
 progress['finished_results']=[p.stem for p in (base/'runs').glob('stage3-S*-r540-health-processes-20261116.json') if not p.name.endswith('.cpu.json')]
 with (root/'progress.jsonl').open('a') as f:f.write(json.dumps(progress)+'\n')
-print(json.dumps(progress,ensure_ascii=False))
+print(progress["at"], path.stem.split("-P0")[0] if path else "pending", "health(n/maxgap_s/maxbytes):", progress.get("health_samples_maxgap_maxbytes"), "results:", len(progress["finished_results"]), "/7")

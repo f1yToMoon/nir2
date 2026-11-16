@@ -1,0 +1,17 @@
+[
+  {
+    "label": "early",
+    "offset_s": 400,
+    "exit": 0
+  },
+  {
+    "label": "mid",
+    "offset_s": 900,
+    "exit": 0
+  },
+  {
+    "label": "late",
+    "offset_s": 1500,
+    "exit": 0
+  }
+]

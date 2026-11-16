@@ -1,0 +1,9 @@
+{
+  "at": "2026-11-16T20:02:08.472704+00:00",
+  "spark_active_apps": [],
+  "flink_active_jobs": [],
+  "holds": [],
+  "slots": {},
+  "current_snapshot_id": 1928630960493689178,
+  "containers_and_volumes_preserved": true
+}

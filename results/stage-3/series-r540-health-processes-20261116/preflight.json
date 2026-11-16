@@ -1,0 +1,14 @@
+{
+  "active_spark_apps": [],
+  "alive_spark_workers": 2,
+  "spark_worker_cores": 8,
+  "active_flink_jobs": [],
+  "proxy_holds": [],
+  "proxy_slots": {},
+  "resources": {
+    "spark_master": "spark://spark-master:7077",
+    "executor_memory": "2g",
+    "driver_memory": "3g",
+    "cores_max": "8"
+  }
+}
