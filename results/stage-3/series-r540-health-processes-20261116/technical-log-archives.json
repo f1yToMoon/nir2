@@ -1,0 +1,12 @@
+[
+  {
+    "source": "results/stage-3/series-r540-health-processes-20261116/technical-export.log",
+    "archive": "results/stage-3/series-r540-health-processes-20261116/technical-export.log.gz",
+    "sha256": "c678a5bc5f74a8fb2d69427bc1de83c3c0e365837f0221cf4037d38217b63305"
+  },
+  {
+    "source": "results/stage-3/series-r540-health-processes-20261116/technical.log",
+    "archive": "results/stage-3/series-r540-health-processes-20261116/technical.log.gz",
+    "sha256": "fc75abcd0c5e6b72424d58be322867ca5fdbd717ad415bf41ecd8f0a7efb5cc2"
+  }
+]

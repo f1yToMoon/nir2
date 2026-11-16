@@ -1,0 +1,35 @@
+{
+  "git_sha": "23e2fa6d9f5acd87c430544d0d87b9cec65419c9",
+  "verified_files": 42,
+  "coverage": {
+    "ok": true,
+    "samples": 11,
+    "interval_s": 30,
+    "jitter_budget_s": 1.0,
+    "max_gap_s": 30.27311,
+    "missed_intervals": 0,
+    "gaps_s": [
+      29.655072,
+      29.99493,
+      30.27311,
+      29.76253,
+      29.99372,
+      30.023186,
+      29.976772,
+      29.973517,
+      29.992449,
+      1.52902,
+      0.373215,
+      0.005288
+    ],
+    "invalid_timestamps": []
+  },
+  "metadata_versions": 20,
+  "metadata_bytes_upper_bound": 29497,
+  "freshness_events": 446800,
+  "validation": {
+    "ok": true,
+    "incomplete_cost": [],
+    "runner_errors": []
+  }
+}

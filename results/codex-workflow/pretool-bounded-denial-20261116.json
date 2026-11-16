@@ -1,0 +1,15 @@
+{
+  "at": "2026-11-16T18:55:51.284708+00:00",
+  "event": "PreToolUse denial in active work session",
+  "denial": "acceptance mechanism files may only be changed manually by the author",
+  "intended_writes": [
+    "results/stage-3/series-r540-health-processes-20261116/",
+    "docs/stage-3-report.md",
+    "docs/CHANGELOG.md",
+    "docs/chatgpt-handoff.md"
+  ],
+  "combined_read_only_command": "git diff --check -- src tests docs",
+  "writes_executed_before_denial": false,
+  "resolution": "Separate concrete allowed-file patches from read-only parent-path validation; accepted by the unchanged hook.",
+  "protection_configuration_changed": false
+}
