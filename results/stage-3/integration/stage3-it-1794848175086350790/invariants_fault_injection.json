@@ -1,0 +1,768 @@
+{
+ "run_id": "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1",
+ "telemetry_run_id": "stage3-it-1794848175086350790",
+ "clean": {
+  "ledger_row_counts": {
+   "ok": true,
+   "partitions_checked": 288,
+   "mismatches": {},
+   "n_mismatches": 0,
+   "rows_by_origin": {
+    "stream": 3381200,
+    "golden": 30000000,
+    "merge": 60000
+   },
+   "journal_physical_records": 33441200,
+   "snapshot_total_records": 33441200,
+   "table_live_rows": 33441200,
+   "journal_commits": 188
+  },
+  "no_duplicate_event_ids": {
+   "ok": true,
+   "duplicates": 0,
+   "rows": 33441200
+  },
+  "committed_ops_in_lineage": {
+   "ok": true,
+   "lineage_len": 188,
+   "lineage_error": null,
+   "committed_checked": 18,
+   "missing": [],
+   "n_missing": 0
+  },
+  "aborted_ops_absent": {
+   "ok": true,
+   "failed_ops": 7,
+   "snapshots_in_lineage": [],
+   "aborted_rows_checked": 18000,
+   "aborted_rows_present": 0,
+   "lineage_error": null
+  },
+  "version_monotonic": {
+   "ok": true,
+   "rows_checked": 33441200,
+   "rows_expected_updated": 236925,
+   "mismatches": 0
+  },
+  "ok": true
+ },
+ "detected": {
+  "duplicate_row": [
+   "aborted_ops_absent",
+   "committed_ops_in_lineage",
+   "ledger_row_counts",
+   "no_duplicate_event_ids"
+  ],
+  "lost_row": [
+   "aborted_ops_absent",
+   "committed_ops_in_lineage",
+   "ledger_row_counts"
+  ],
+  "extra_update": [
+   "aborted_ops_absent",
+   "committed_ops_in_lineage",
+   "ledger_row_counts",
+   "version_monotonic"
+  ],
+  "aborted_row": [
+   "aborted_ops_absent",
+   "committed_ops_in_lineage",
+   "ledger_row_counts"
+  ],
+  "lineage": [
+   "committed_ops_in_lineage",
+   "ledger_row_counts",
+   "version_monotonic"
+  ]
+ },
+ "details": {
+  "duplicate_row": {
+   "ledger_row_counts": {
+    "ok": false,
+    "partitions_checked": 288,
+    "mismatches": {
+     "dt=2026-11-02/key_bucket=6|golden": {
+      "expected": 124609,
+      "actual": 124610
+     }
+    },
+    "n_mismatches": 1,
+    "rows_by_origin": {
+     "stream": 3381200,
+     "golden": 30000001,
+     "merge": 60000
+    },
+    "journal_physical_records": 30000000,
+    "snapshot_total_records": 33441201,
+    "table_live_rows": 33441201,
+    "journal_commits": 0
+   },
+   "no_duplicate_event_ids": {
+    "ok": false,
+    "duplicates": 1,
+    "rows": 33441201
+   },
+   "committed_ops_in_lineage": {
+    "ok": false,
+    "lineage_len": 0,
+    "lineage_error": "snapshot 6029997619537330635 not in the proxy journal",
+    "committed_checked": 18,
+    "missing": [
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1-compaction-0000",
+      "snapshot_id": 859958209470913169
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1-cdc_merge-0001",
+      "snapshot_id": 7929364451960603678
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1-compaction-0001",
+      "snapshot_id": 6238948391123960643
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1-cdc_merge-0002",
+      "snapshot_id": 1338141277565472869
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1-compaction-0002",
+      "snapshot_id": 3625630311006897246
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1-cdc_merge-0003",
+      "snapshot_id": 811971679531231118
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1-cdc_merge-0004",
+      "snapshot_id": 1873247393795456091
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1-compaction-0003",
+      "snapshot_id": 2606041909490185527
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1-compaction-0004",
+      "snapshot_id": 1767615801899040820
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1-cdc_merge-0005",
+      "snapshot_id": 1347741860858387154
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1-cdc_merge-0006",
+      "snapshot_id": 7411801958082523531
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1-cdc_merge-0007",
+      "snapshot_id": 3360448516322160018
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1-compaction-0005",
+      "snapshot_id": 3306616085552123451
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1-cdc_merge-0009",
+      "snapshot_id": 8862137751057871200
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1-compaction-0006",
+      "snapshot_id": 3120682712936913358
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1-compaction-0007",
+      "snapshot_id": 1132115890616892372
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1-cdc_merge-0011",
+      "snapshot_id": 3307814910873179110
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1-cdc_merge-0012",
+      "snapshot_id": 3251014371583832935
+     }
+    ],
+    "n_missing": 18
+   },
+   "aborted_ops_absent": {
+    "ok": false,
+    "failed_ops": 7,
+    "snapshots_in_lineage": [],
+    "aborted_rows_checked": 18000,
+    "aborted_rows_present": 0,
+    "lineage_error": "snapshot 6029997619537330635 not in the proxy journal"
+   },
+   "version_monotonic": {
+    "ok": true,
+    "rows_checked": 33441201,
+    "rows_expected_updated": 236925,
+    "mismatches": 0
+   },
+   "ok": false
+  },
+  "lost_row": {
+   "ledger_row_counts": {
+    "ok": false,
+    "partitions_checked": 288,
+    "mismatches": {
+     "dt=2026-11-30/key_bucket=0|stream": {
+      "expected": 401210,
+      "actual": 401209
+     }
+    },
+    "n_mismatches": 1,
+    "rows_by_origin": {
+     "stream": 3381199,
+     "golden": 30000000,
+     "merge": 60000
+    },
+    "journal_physical_records": 30000000,
+    "snapshot_total_records": 33441199,
+    "table_live_rows": 33441199,
+    "journal_commits": 0
+   },
+   "no_duplicate_event_ids": {
+    "ok": true,
+    "duplicates": 0,
+    "rows": 33441199
+   },
+   "committed_ops_in_lineage": {
+    "ok": false,
+    "lineage_len": 0,
+    "lineage_error": "snapshot 8890933141868466947 not in the proxy journal",
+    "committed_checked": 18,
+    "missing": [
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1-compaction-0000",
+      "snapshot_id": 859958209470913169
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1-cdc_merge-0001",
+      "snapshot_id": 7929364451960603678
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1-compaction-0001",
+      "snapshot_id": 6238948391123960643
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1-cdc_merge-0002",
+      "snapshot_id": 1338141277565472869
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1-compaction-0002",
+      "snapshot_id": 3625630311006897246
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1-cdc_merge-0003",
+      "snapshot_id": 811971679531231118
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1-cdc_merge-0004",
+      "snapshot_id": 1873247393795456091
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1-compaction-0003",
+      "snapshot_id": 2606041909490185527
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1-compaction-0004",
+      "snapshot_id": 1767615801899040820
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1-cdc_merge-0005",
+      "snapshot_id": 1347741860858387154
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1-cdc_merge-0006",
+      "snapshot_id": 7411801958082523531
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1-cdc_merge-0007",
+      "snapshot_id": 3360448516322160018
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1-compaction-0005",
+      "snapshot_id": 3306616085552123451
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1-cdc_merge-0009",
+      "snapshot_id": 8862137751057871200
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1-compaction-0006",
+      "snapshot_id": 3120682712936913358
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1-compaction-0007",
+      "snapshot_id": 1132115890616892372
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1-cdc_merge-0011",
+      "snapshot_id": 3307814910873179110
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1-cdc_merge-0012",
+      "snapshot_id": 3251014371583832935
+     }
+    ],
+    "n_missing": 18
+   },
+   "aborted_ops_absent": {
+    "ok": false,
+    "failed_ops": 7,
+    "snapshots_in_lineage": [],
+    "aborted_rows_checked": 18000,
+    "aborted_rows_present": 0,
+    "lineage_error": "snapshot 8890933141868466947 not in the proxy journal"
+   },
+   "version_monotonic": {
+    "ok": true,
+    "rows_checked": 33441199,
+    "rows_expected_updated": 236925,
+    "mismatches": 0
+   },
+   "ok": false
+  },
+  "extra_update": {
+   "ledger_row_counts": {
+    "ok": false,
+    "partitions_checked": 288,
+    "mismatches": {},
+    "n_mismatches": 0,
+    "rows_by_origin": {
+     "stream": 3381200,
+     "golden": 30000000,
+     "merge": 60000
+    },
+    "journal_physical_records": 30000000,
+    "snapshot_total_records": 33441200,
+    "table_live_rows": 33441200,
+    "journal_commits": 0
+   },
+   "no_duplicate_event_ids": {
+    "ok": true,
+    "duplicates": 0,
+    "rows": 33441200
+   },
+   "committed_ops_in_lineage": {
+    "ok": false,
+    "lineage_len": 0,
+    "lineage_error": "snapshot 2253965680930570394 not in the proxy journal",
+    "committed_checked": 18,
+    "missing": [
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1-compaction-0000",
+      "snapshot_id": 859958209470913169
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1-cdc_merge-0001",
+      "snapshot_id": 7929364451960603678
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1-compaction-0001",
+      "snapshot_id": 6238948391123960643
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1-cdc_merge-0002",
+      "snapshot_id": 1338141277565472869
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1-compaction-0002",
+      "snapshot_id": 3625630311006897246
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1-cdc_merge-0003",
+      "snapshot_id": 811971679531231118
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1-cdc_merge-0004",
+      "snapshot_id": 1873247393795456091
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1-compaction-0003",
+      "snapshot_id": 2606041909490185527
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1-compaction-0004",
+      "snapshot_id": 1767615801899040820
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1-cdc_merge-0005",
+      "snapshot_id": 1347741860858387154
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1-cdc_merge-0006",
+      "snapshot_id": 7411801958082523531
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1-cdc_merge-0007",
+      "snapshot_id": 3360448516322160018
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1-compaction-0005",
+      "snapshot_id": 3306616085552123451
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1-cdc_merge-0009",
+      "snapshot_id": 8862137751057871200
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1-compaction-0006",
+      "snapshot_id": 3120682712936913358
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1-compaction-0007",
+      "snapshot_id": 1132115890616892372
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1-cdc_merge-0011",
+      "snapshot_id": 3307814910873179110
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1-cdc_merge-0012",
+      "snapshot_id": 3251014371583832935
+     }
+    ],
+    "n_missing": 18
+   },
+   "aborted_ops_absent": {
+    "ok": false,
+    "failed_ops": 7,
+    "snapshots_in_lineage": [],
+    "aborted_rows_checked": 18000,
+    "aborted_rows_present": 0,
+    "lineage_error": "snapshot 2253965680930570394 not in the proxy journal"
+   },
+   "version_monotonic": {
+    "ok": false,
+    "rows_checked": 33441200,
+    "rows_expected_updated": 236925,
+    "mismatches": 1
+   },
+   "ok": false
+  },
+  "aborted_row": {
+   "ledger_row_counts": {
+    "ok": false,
+    "partitions_checked": 288,
+    "mismatches": {
+     "dt=2026-11-02/key_bucket=6|agent": {
+      "expected": 0,
+      "actual": 1
+     }
+    },
+    "n_mismatches": 1,
+    "rows_by_origin": {
+     "stream": 3381200,
+     "merge": 60000,
+     "golden": 30000000,
+     "agent": 1
+    },
+    "journal_physical_records": 30000000,
+    "snapshot_total_records": 33441201,
+    "table_live_rows": 33441201,
+    "journal_commits": 0
+   },
+   "no_duplicate_event_ids": {
+    "ok": true,
+    "duplicates": 0,
+    "rows": 33441201
+   },
+   "committed_ops_in_lineage": {
+    "ok": false,
+    "lineage_len": 0,
+    "lineage_error": "snapshot 6639345198311951684 not in the proxy journal",
+    "committed_checked": 18,
+    "missing": [
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1-compaction-0000",
+      "snapshot_id": 859958209470913169
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1-cdc_merge-0001",
+      "snapshot_id": 7929364451960603678
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1-compaction-0001",
+      "snapshot_id": 6238948391123960643
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1-cdc_merge-0002",
+      "snapshot_id": 1338141277565472869
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1-compaction-0002",
+      "snapshot_id": 3625630311006897246
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1-cdc_merge-0003",
+      "snapshot_id": 811971679531231118
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1-cdc_merge-0004",
+      "snapshot_id": 1873247393795456091
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1-compaction-0003",
+      "snapshot_id": 2606041909490185527
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1-compaction-0004",
+      "snapshot_id": 1767615801899040820
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1-cdc_merge-0005",
+      "snapshot_id": 1347741860858387154
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1-cdc_merge-0006",
+      "snapshot_id": 7411801958082523531
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1-cdc_merge-0007",
+      "snapshot_id": 3360448516322160018
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1-compaction-0005",
+      "snapshot_id": 3306616085552123451
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1-cdc_merge-0009",
+      "snapshot_id": 8862137751057871200
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1-compaction-0006",
+      "snapshot_id": 3120682712936913358
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1-compaction-0007",
+      "snapshot_id": 1132115890616892372
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1-cdc_merge-0011",
+      "snapshot_id": 3307814910873179110
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1-cdc_merge-0012",
+      "snapshot_id": 3251014371583832935
+     }
+    ],
+    "n_missing": 18
+   },
+   "aborted_ops_absent": {
+    "ok": false,
+    "failed_ops": 7,
+    "snapshots_in_lineage": [],
+    "aborted_rows_checked": 18001,
+    "aborted_rows_present": 1,
+    "lineage_error": "snapshot 6639345198311951684 not in the proxy journal"
+   },
+   "version_monotonic": {
+    "ok": true,
+    "rows_checked": 33441201,
+    "rows_expected_updated": 236925,
+    "mismatches": 0
+   },
+   "ok": false
+  },
+  "lineage": {
+   "ledger_row_counts": {
+    "ok": false,
+    "partitions_checked": 288,
+    "mismatches": {
+     "dt=2026-11-28/key_bucket=0|stream": {
+      "expected": 10745,
+      "actual": 10569
+     },
+     "dt=2026-11-28/key_bucket=4|stream": {
+      "expected": 10292,
+      "actual": 10115
+     },
+     "dt=2026-11-28/key_bucket=1|stream": {
+      "expected": 10611,
+      "actual": 10436
+     },
+     "dt=2026-11-27/key_bucket=3|merge": {
+      "expected": 4500,
+      "actual": 1500
+     },
+     "dt=2026-11-28/key_bucket=5|stream": {
+      "expected": 10617,
+      "actual": 10434
+     },
+     "dt=2026-11-30/key_bucket=2|stream": {
+      "expected": 402007,
+      "actual": 395402
+     },
+     "dt=2026-11-30/key_bucket=3|stream": {
+      "expected": 403262,
+      "actual": 396617
+     },
+     "dt=2026-11-30/key_bucket=4|stream": {
+      "expected": 401501,
+      "actual": 394720
+     },
+     "dt=2026-11-30/key_bucket=2|merge": {
+      "expected": 7200,
+      "actual": 4200
+     },
+     "dt=2026-11-28/key_bucket=2|stream": {
+      "expected": 10575,
+      "actual": 10383
+     },
+     "dt=2026-11-29/key_bucket=0|stream": {
+      "expected": 10488,
+      "actual": 10315
+     },
+     "dt=2026-11-29/key_bucket=7|stream": {
+      "expected": 10609,
+      "actual": 10409
+     },
+     "dt=2026-11-28/key_bucket=3|stream": {
+      "expected": 10533,
+      "actual": 10369
+     },
+     "dt=2026-11-29/key_bucket=6|stream": {
+      "expected": 10523,
+      "actual": 10349
+     },
+     "dt=2026-11-28/key_bucket=7|stream": {
+      "expected": 10513,
+      "actual": 10334
+     },
+     "dt=2026-11-28/key_bucket=6|stream": {
+      "expected": 10525,
+      "actual": 10345
+     },
+     "dt=2026-11-29/key_bucket=5|stream": {
+      "expected": 10529,
+      "actual": 10346
+     },
+     "dt=2026-11-29/key_bucket=1|stream": {
+      "expected": 10607,
+      "actual": 10441
+     },
+     "dt=2026-11-30/key_bucket=5|stream": {
+      "expected": 400878,
+      "actual": 394190
+     },
+     "dt=2026-11-30/key_bucket=6|stream": {
+      "expected": 401915,
+      "actual": 395100
+     },
+     "dt=2026-11-29/key_bucket=3|stream": {
+      "expected": 10521,
+      "actual": 10345
+     },
+     "dt=2026-11-29/key_bucket=4|stream": {
+      "expected": 10461,
+      "actual": 10281
+     },
+     "dt=2026-11-29/key_bucket=2|stream": {
+      "expected": 10494,
+      "actual": 10288
+     },
+     "dt=2026-11-30/key_bucket=0|stream": {
+      "expected": 401210,
+      "actual": 394512
+     },
+     "dt=2026-11-30/key_bucket=7|stream": {
+      "expected": 401282,
+      "actual": 394556
+     },
+     "dt=2026-11-30/key_bucket=1|stream": {
+      "expected": 400502,
+      "actual": 393944
+     }
+    },
+    "n_mismatches": 26,
+    "rows_by_origin": {
+     "stream": 3324800,
+     "golden": 30000000,
+     "merge": 54000
+    },
+    "journal_physical_records": 33378800,
+    "snapshot_total_records": 33378800,
+    "table_live_rows": 33378800,
+    "journal_commits": 184
+   },
+   "no_duplicate_event_ids": {
+    "ok": true,
+    "duplicates": 0,
+    "rows": 33378800
+   },
+   "committed_ops_in_lineage": {
+    "ok": false,
+    "lineage_len": 184,
+    "lineage_error": null,
+    "committed_checked": 18,
+    "missing": [
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1-cdc_merge-0012",
+      "snapshot_id": 3251014371583832935
+     }
+    ],
+    "n_missing": 1
+   },
+   "aborted_ops_absent": {
+    "ok": true,
+    "failed_ops": 7,
+    "snapshots_in_lineage": [],
+    "aborted_rows_checked": 18000,
+    "aborted_rows_present": 0,
+    "lineage_error": null
+   },
+   "version_monotonic": {
+    "ok": false,
+    "rows_checked": 33378800,
+    "rows_expected_updated": 236925,
+    "mismatches": 24000
+   },
+   "ok": false
+  }
+ },
+ "after_restore": {
+  "ledger_row_counts": {
+   "ok": true,
+   "partitions_checked": 288,
+   "mismatches": {},
+   "n_mismatches": 0,
+   "rows_by_origin": {
+    "golden": 30000000,
+    "stream": 3381200,
+    "merge": 60000
+   },
+   "journal_physical_records": 33441200,
+   "snapshot_total_records": 33441200,
+   "table_live_rows": 33441200,
+   "journal_commits": 188
+  },
+  "no_duplicate_event_ids": {
+   "ok": true,
+   "duplicates": 0,
+   "rows": 33441200
+  },
+  "committed_ops_in_lineage": {
+   "ok": true,
+   "lineage_len": 188,
+   "lineage_error": null,
+   "committed_checked": 18,
+   "missing": [],
+   "n_missing": 0
+  },
+  "aborted_ops_absent": {
+   "ok": true,
+   "failed_ops": 7,
+   "snapshots_in_lineage": [],
+   "aborted_rows_checked": 18000,
+   "aborted_rows_present": 0,
+   "lineage_error": null
+  },
+  "version_monotonic": {
+   "ok": true,
+   "rows_checked": 33441200,
+   "rows_expected_updated": 236925,
+   "mismatches": 0
+  },
+  "ok": true
+ }
+}

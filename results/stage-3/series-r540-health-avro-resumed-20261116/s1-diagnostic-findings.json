@@ -1,0 +1,29 @@
+{
+  "recorded_at": "2026-11-16T18:24:14.883050+00:00",
+  "production_code_unchanged": true,
+  "failed_gap_s": 31.094039,
+  "source_acquisition_s": 1.188311,
+  "source_rest_s": 0.025228,
+  "archived_objects_verified": 144,
+  "pinned_states": 2,
+  "pinned_new_manifests": [
+    87,
+    53
+  ],
+  "decoding_benchmark_equal_objects": 140,
+  "projection_prototype_installed": false,
+  "projection_full_best_sum_s": 0.8518650360047104,
+  "projection_projected_best_sum_s": 0.7569926589940223,
+  "isolation_with_stress_threads_s": [
+    1.5190279750004265,
+    1.47150739800054,
+    1.3768275160000485
+  ],
+  "isolation_with_stress_two_processes_s": [
+    0.7111699130000488,
+    0.7633989690002636,
+    0.6805166280000776
+  ],
+  "new_regressions_before_fix_failed": 7,
+  "experiments_note": "Read-only pinned/object/CPU diagnostic probes started after the coverage failure. Later S1 observations remain diagnostic, not a qualified frequency/cost comparison. No source or scientific thresholds were changed."
+}

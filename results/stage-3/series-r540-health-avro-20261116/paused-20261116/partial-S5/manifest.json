@@ -1,0 +1,54 @@
+{
+  "run_id": "stage3-S5-P0-mid-s11-r540-health-avro-20261116",
+  "partial_only": true,
+  "run_status": "failed",
+  "stop_reason": "explicit user pause",
+  "current_snapshot_id": 3336585217761892171,
+  "metadata_location": "s3://warehouse/bench/events/metadata/00167-9505c42d-bd5b-4187-9ec8-b158f3a27aa2.metadata.json",
+  "metadata_versions": 127,
+  "metadata_inventory_complete": true,
+  "kafka_topics_preserved": [
+    "capl-stage3-S5-P0-mid-s11-r540-health-avro-20261116-ingest-1794780777"
+  ],
+  "spark_active_apps": [],
+  "files": {
+    "runs.json.gz": {
+      "rows": 1,
+      "sha256": "b1790e1fff0c764c282163a5a8868fba78755dd3ffbda9da640ca8d23f6170fd"
+    },
+    "ops.json.gz": {
+      "rows": 31,
+      "sha256": "e5c014eab7c308855df6d04ebc299905c42cfba4ab466cdea7d57222170f31e5"
+    },
+    "commit_attempts.json.gz": {
+      "rows": 134,
+      "sha256": "600feeae80ad225bd333d994792ba12e3f22b8e87db059a8b0f945cea3a5243c"
+    },
+    "commit_events.json.gz": {
+      "rows": 117,
+      "sha256": "f5f544f8121d40c5b4917a96e435cb966c90e3c3f90104aedaca810bb3997c01"
+    },
+    "commit_partitions.json.gz": {
+      "rows": 2642,
+      "sha256": "6ccb551eb032d3dae0d87f1e38d804192553529d744a3a60c1f02a1d8c71f705"
+    },
+    "table_health.json.gz": {
+      "rows": 8640,
+      "sha256": "2254dc2fe6b1a37a5c60736c7d65424ccf92b31e84ea7d9970c4181245aa26b9"
+    },
+    "table_meta.json.gz": {
+      "rows": 36,
+      "sha256": "6d0dc16b0781e0c7123a70d5c05c0d8bae5cbf7aa3c7e2543e3ac34248feb32e"
+    },
+    "orphan_scan.json.gz": {
+      "rows": 0,
+      "sha256": "64406e753d82e11c6bd63d1d04bb6aa083eefa0a46949bbfce994d556b989f0f"
+    },
+    "run_summary.json.gz": {
+      "rows": 0,
+      "sha256": "64406e753d82e11c6bd63d1d04bb6aa083eefa0a46949bbfce994d556b989f0f"
+    }
+  },
+  "ledger_finalized": false,
+  "note": "Persisted rows/files preserved; no finalized freshness or full validation for interrupted S5. Use a new run_id."
+}

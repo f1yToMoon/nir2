@@ -10,11 +10,12 @@ delete_files_topn.
 """
 from __future__ import annotations
 
-import contextlib
 import io
+import multiprocessing
+import os
 import threading
 import time
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from datetime import datetime, timezone
 from itertools import pairwise
 from typing import Any
@@ -58,6 +59,7 @@ class HealthSampler:
         self.sample_times: list[datetime] = []
         self.metadata_locations: set[str] = set()
         self._manifest_cache: dict[str, dict[str, dict[str, int]]] = {}
+        self._decoder_pool: ProcessPoolExecutor | None = None
         self.max_snapshots = 0
         self.max_metadata_bytes = 0
 
@@ -69,7 +71,8 @@ class HealthSampler:
             started = datetime.now(UTC)
             st = load_table_state(self.env, self.table)
             observed = datetime.now(UTC)
-            stats = inspect_partition_files(self.env, st.metadata_location, self._manifest_cache)
+            stats = inspect_partition_files(self.env, st.metadata_location, self._manifest_cache,
+                                            self._decoder_pool)
             mb = s3_object_size(self.env, st.metadata_location)
             finished = datetime.now(UTC)
             self.n += 1
@@ -103,19 +106,39 @@ class HealthSampler:
             deadline += self.interval_s
 
     def start(self) -> None:
+        self._start_decoder_pool()
         from pyspark import InheritableThread
         self._thr = InheritableThread(target=self._loop, name="health", daemon=True)
         self._thr.start()
 
+    def _start_decoder_pool(self) -> None:
+        # Spawn fresh interpreters: never fork a process containing the Spark JVM.
+        # Decode CPU must not contend for the collector's GIL with stream freshness.
+        if self._decoder_pool is None:
+            self._decoder_pool = ProcessPoolExecutor(2, mp_context=multiprocessing.get_context('spawn'))
+            ready = [self._decoder_pool.submit(os.getpid) for _ in range(2)]
+            for task in ready:
+                task.result()
+
     def stop(self) -> None:
         self._stop.set()
         if self._thr is not None:
-            with contextlib.suppress(Exception):
-                self._thr.join(timeout=120)
+            self._thr.join(timeout=120)
+            if self._thr.is_alive():
+                raise RuntimeError('Health sampler did not stop within 120 seconds')
+
+    def close(self) -> None:
+        try:
+            self.stop()
+        finally:
+            pool, self._decoder_pool = self._decoder_pool, None
+            if pool is not None:
+                pool.shutdown(wait=True, cancel_futures=True)
 
 
 def inspect_partition_files(env: Env, metadata_location: str,
-                            manifest_cache: dict[str, dict[str, dict[str, int]]] | None = None
+                            manifest_cache: dict[str, dict[str, dict[str, int]]] | None = None,
+                            decoder_pool: ProcessPoolExecutor | None = None
                             ) -> dict[str, dict[str, int]]:
     """Read live manifest entries without submitting work to the measured Spark cluster."""
     from pyiceberg.table import StaticTable
@@ -133,34 +156,11 @@ def inspect_partition_files(env: Env, metadata_location: str,
     missing = [m for m in manifests if m.manifest_path not in cache]
 
     def inspect_manifest(manifest: Any) -> tuple[str, dict[str, dict[str, int]]]:
-        import fastavro
-        grouped: dict[str, dict[str, int]] = {}
-        labels: dict[tuple[Any, Any], str] = {}
         with table.io.new_input(manifest.manifest_path).open() as source:
             payload = source.read()
-        for entry in fastavro.reader(io.BytesIO(payload)):
-            if entry['status'] not in (0, 1, 2):
-                raise ValueError('Unknown manifest entry status')
-            if entry['status'] == 2:
-                continue  # DELETED; EXISTING=0 and ADDED=1 are live in this manifest.
-            file = entry['data_file']
-            if file['content'] not in (0, 1, 2):
-                raise ValueError('Unknown manifest file content')
-            part = file['partition']
-            key = (part['dt'], part['key_bucket'])
-            label = labels.get(key)
-            if label is None:
-                label = labels[key] = partition_str(*key)
-            v = grouped.setdefault(label, dict(data_files=0, small_files=0,
-                                                delete_files=0, total_bytes=0))
-            size = int(file['file_size_in_bytes'])
-            if int(file['content']) == 0:
-                v['data_files'] += 1
-                v['small_files'] += size < SMALL_FILE_BYTES
-            else:
-                v['delete_files'] += 1
-            v['total_bytes'] += size
-        return manifest.manifest_path, grouped
+        stats = (_partition_file_stats(payload) if decoder_pool is None else
+                 decoder_pool.submit(_partition_file_stats, payload).result())
+        return manifest.manifest_path, stats
 
     # Manifest paths are immutable. Cache only their aggregates, never table/current
     # metadata or the snapshot manifest list. Dropped manifests disappear from the sum.
@@ -174,6 +174,35 @@ def inspect_partition_files(env: Env, metadata_location: str,
             for key, count in counts.items():
                 value[key] += count
     return stats
+
+
+def _partition_file_stats(payload: bytes) -> dict[str, dict[str, int]]:
+    """Pure CPU work; process workers receive bytes, never Spark, FileIO, DB or a cache."""
+    import fastavro
+    grouped: dict[str, dict[str, int]] = {}
+    labels: dict[tuple[Any, Any], str] = {}
+    for entry in fastavro.reader(io.BytesIO(payload)):
+        if entry['status'] not in (0, 1, 2):
+            raise ValueError('Unknown manifest entry status')
+        if entry['status'] == 2:
+            continue  # DELETED; EXISTING=0 and ADDED=1 are live in this manifest.
+        file = entry['data_file']
+        if file['content'] not in (0, 1, 2):
+            raise ValueError('Unknown manifest file content')
+        part = file['partition']
+        key = (part['dt'], part['key_bucket'])
+        label = labels.get(key)
+        if label is None:
+            label = labels[key] = partition_str(*key)
+        v = grouped.setdefault(label, dict(data_files=0, small_files=0, delete_files=0, total_bytes=0))
+        size = int(file['file_size_in_bytes'])
+        if int(file['content']) == 0:
+            v['data_files'] += 1
+            v['small_files'] += size < SMALL_FILE_BYTES
+        else:
+            v['delete_files'] += 1
+        v['total_bytes'] += size
+    return grouped
 
 
 

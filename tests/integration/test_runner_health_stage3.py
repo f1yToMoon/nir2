@@ -30,6 +30,7 @@ def test_stage3_health_native_metadata(format_version: int, monkeypatch: pytest.
     out.mkdir(parents=True, exist_ok=False)
     started = datetime.now(UTC)
     result: dict[str, Any] = {}
+    sampler = None
 
     class DB:
         def __init__(self) -> None:
@@ -69,15 +70,17 @@ def test_stage3_health_native_metadata(format_version: int, monkeypatch: pytest.
         inspect_files = health.inspect_partition_files
         concurrent: dict[str, Any] = {}
 
-        def commit_then_read(env: Env, location: str, cache: Any) -> dict[str, dict[str, int]]:
+        def commit_then_read(env: Env, location: str, cache: Any,
+                             decoder_pool: Any = None) -> dict[str, dict[str, int]]:
             assert location == st.metadata_location
             spark.sql(f"INSERT INTO {table} VALUES (11,98,DATE '2026-11-02')")
             concurrent['state'] = load_table_state(env, name)
-            return inspect_files(env, location, cache)
+            return inspect_files(env, location, cache, decoder_pool)
 
         monkeypatch.setattr(health, 'inspect_partition_files', commit_then_read)
         db = DB()
         sampler = health.HealthSampler(ForbiddenSpark(), env, db, rid, name, 30)
+        sampler._start_decoder_pool()
         sampler.sample()
         meta = db.rows['table_meta'][0]
         assert meta['current_snapshot_id'] == st.current_snapshot_id
@@ -91,13 +94,19 @@ def test_stage3_health_native_metadata(format_version: int, monkeypatch: pytest.
                 raise AssertionError('An immutable cached manifest was read again')
             patch.setattr(fastavro, 'reader', forbid_reread)
             assert inspect_files(env, st.metadata_location, sampler._manifest_cache) == expected
-        fresh = inspect_files(env, concurrent['state'].metadata_location, sampler._manifest_cache)
+        with monkeypatch.context() as patch:
+            patch.setattr(fastavro, 'reader', forbid_reread)
+            fresh = inspect_files(env, concurrent['state'].metadata_location, sampler._manifest_cache,
+                                  sampler._decoder_pool)
         assert fresh == spark_reference() and fresh != expected
         assert sum(v['data_files'] for v in fresh.values()) == (
             sum(v['data_files'] for v in expected.values()) + 1)
         spark.sql(f"DELETE FROM {table} WHERE dt=DATE '2026-11-02'")
         removed = load_table_state(env, name)
-        after_removal = inspect_files(env, removed.metadata_location, sampler._manifest_cache)
+        with monkeypatch.context() as patch:
+            patch.setattr(fastavro, 'reader', forbid_reread)
+            after_removal = inspect_files(env, removed.metadata_location, sampler._manifest_cache,
+                                          sampler._decoder_pool)
         assert after_removal == spark_reference() == expected
         result.update(after_append=fresh, after_removal=after_removal,
                       cached_manifest_count=len(sampler._manifest_cache))
@@ -109,6 +118,8 @@ def test_stage3_health_native_metadata(format_version: int, monkeypatch: pytest.
         result.update(expected=expected, metadata=meta, inventory=inventory,
                       concurrent_snapshot_id=concurrent['state'].current_snapshot_id)
     finally:
+        if sampler is not None:
+            sampler.close()
         (out / 'native-health.json').write_text(json.dumps(result, default=str, indent=2))
         spark.sql(f'DROP TABLE IF EXISTS {table} PURGE')
         spark.stop()

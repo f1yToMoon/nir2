@@ -1,0 +1,11 @@
+{
+  "spark.master": "spark://spark-master:7077",
+  "spark.executor.memory": "2g",
+  "spark.driver.memory": "3g",
+  "spark.cores.max": "8",
+  "spark.executor.cores": "2",
+  "spark.scheduler.mode": "FAIR",
+  "spark.sql.extensions": "org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions",
+  "spark.app.name": "capl-stage3-S4-P0-mid-s11-r540-health-avro-20261116",
+  "spark.app.id": "app-20261115214149-0030"
+}

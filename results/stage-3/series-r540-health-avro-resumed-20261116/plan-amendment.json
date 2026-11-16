@@ -1,0 +1,12 @@
+{
+  "created_at": "2026-11-16T16:23:05.694483+00:00",
+  "original_plan": "results/stage-3/series-r540-health-avro-20261116/plan.json",
+  "original_plan_sha256": "0c6ad0bf72a68977ba1e5a3d690d7fa67841ed72764dea39b74c0aa02be6c7a2",
+  "reason": "Explicit author resume after user interruption of S5; all original and partial evidence retained.",
+  "old_run_id": "stage3-S5-P0-mid-s11-r540-health-avro-20261116",
+  "new_run_id": "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1",
+  "retained_S4": "stage3-S4-P0-mid-s11-r540-health-avro-20261116",
+  "source_sha": "d76c8ecf9e99caafecdd0d991934cee9d2997b15",
+  "scientific_parameters_changed": false,
+  "review_rounds_used": 1
+}

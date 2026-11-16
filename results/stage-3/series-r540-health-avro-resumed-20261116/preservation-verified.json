@@ -1,0 +1,31 @@
+{
+  "at": "2026-11-16T18:30:58.450454+00:00",
+  "runs": {
+    "stage3-S4-P0-mid-s11-r540-health-avro-20261116": {
+      "verified_files": 239,
+      "stream_events": 3512400,
+      "validation_ok": true
+    },
+    "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1": {
+      "verified_files": 284,
+      "stream_events": 3381200,
+      "validation_ok": true
+    },
+    "stage3-S0-P0-mid-s1-r540-health-avro-20261116": {
+      "verified_files": 258,
+      "stream_events": 1674600,
+      "validation_ok": true
+    },
+    "stage3-S0-P0-mid-s1-rep-r540-health-avro-20261116": {
+      "verified_files": 259,
+      "stream_events": 1674600,
+      "validation_ok": true
+    },
+    "stage3-S1-P0-mid-s11-r540-health-avro-20261116": {
+      "verified_files": 3841,
+      "stream_events": 5363200,
+      "validation_ok": false
+    }
+  },
+  "total_files": 4881
+}

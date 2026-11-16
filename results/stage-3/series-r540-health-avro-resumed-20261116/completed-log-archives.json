@@ -1,0 +1,72 @@
+[
+  {
+    "source": "results/stage-3/stage3-S4-P0-mid-s11-r540-health-avro-20261116.log",
+    "archive": "results/stage-3/stage3-S4-P0-mid-s11-r540-health-avro-20261116.log.gz",
+    "bytes": 286267,
+    "sha256": "18129684ffc7a9681926982396444c9fcc1bcf76f516827648006afe5ecd94cf",
+    "archive_sha256": "933896ebf82516f3fc7cd384f595c70ffe579854fa071484f6fd077b3360947e"
+  },
+  {
+    "source": "results/stage-3/stage3-S5-P0-mid-s11-r540-health-avro-20261116.log",
+    "archive": "results/stage-3/stage3-S5-P0-mid-s11-r540-health-avro-20261116.log.gz",
+    "bytes": 213586,
+    "sha256": "0061e0f1203a963fed0c32aa6ea2d88e991c4dba42564bf3c675a97af9d1e66a",
+    "archive_sha256": "f332fd8cef08f5f590161c81c674b41c0125440c2fccce13963c11ad3e90981f"
+  },
+  {
+    "source": "results/stage-3/stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1.log",
+    "archive": "results/stage-3/stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1.log.gz",
+    "bytes": 310978,
+    "sha256": "60616186ed85058dc20b714b413af87d185296267d3f1dedf5e3eb6c145e89de",
+    "archive_sha256": "8bc4916877546da15e31b3a8ee470a3256df09e8933c066e17c94e1522ea5ac8"
+  },
+  {
+    "source": "results/stage-3/series-r540-health-avro-resumed-20261116/preflight-checks.log",
+    "archive": "results/stage-3/series-r540-health-avro-resumed-20261116/preflight-checks.log.gz",
+    "bytes": 1010,
+    "sha256": "ee1262ef9db3f83ccb9e2a14b8fb02caac36054267e13753dd44ed9892e56533",
+    "archive_sha256": "d9e588912ad35369906c9bceaa728e67acb75a50a824b24225371ad5bdb2c59e"
+  },
+  {
+    "source": "results/stage-3/series-r540-health-avro-resumed-20261116/integration.log",
+    "archive": "results/stage-3/series-r540-health-avro-resumed-20261116/integration.log.gz",
+    "bytes": 870,
+    "sha256": "88b9d70d9a0be9156c01c72f4d5fde403827dc5781fb7c7f25f6e2aa864edf81",
+    "archive_sha256": "029041802c0ae56423f58e16cb38b62d002c6c740bfa040abe980affb799dae3"
+  },
+  {
+    "source": "results/stage-3/series-r540-health-avro-resumed-20261116/checks-S4-S5.log",
+    "archive": "results/stage-3/series-r540-health-avro-resumed-20261116/checks-S4-S5.log.gz",
+    "bytes": 3637,
+    "sha256": "c433f6738e90dec0f78aeb5c60acf81c3b5f4ea7a9d9ba349a9ef11810ca4471",
+    "archive_sha256": "0c97723e7247374d9bb02a56868083bb8f7c56f8a956c4a91e2dbb1dc06904fb"
+  },
+  {
+    "source": "results/stage-3/series-r540-health-avro-resumed-20261116/injection-before.log",
+    "archive": "results/stage-3/series-r540-health-avro-resumed-20261116/injection-before.log.gz",
+    "bytes": 109,
+    "sha256": "89fe270eb4451cbae6bd3db40ba510153a323f1c51abb871bd54860669085c51",
+    "archive_sha256": "c23558eb86a3745c9a7f95486a33df347ff6727832648dd2c87341c9c16e9d7f"
+  },
+  {
+    "source": "results/stage-3/series-r540-health-avro-resumed-20261116/injection-after.log",
+    "archive": "results/stage-3/series-r540-health-avro-resumed-20261116/injection-after.log.gz",
+    "bytes": 108,
+    "sha256": "5f968bf1e4fef87b548d4c011b201ae70f59d728baba55820311b7b408b53ec0",
+    "archive_sha256": "65d90dabb5b6ec5483cf4f44e4857c272353563147e06d1d56d318e1d4a5310e"
+  },
+  {
+    "source": "results/stage-3/series-r540-health-avro-resumed-20261116/previous-worker-runtime.log",
+    "archive": "results/stage-3/series-r540-health-avro-resumed-20261116/previous-worker-runtime.log.gz",
+    "bytes": 911,
+    "sha256": "7c6580dfc6cb71bb6aba5cad1390a2e14aef88aca1497d99edb8feecadf04dec",
+    "archive_sha256": "9afc0843ffb7636611fb11847f52c8ef5c1a3534397b18199be4172215b9e510"
+  },
+  {
+    "source": "results/stage-3/series-r540-health-avro-resumed-20261116/current-worker-runtime.log",
+    "archive": "results/stage-3/series-r540-health-avro-resumed-20261116/current-worker-runtime.log.gz",
+    "bytes": 911,
+    "sha256": "7c6580dfc6cb71bb6aba5cad1390a2e14aef88aca1497d99edb8feecadf04dec",
+    "archive_sha256": "9afc0843ffb7636611fb11847f52c8ef5c1a3534397b18199be4172215b9e510"
+  }
+]

@@ -220,6 +220,7 @@ class Run:
         self.lock = threading.Lock()
         self.journal_dir = RUNS_DIR / self.run_id
         self.results: dict[str, Any] = {"run_id": self.run_id}
+        self._health: HealthSampler | None = None
 
     def _golden(self) -> tuple[dict[str, Any], dict[str, Any]]:
         g = GOLDEN_DIR / f"{golden_name(self.sc)}.json"
@@ -260,9 +261,13 @@ class Run:
                           notes=traceback.format_exc()[-3000:])
             raise
         finally:
-            with contextlib.suppress(Exception):
-                spark.stop()
-            db.close()
+            try:
+                if self._health is not None:
+                    self._health.close()
+            finally:
+                with contextlib.suppress(Exception):
+                    spark.stop()
+                db.close()
 
     def _execute(self, spark: Any, db: DB, gj: dict[str, Any], dg: dict[str, Any]) -> int:
         env, sc, args = self.env, self.sc, self.args
@@ -288,7 +293,8 @@ class Run:
                        "n_intents": len(self.intents), "golden": gj, "gc": gc},
             "started_at": t0, "status": "running"})
         cost = CostReader(spark, env.spark_ui_port)
-        health = HealthSampler(spark, env, db, self.run_id, table, sc.runner.health_sample_interval_s)
+        health = self._health = HealthSampler(spark, env, db, self.run_id, table,
+                                             sc.runner.health_sample_interval_s)
         ctx = RunCtx(spark, env, db, sc, self.run_id, t0, self.journal_dir, cost, health)
         ex = OpExecutor(ctx, SlotPool([f"s{k}" for k in range(sc.runner.n_slots)], env),
                         SlotPool(["m0", "m1"], env))
@@ -371,6 +377,7 @@ class Run:
         health.stop()
         health.sample()
         t_end = now()
+        health.close()
         log("writers stopped", flink=flink_out)
         # 7. finalize operations, invariants, orphans
         self._footprints_executed(db)

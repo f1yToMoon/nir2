@@ -1,0 +1,485 @@
+{
+ "runs": {
+  "stage3-S4-P0-mid-s11-r540-health-avro-20261116": {
+   "scenario": "S4_merge_vs_stream_serializable",
+   "status": "finished",
+   "invariants_ok": true,
+   "git_sha": "d76c8ecf9e99caafecdd0d991934cee9d2997b15",
+   "n_ops": 35,
+   "k2": 25,
+   "k1_fail": 0,
+   "k1_with_409": 1,
+   "outcomes": {
+    "committed": 10,
+    "data_conflict": 25
+   },
+   "background_expire": {
+    "n": 30,
+    "cpu_s": 57.365,
+    "outcomes": {
+     "committed": 30
+    },
+    "late_max_s": 11.2,
+    "d_exec_max_s": 10.675696,
+    "d_exec_p50_s": 5.966065499999999
+   },
+   "commit_rate_per_s": 0.07806235598317968,
+   "R_s": 540.0,
+   "I_s": 60.0
+  },
+  "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1": {
+   "scenario": "S5_compliance_delete",
+   "status": "finished",
+   "invariants_ok": true,
+   "git_sha": "d76c8ecf9e99caafecdd0d991934cee9d2997b15",
+   "n_ops": 25,
+   "k2": 7,
+   "k1_fail": 0,
+   "k1_with_409": 0,
+   "outcomes": {
+    "committed": 18,
+    "data_conflict": 7
+   },
+   "background_expire": {
+    "n": 28,
+    "cpu_s": 61.098,
+    "outcomes": {
+     "committed": 28
+    },
+    "late_max_s": 7.3,
+    "d_exec_max_s": 6.663152,
+    "d_exec_p50_s": 1.342449
+   },
+   "commit_rate_per_s": 0.11662075149817915,
+   "R_s": 540.0,
+   "I_s": 60.0
+  }
+ },
+ "checks": {
+  "stage3-S4-P0-mid-s11-r540-health-avro-20261116: finished, invariants_ok": {
+   "ok": true,
+   "invariants": {
+    "ledger_row_counts": true,
+    "no_duplicate_event_ids": true,
+    "committed_ops_in_lineage": true,
+    "aborted_ops_absent": true,
+    "version_monotonic": true,
+    "ok": true
+   }
+  },
+  "stage3-S4-P0-mid-s11-r540-health-avro-20261116: validation.ok": {
+   "ok": true,
+   "validation": {
+    "ok": true,
+    "incomplete_cost": [],
+    "runner_errors": []
+   }
+  },
+  "stage3-S4-P0-mid-s11-r540-health-avro-20261116: stream freshness fully observed": {
+   "ok": true,
+   "freshness": {
+    "complete": true,
+    "n_expected": 3512400,
+    "n_samples": 3512400,
+    "missing": 0,
+    "p95_s": 14.46853688955307,
+    "errors": [],
+    "unresolved_snapshots": {},
+    "n_snapshots": 118,
+    "observer_cpu_s": 12.720360708000037,
+    "clock": "producer UTC time.time → successful commit_attempts.responded_at"
+   }
+  },
+  "stage3-S4-P0-mid-s11-r540-health-avro-20261116: sum cpu_ms <= app cpu": {
+   "ok": true,
+   "ops_cpu_ms": 567040,
+   "app_cpu_ms": 5797832,
+   "workers_cgroup_cpu_ms": 11486621,
+   "share_of_app": 0.098
+  },
+  "stage3-S4-P0-mid-s11-r540-health-avro-20261116: app cpu <= workers cgroup cpu": {
+   "ok": true,
+   "app_cpu_ms": 5797832,
+   "workers_cgroup_cpu_ms": 11486621
+  },
+  "stage3-S4-P0-mid-s11-r540-health-avro-20261116: complete cost for every executed operation": {
+   "ok": true,
+   "incomplete": []
+  },
+  "stage3-S4-P0-mid-s11-r540-health-avro-20261116: footprint_executed ⊆ requested": {
+   "ok": true,
+   "committed": 10,
+   "with_executed": 10,
+   "violations": []
+  },
+  "stage3-S4-P0-mid-s11-r540-health-avro-20261116: K2+K1 > 0 and class K2": {
+   "ok": true,
+   "k2": 25,
+   "k1_with_409": 1,
+   "k1_fail": 0,
+   "n_ops": 35,
+   "share": 0.743
+  },
+  "stage3-S4-P0-mid-s11-r540-health-avro-20261116: complete history timing coverage": {
+   "ok": true,
+   "expected": 35,
+   "observed": 35,
+   "missing_or_invalid": []
+  },
+  "stage3-S4-P0-mid-s11-r540-health-avro-20261116: no operation older than R (or counted)": {
+   "ok": true,
+   "R_s": 540.0,
+   "over_r": [],
+   "n_over_r": 0,
+   "base_expired": 0,
+   "history_unresolved": 0,
+   "errors": 0
+  },
+  "stage3-S4-P0-mid-s11-r540-health-avro-20261116: no runner/infrastructure errors": {
+   "ok": true,
+   "errors": []
+  },
+  "stage3-S4-P0-mid-s11-r540-health-avro-20261116: complete health sampling coverage": {
+   "ok": true,
+   "coverage": {
+    "ok": true,
+    "samples": 62,
+    "interval_s": 30.0,
+    "jitter_budget_s": 1.0,
+    "max_gap_s": 30.845521,
+    "missed_intervals": 0,
+    "gaps_s": [
+     29.62191,
+     30.001829,
+     29.997299,
+     30.002175,
+     29.998571,
+     30.001053,
+     29.998912,
+     30.001232,
+     30.547115,
+     29.494137,
+     30.00427,
+     29.996916,
+     30.008152,
+     29.986697,
+     29.96291,
+     30.600775,
+     29.437824,
+     29.990456,
+     30.007876,
+     30.005224,
+     30.542538,
+     29.457241,
+     29.973559,
+     30.029709,
+     29.985175,
+     30.010142,
+     29.960261,
+     30.393842,
+     29.631517,
+     30.010467,
+     29.977207,
+     30.004841,
+     29.976667,
+     30.002156,
+     29.999913,
+     29.998456,
+     29.999723,
+     30.002685,
+     30.045368,
+     30.459551,
+     29.514159,
+     30.00827,
+     30.012628,
+     29.977885,
+     29.979808,
+     30.020953,
+     30.410033,
+     30.048759,
+     29.543912,
+     30.845521,
+     29.167977,
+     29.995497,
+     29.968176,
+     30.445036,
+     29.584592,
+     29.994457,
+     30.005909,
+     29.99138,
+     29.979728,
+     29.995871,
+     4.178636,
+     0.399911,
+     0.005494
+    ],
+    "invalid_timestamps": []
+   }
+  },
+  "stage3-S4-P0-mid-s11-r540-health-avro-20261116: complete metadata version byte bound": {
+   "ok": true,
+   "complete": true,
+   "max_bytes": 62415,
+   "error": null
+  },
+  "stage3-S4-P0-mid-s11-r540-health-avro-20261116: history <= verified point (1452 / 1.51 MB)": {
+   "ok": true,
+   "max_snapshots": 46,
+   "max_metadata_bytes": 62415,
+   "B": [
+    1800,
+    1880000
+   ]
+  },
+  "stage3-S4-P0-mid-s11-r540-health-avro-20261116: dense history upper bound <= 1452": {
+   "ok": true,
+   "unique_additions": 128,
+   "unique_removals": 90,
+   "lower": {
+    "peak_snapshots": 46,
+    "at": "2026-11-15 21:55:53.707891+00:00",
+    "final_snapshots": 39
+   },
+   "upper": {
+    "peak_snapshots": 46,
+    "at": "2026-11-15 21:55:53.689744+00:00",
+    "final_snapshots": 39
+   }
+  },
+  "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1: finished, invariants_ok": {
+   "ok": true,
+   "invariants": {
+    "ledger_row_counts": true,
+    "no_duplicate_event_ids": true,
+    "committed_ops_in_lineage": true,
+    "aborted_ops_absent": true,
+    "version_monotonic": true,
+    "ok": true
+   }
+  },
+  "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1: validation.ok": {
+   "ok": true,
+   "validation": {
+    "ok": true,
+    "incomplete_cost": [],
+    "runner_errors": []
+   }
+  },
+  "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1: stream freshness fully observed": {
+   "ok": true,
+   "freshness": {
+    "complete": true,
+    "n_expected": 3381200,
+    "n_samples": 3381200,
+    "missing": 0,
+    "p95_s": 9.72043205499649,
+    "errors": [],
+    "unresolved_snapshots": {},
+    "n_snapshots": 170,
+    "observer_cpu_s": 9.600586565999999,
+    "clock": "producer UTC time.time → successful commit_attempts.responded_at"
+   }
+  },
+  "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1: sum cpu_ms <= app cpu": {
+   "ok": true,
+   "ops_cpu_ms": 408517,
+   "app_cpu_ms": 1861317,
+   "workers_cgroup_cpu_ms": 2609493,
+   "share_of_app": 0.219
+  },
+  "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1: app cpu <= workers cgroup cpu": {
+   "ok": true,
+   "app_cpu_ms": 1861317,
+   "workers_cgroup_cpu_ms": 2609493
+  },
+  "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1: complete cost for every executed operation": {
+   "ok": true,
+   "incomplete": []
+  },
+  "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1: footprint_executed ⊆ requested": {
+   "ok": true,
+   "committed": 18,
+   "with_executed": 18,
+   "violations": []
+  },
+  "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1: K2+K1 > 0 and class K2": {
+   "ok": true,
+   "k2": 7,
+   "k1_with_409": 0,
+   "k1_fail": 0,
+   "n_ops": 25,
+   "share": 0.28
+  },
+  "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1: complete history timing coverage": {
+   "ok": true,
+   "expected": 25,
+   "observed": 25,
+   "missing_or_invalid": []
+  },
+  "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1: no operation older than R (or counted)": {
+   "ok": true,
+   "R_s": 540.0,
+   "over_r": [],
+   "n_over_r": 0,
+   "base_expired": 0,
+   "history_unresolved": 0,
+   "errors": 0
+  },
+  "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1: no runner/infrastructure errors": {
+   "ok": true,
+   "errors": []
+  },
+  "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1: complete health sampling coverage": {
+   "ok": true,
+   "coverage": {
+    "ok": true,
+    "samples": 59,
+    "interval_s": 30.0,
+    "jitter_budget_s": 1.0,
+    "max_gap_s": 30.549522,
+    "missed_intervals": 0,
+    "gaps_s": [
+     29.578778,
+     30.001362,
+     30.00735,
+     30.004544,
+     29.986105,
+     30.001753,
+     29.997555,
+     30.00418,
+     30.031444,
+     30.315346,
+     29.649248,
+     30.004697,
+     30.549522,
+     29.44938,
+     29.997115,
+     30.283598,
+     29.721679,
+     30.238936,
+     29.755386,
+     30.001489,
+     29.998192,
+     30.230534,
+     29.880497,
+     30.366306,
+     29.522604,
+     30.04255,
+     30.126405,
+     30.034872,
+     29.792494,
+     30.001049,
+     29.998057,
+     30.003149,
+     29.997365,
+     30.197435,
+     29.851705,
+     30.338981,
+     29.645181,
+     30.046414,
+     29.920497,
+     30.210553,
+     29.789247,
+     30.002544,
+     30.35226,
+     29.648497,
+     29.996404,
+     30.208149,
+     29.793518,
+     30.001392,
+     29.997701,
+     30.000662,
+     30.014552,
+     30.020528,
+     29.963662,
+     30.003257,
+     30.007191,
+     30.334147,
+     29.653655,
+     18.790878,
+     0.448167,
+     0.00653
+    ],
+    "invalid_timestamps": []
+   }
+  },
+  "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1: complete metadata version byte bound": {
+   "ok": true,
+   "complete": true,
+   "max_bytes": 86503,
+   "error": null
+  },
+  "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1: history <= verified point (1452 / 1.51 MB)": {
+   "ok": true,
+   "max_snapshots": 70,
+   "max_metadata_bytes": 86503,
+   "B": [
+    1800,
+    1880000
+   ]
+  },
+  "stage3-S5-P0-mid-s11-r540-health-avro-20261116-resume1: dense history upper bound <= 1452": {
+   "ok": true,
+   "unique_additions": 188,
+   "unique_removals": 126,
+   "lower": {
+    "peak_snapshots": 70,
+    "at": "2026-11-16 16:45:09.709689+00:00",
+    "final_snapshots": 63
+   },
+   "upper": {
+    "peak_snapshots": 70,
+    "at": "2026-11-16 16:45:09.694968+00:00",
+    "final_snapshots": 63
+   }
+  },
+  "retention: nonempty timing coverage": {
+   "ok": true,
+   "n_observed": 60
+  },
+  "retention: measured lower bound <= configured R": {
+   "ok": true,
+   "lower_s": 370.9,
+   "configured_R_s": 540.0
+  },
+  "retention: D_max <= 349 s (else author decision)": {
+   "ok": true,
+   "d_max_s": 35.4
+  }
+ },
+ "retention": {
+  "d_max_s": 35.4,
+  "d_max_op": "stage3-S4-P0-mid-s11-r540-health-avro-20261116-batch_merge-0011",
+  "d_max_run": "stage3-S4-P0-mid-s11-r540-health-avro-20261116",
+  "top5": [
+   [
+    35.4,
+    "stage3-S4-P0-mid-s11-r540-health-avro-20261116-batch_merge-0011"
+   ],
+   [
+    35.1,
+    "stage3-S4-P0-mid-s11-r540-health-avro-20261116-batch_merge-0008"
+   ],
+   [
+    34.2,
+    "stage3-S4-P0-mid-s11-r540-health-avro-20261116-batch_merge-0024"
+   ],
+   [
+    32.9,
+    "stage3-S4-P0-mid-s11-r540-health-avro-20261116-batch_merge-0019"
+   ],
+   [
+    31.1,
+    "stage3-S4-P0-mid-s11-r540-health-avro-20261116-batch_merge-0013"
+   ]
+  ],
+  "num_retries": 4,
+  "R_low_s (2·D_max + (n+1)·hold)": 370.9,
+  "R_low_single_hold_s": 130.9,
+  "S1_commit_rate_per_s": null,
+  "R_high_verified_point_s": null,
+  "R_high_B_s": null,
+  "author_stop (D_max > 349 s)": false
+ },
+ "failed": []
+}

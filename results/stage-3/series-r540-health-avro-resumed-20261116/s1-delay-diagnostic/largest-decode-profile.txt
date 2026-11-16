@@ -1,0 +1,17 @@
+<class 'fastavro._read.reader'> s3://warehouse/bench/events/metadata/4215dfc6-a430-4b4b-994b-afba80c5fbad-m1.avro 19518
+         11 function calls in 0.000 seconds
+
+   Ordered by: cumulative time
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.10/json/__init__.py:299(loads)
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.10/json/decoder.py:332(decode)
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.10/json/decoder.py:343(raw_decode)
+        2    0.000    0.000    0.000    0.000 {method 'match' of 're.Pattern' objects}
+        1    0.000    0.000    0.000    0.000 {method 'disable' of '_lsprof.Profiler' objects}
+        1    0.000    0.000    0.000    0.000 {method 'startswith' of 'str' objects}
+        2    0.000    0.000    0.000    0.000 {method 'end' of 're.Match' objects}
+        1    0.000    0.000    0.000    0.000 {built-in method builtins.isinstance}
+        1    0.000    0.000    0.000    0.000 {built-in method builtins.len}
+
+

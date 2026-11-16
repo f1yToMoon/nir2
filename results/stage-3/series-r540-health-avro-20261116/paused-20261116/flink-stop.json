@@ -1,0 +1,30 @@
+{
+  "active_before": [
+    {
+      "jid": "a815cb7ea50e08fa63ff416593eac5ed",
+      "name": "capl-stream-ingest-stage3-S5-P0-mid-s11-r540-health-avro-20261116",
+      "start-time": 1794780780943,
+      "end-time": -1,
+      "duration": 1089633,
+      "state": "RUNNING",
+      "last-modification": 1794780781050,
+      "tasks": {
+        "running": 5,
+        "canceling": 0,
+        "canceled": 0,
+        "total": 5,
+        "created": 0,
+        "scheduled": 0,
+        "deploying": 0,
+        "reconciling": 0,
+        "finished": 0,
+        "initializing": 0,
+        "failed": 0
+      }
+    }
+  ],
+  "canceled": [
+    "a815cb7ea50e08fa63ff416593eac5ed"
+  ],
+  "remaining": []
+}

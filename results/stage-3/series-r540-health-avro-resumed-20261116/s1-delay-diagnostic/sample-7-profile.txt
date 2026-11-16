@@ -1,0 +1,373 @@
+         26024 function calls (24946 primitive calls) in 0.901 seconds
+
+   Ordered by: cumulative time
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        1    0.002    0.002    0.901    0.901 /workspace/src/runner/health.py:117(inspect_partition_files)
+      432    0.866    0.002    0.866    0.002 {method 'acquire' of '_thread.lock' objects}
+        5    0.000    0.000    0.865    0.173 {method 'update' of 'dict' objects}
+      117    0.000    0.000    0.865    0.007 /usr/lib/python3.10/threading.py:288(wait)
+       88    0.000    0.000    0.865    0.010 /usr/lib/python3.10/concurrent/futures/_base.py:614(result_iterator)
+       87    0.000    0.000    0.865    0.010 /usr/lib/python3.10/concurrent/futures/_base.py:316(_result_or_cancel)
+       87    0.000    0.000    0.864    0.010 /usr/lib/python3.10/concurrent/futures/_base.py:430(result)
+        1    0.000    0.000    0.021    0.021 /usr/local/lib/python3.10/dist-packages/pyiceberg/table/__init__.py:1975(from_metadata)
+        1    0.000    0.000    0.021    0.021 /usr/local/lib/python3.10/dist-packages/pyiceberg/serializers.py:101(table_metadata)
+        1    0.000    0.000    0.017    0.017 /usr/local/lib/python3.10/dist-packages/pyiceberg/serializers.py:79(table_metadata)
+        1    0.000    0.000    0.014    0.014 /usr/local/lib/python3.10/dist-packages/pyiceberg/table/metadata.py:670(parse_raw)
+        1    0.000    0.000    0.014    0.014 /usr/local/lib/python3.10/dist-packages/pydantic/main.py:800(model_validate_json)
+        1    0.008    0.008    0.014    0.014 {method 'validate_json' of 'pydantic_core._pydantic_core.SchemaValidator' objects}
+        1    0.000    0.000    0.008    0.008 /usr/local/lib/python3.10/dist-packages/pyiceberg/table/snapshots.py:287(manifests)
+        1    0.000    0.000    0.008    0.008 /usr/local/lib/python3.10/dist-packages/pyiceberg/manifest.py:957(_manifests)
+       88    0.000    0.000    0.007    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/manifest.py:987(read_manifest_list)
+        1    0.001    0.001    0.005    0.005 /usr/local/lib/python3.10/dist-packages/pyiceberg/avro/file.py:168(__enter__)
+        2    0.005    0.003    0.005    0.003 /usr/local/lib/python3.10/dist-packages/pyiceberg/io/pyarrow.py:323(open)
+      444    0.001    0.000    0.004    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/table/snapshots.py:197(__init__)
+  484/474    0.000    0.000    0.004    0.000 /usr/local/lib/python3.10/dist-packages/pydantic/main.py:270(__init__)
+  494/474    0.001    0.000    0.004    0.000 {method 'validate_python' of 'pydantic_core._pydantic_core.SchemaValidator' objects}
+        1    0.003    0.003    0.004    0.004 /usr/lib/python3.10/codecs.py:451(read)
+        1    0.000    0.000    0.003    0.003 /usr/lib/python3.10/concurrent/futures/_base.py:585(map)
+        1    0.000    0.000    0.003    0.003 /usr/lib/python3.10/concurrent/futures/_base.py:610(<listcomp>)
+       87    0.000    0.000    0.003    0.000 /usr/lib/python3.10/concurrent/futures/thread.py:161(submit)
+      453    0.002    0.000    0.002    0.000 /usr/local/lib/python3.10/dist-packages/pydantic/_internal/_model_construction.py:361(init_private_attributes)
+       87    0.000    0.000    0.002    0.000 /usr/lib/python3.10/concurrent/futures/thread.py:180(_adjust_thread_count)
+    89/88    0.000    0.000    0.002    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/avro/file.py:207(__next__)
+       88    0.000    0.000    0.002    0.000 {built-in method builtins.next}
+       87    0.000    0.000    0.002    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/avro/file.py:124(__next__)
+        1    0.000    0.000    0.002    0.002 /usr/lib/python3.10/concurrent/futures/_base.py:648(__exit__)
+        1    0.000    0.000    0.002    0.002 /usr/lib/python3.10/concurrent/futures/thread.py:216(shutdown)
+   262/88    0.001    0.000    0.002    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/avro/reader.py:351(read)
+        8    0.000    0.000    0.002    0.000 /usr/lib/python3.10/threading.py:1064(join)
+        8    0.000    0.000    0.002    0.000 /usr/lib/python3.10/threading.py:1102(_wait_for_tstate_lock)
+     60/4    0.000    0.000    0.002    0.000 /usr/lib/python3.10/functools.py:884(wrapper)
+        8    0.000    0.000    0.001    0.000 /usr/lib/python3.10/threading.py:916(start)
+        1    0.000    0.000    0.001    0.001 /usr/local/lib/python3.10/dist-packages/pyiceberg/avro/file.py:98(get_schema)
+        2    0.000    0.000    0.001    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/avro/resolver.py:239(resolve_reader)
+        1    0.000    0.000    0.001    0.001 /usr/local/lib/python3.10/dist-packages/pyiceberg/utils/schema_conversion.py:85(avro_to_iceberg)
+        2    0.000    0.000    0.001    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/schema.py:97(__init__)
+  696/174    0.000    0.000    0.001    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/avro/reader.py:291(read)
+      3/2    0.000    0.000    0.001    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/schema.py:679(_)
+       87    0.000    0.000    0.001    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/avro/reader.py:394(read)
+        8    0.000    0.000    0.001    0.000 /usr/lib/python3.10/threading.py:589(wait)
+       87    0.000    0.000    0.001    0.000 /usr/lib/python3.10/threading.py:428(acquire)
+        1    0.000    0.000    0.001    0.001 /usr/local/lib/python3.10/dist-packages/pyiceberg/utils/schema_conversion.py:130(<listcomp>)
+    19/15    0.000    0.000    0.001    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/utils/schema_conversion.py:223(_convert_field)
+        1    0.000    0.000    0.001    0.001 /usr/local/lib/python3.10/dist-packages/pyiceberg/schema.py:673(_)
+        2    0.000    0.000    0.001    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/schema.py:1208(index_by_name)
+   159/49    0.000    0.000    0.001    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/types.py:179(handle_primitive_type)
+        2    0.000    0.000    0.001    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/schema.py:900(_)
+      454    0.000    0.000    0.001    0.000 /usr/local/lib/python3.10/dist-packages/pydantic/fields.py:1633(get_default)
+       28    0.000    0.000    0.001    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/types.py:434(__init__)
+      453    0.000    0.000    0.001    0.000 /usr/local/lib/python3.10/dist-packages/pydantic/main.py:1107(__setattr__)
+        2    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/io/pyarrow.py:630(new_input)
+      3/2    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/schema.py:906(_)
+        2    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/io/__init__.py:369(load_file_io)
+        2    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/io/__init__.py:352(_infer_file_io_from_scheme)
+        1    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/avro/file.py:221(_read_header)
+        1    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/avro/resolver.py:113(construct_reader)
+        2    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/io/pyarrow.py:427(_initialize_fs)
+        5    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/types.py:521(__init__)
+        2    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/io/pyarrow.py:482(_initialize_s3_fs)
+       22    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/schema.py:724(_)
+       22    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/avro/resolver.py:457(primitive)
+       87    0.000    0.000    0.000    0.000 /usr/lib/python3.10/concurrent/futures/_base.py:330(__init__)
+        8    0.000    0.000    0.000    0.000 {built-in method _thread.start_new_thread}
+        4    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/schema.py:185(as_struct)
+        3    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/avro/resolver.py:405(struct)
+        2    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/io/__init__.py:335(_import_file_io)
+       96    0.000    0.000    0.000    0.000 /usr/lib/python3.10/threading.py:236(__init__)
+       88    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/manifest.py:984(<genexpr>)
+      453    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pydantic/main.py:114(_private_setattr_handler)
+       87    0.000    0.000    0.000    0.000 /usr/lib/python3.10/concurrent/futures/_base.py:366(cancel)
+       87    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/manifest.py:928(get_or_cache)
+    20/15    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/utils/schema_conversion.py:185(_convert_schema)
+      269    0.000    0.000    0.000    0.000 /usr/lib/python3.10/threading.py:264(__enter__)
+      744    0.000    0.000    0.000    0.000 {built-in method builtins.isinstance}
+      454    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pydantic/_internal/_fields.py:860(resolve_default_value)
+        1    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/utils/schema_conversion.py:299(_convert_array_type)
+      269    0.000    0.000    0.000    0.000 /usr/lib/python3.10/threading.py:267(__exit__)
+     2113    0.000    0.000    0.000    0.000 {method 'setdefault' of 'dict' objects}
+      908    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pydantic/fields.py:1609(default_factory_takes_validated_data)
+       41    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/utils/singleton.py:45(__new__)
+     2004    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/typedef.py:187(__setitem__)
+     2696    0.000    0.000    0.000    0.000 {method 'items' of 'dict' objects}
+   136/25    0.000    0.000    0.000    0.000 {built-in method builtins.hash}
+        1    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/schema.py:694(_)
+        4    0.000    0.000    0.000    0.000 /usr/lib/python3.10/urllib/parse.py:380(urlparse)
+        2    0.000    0.000    0.000    0.000 /usr/lib/python3.10/importlib/__init__.py:108(import_module)
+        1    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/utils/schema_conversion.py:245(_convert_record_type)
+        2    0.000    0.000    0.000    0.000 <frozen importlib._bootstrap>:1038(_gcd_import)
+        1    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/table/__init__.py:1550(current_snapshot)
+   111/57    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pydantic/_internal/_model_construction.py:515(hash_func)
+        3    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/avro/reader.py:324(__init__)
+        1    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/table/__init__.py:1559(snapshot_by_id)
+       22    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pydantic/root_model.py:178(__eq__)
+        1    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/table/metadata.py:239(snapshot_by_id)
+        2    0.000    0.000    0.000    0.000 <frozen importlib._bootstrap>:1022(_find_and_load)
+       22    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/schema.py:524(primitive)
+       28    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/types.py:424(convert_field_type)
+       87    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/avro/resolver.py:271(read)
+        2    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/table/metadata.py:241(<genexpr>)
+      984    0.000    0.000    0.000    0.000 {built-in method builtins.getattr}
+        8    0.000    0.000    0.000    0.000 /usr/lib/python3.10/threading.py:827(__init__)
+        4    0.000    0.000    0.000    0.000 /usr/lib/python3.10/urllib/parse.py:473(urlsplit)
+       87    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/cachetools/__init__.py:294(__getitem__)
+        1    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/partitioning.py:139(__init__)
+     1044    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/avro/reader.py:128(read)
+        1    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/avro/resolver.py:529(schema_partner)
+        3    0.000    0.000    0.000    0.000 /usr/lib/python3.10/typing.py:1490(__instancecheck__)
+       60    0.000    0.000    0.000    0.000 /usr/lib/python3.10/functools.py:818(dispatch)
+        2    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/partitioning.py:89(__init__)
+        2    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/avro/file.py:192(_read_block)
+        1    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/schema.py:706(_)
+        2    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/io/pyarrow.py:403(parse_location)
+        1    0.000    0.000    0.000    0.000 {built-in method _codecs.utf_8_decode}
+        2    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/io/pyarrow.py:399(__init__)
+        1    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/utils/schema_conversion.py:297(<listcomp>)
+        1    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/schema.py:920(_)
+      454    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pydantic/_internal/_utils.py:334(smart_deepcopy)
+        2    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/transforms.py:222(parse_transform)
+      572    0.000    0.000    0.000    0.000 {method 'get' of 'dict' objects}
+        3    0.000    0.000    0.000    0.000 /usr/lib/python3.10/typing.py:1425(_is_callable_members_only)
+       22    0.000    0.000    0.000    0.000 {method '_acquire_restore' of '_thread.RLock' objects}
+       41    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/utils/singleton.py:34(_convert_to_hashable_type)
+       10    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pydantic/root_model.py:62(__init__)
+        9    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pydantic/main.py:1078(__getattr__)
+       20    0.000    0.000    0.000    0.000 /usr/lib/python3.10/typing.py:1278(__eq__)
+        2    0.000    0.000    0.000    0.000 /usr/lib/python3.10/functools.py:479(lru_cache)
+      265    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/typedef.py:184(__init__)
+        2    0.000    0.000    0.000    0.000 <frozen importlib._bootstrap>:169(__enter__)
+      261    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/manifest.py:788(manifest_path)
+        8    0.000    0.000    0.000    0.000 /usr/lib/python3.10/threading.py:1028(_stop)
+       87    0.000    0.000    0.000    0.000 /usr/lib/python3.10/enum.py:359(__call__)
+      348    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/avro/reader.py:252(read)
+        1    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/avro/codecs/deflate.py:32(decompress)
+       95    0.000    0.000    0.000    0.000 /usr/lib/python3.10/threading.py:279(_is_owned)
+        3    0.000    0.000    0.000    0.000 /usr/lib/python3.10/typing.py:1408(_get_protocol_attrs)
+        1    0.000    0.000    0.000    0.000 {built-in method zlib.decompress}
+        4    0.000    0.000    0.000    0.000 <frozen importlib._bootstrap>:179(_get_module_lock)
+       95    0.000    0.000    0.000    0.000 /usr/lib/python3.10/threading.py:273(_release_save)
+        3    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/types.py:612(__hash__)
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.10/json/__init__.py:299(loads)
+      135    0.000    0.000    0.000    0.000 {built-in method _thread.allocate_lock}
+       27    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/schema.py:1151(field)
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.10/json/decoder.py:332(decode)
+        1    0.000    0.000    0.000    0.000 /workspace/src/runner/health.py:133(<listcomp>)
+       22    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pydantic/main.py:1227(__eq__)
+       95    0.000    0.000    0.000    0.000 /usr/lib/python3.10/threading.py:276(_acquire_restore)
+       20    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/utils/schema_conversion.py:136(_resolve_union)
+       87    0.000    0.000    0.000    0.000 /usr/lib/python3.10/concurrent/futures/thread.py:47(__init__)
+       87    0.000    0.000    0.000    0.000 /usr/lib/python3.10/concurrent/futures/_base.py:400(__get_result)
+       87    0.000    0.000    0.000    0.000 /usr/lib/python3.10/threading.py:90(RLock)
+        8    0.000    0.000    0.000    0.000 /usr/lib/python3.10/threading.py:545(__init__)
+      270    0.000    0.000    0.000    0.000 {method '__exit__' of '_thread.RLock' objects}
+      174    0.000    0.000    0.000    0.000 {method '__enter__' of '_thread.RLock' objects}
+        2    0.000    0.000    0.000    0.000 /usr/lib/python3.10/functools.py:35(update_wrapper)
+       87    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/cachetools/__init__.py:321(__touch)
+      286    0.000    0.000    0.000    0.000 {method '__exit__' of '_thread.lock' objects}
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.10/concurrent/futures/thread.py:123(__init__)
+      348    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/avro/reader.py:118(read)
+       60    0.000    0.000    0.000    0.000 /usr/lib/python3.10/weakref.py:415(__getitem__)
+        1    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/transforms.py:258(__init__)
+        6    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/types.py:562(__hash__)
+       22    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/avro/resolver.py:535(field_partner)
+      325    0.000    0.000    0.000    0.000 {method 'append' of 'list' objects}
+        1    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/types.py:586(__init__)
+    20/11    0.000    0.000    0.000    0.000 {built-in method builtins.hasattr}
+      167    0.000    0.000    0.000    0.000 {method 'pop' of 'list' objects}
+        3    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/avro/resolver.py:418(<listcomp>)
+        4    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/io/__init__.py:46(_is_local_path)
+       27    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/schema.py:1135(before_field)
+       22    0.000    0.000    0.000    0.000 {method '_release_save' of '_thread.RLock' objects}
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.10/json/decoder.py:343(raw_decode)
+        8    0.000    0.000    0.000    0.000 /usr/lib/python3.10/threading.py:800(_maintain_shutdown_locks)
+      175    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/avro/file.py:121(has_next)
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.10/functools.py:961(__get__)
+        2    0.000    0.000    0.000    0.000 <frozen importlib._bootstrap>:216(_lock_unlock_module)
+      174    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/cachetools/__init__.py:103(__contains__)
+      112    0.000    0.000    0.000    0.000 {built-in method builtins.len}
+      101    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/avro/reader.py:203(read)
+       28    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/schema.py:1167(_add_field)
+       27    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/schema.py:1140(after_field)
+        2    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/avro/resolver.py:510(visit_fixed)
+       87    0.000    0.000    0.000    0.000 /usr/lib/python3.10/enum.py:678(__new__)
+       22    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/avro/resolver.py:442(field)
+        4    0.000    0.000    0.000    0.000 <frozen importlib._bootstrap>:100(acquire)
+      174    0.000    0.000    0.000    0.000 {built-in method time.monotonic}
+        3    0.000    0.000    0.000    0.000 /workspace/src/runner/health.py:40(_aws)
+        3    0.000    0.000    0.000    0.000 {built-in method builtins.issubclass}
+        9    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pydantic/fields.py:1591(__getattr__)
+      117    0.000    0.000    0.000    0.000 {method 'append' of 'collections.deque' objects}
+       88    0.000    0.000    0.000    0.000 {method 'put' of '_queue.SimpleQueue' objects}
+       87    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/cachetools/__init__.py:71(__getitem__)
+        1    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/avro/reader.py:476(read)
+        1    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/table/__init__.py:1327(__init__)
+       16    0.000    0.000    0.000    0.000 /usr/lib/python3.10/threading.py:1430(current_thread)
+        8    0.000    0.000    0.000    0.000 /usr/lib/python3.10/urllib/parse.py:123(_coerce_args)
+        2    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/avro/decoder.py:173(new_decoder)
+        3    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/avro/resolver.py:504(visit_string)
+        1    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/types.py:595(element_field)
+        3    0.000    0.000    0.000    0.000 /usr/lib/python3.10/_collections_abc.py:821(get)
+        3    0.000    0.000    0.000    0.000 /usr/lib/python3.10/abc.py:121(__subclasscheck__)
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.10/threading.py:422(__init__)
+        1    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/table/metadata.py:235(transform_properties_dict_value_to_str)
+       87    0.000    0.000    0.000    0.000 {method 'remove' of 'collections.deque' objects}
+        7    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/avro/resolver.py:474(visit_long)
+        1    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/utils/parsing.py:33(match)
+       26    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/schema.py:944(_)
+       95    0.000    0.000    0.000    0.000 {method '__enter__' of '_thread.lock' objects}
+        4    0.000    0.000    0.000    0.000 <frozen importlib._bootstrap>:71(__init__)
+       22    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/types.py:528(field)
+      103    0.000    0.000    0.000    0.000 {method 'release' of '_thread.lock' objects}
+        3    0.000    0.000    0.000    0.000 /usr/lib/python3.10/os.py:675(__getitem__)
+        1    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/types.py:76(transform_dict_value_to_str)
+        1    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/avro/resolver.py:451(map)
+        2    0.000    0.000    0.000    0.000 /usr/lib/python3.10/urllib/parse.py:419(_splitnetloc)
+        8    0.000    0.000    0.000    0.000 /usr/lib/python3.10/_weakrefset.py:86(add)
+        4    0.000    0.000    0.000    0.000 /usr/lib/python3.10/posixpath.py:131(splitdrive)
+        8    0.000    0.000    0.000    0.000 /usr/lib/python3.10/weakref.py:428(__setitem__)
+       25    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/avro/resolver.py:399(before_field)
+       25    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/avro/resolver.py:402(after_field)
+       46    0.000    0.000    0.000    0.000 {method 'startswith' of 'str' objects}
+        4    0.000    0.000    0.000    0.000 <frozen importlib._bootstrap>:125(release)
+       80    0.000    0.000    0.000    0.000 /usr/lib/python3.10/typing.py:1273(<genexpr>)
+        1    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/avro/file.py:84(compression_codec)
+        2    0.000    0.000    0.000    0.000 <frozen importlib._bootstrap>:173(__exit__)
+        1    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/table/sorting.py:153(__init__)
+        8    0.000    0.000    0.000    0.000 /usr/lib/python3.10/_weakrefset.py:39(_remove)
+       60    0.000    0.000    0.000    0.000 {built-in method _abc.get_cache_token}
+       40    0.000    0.000    0.000    0.000 /usr/lib/python3.10/typing.py:1272(_value_and_type_iter)
+        1    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/avro/resolver.py:445(list)
+        8    0.000    0.000    0.000    0.000 /usr/lib/python3.10/threading.py:810(<listcomp>)
+       87    0.000    0.000    0.000    0.000 {method 'move_to_end' of 'collections.OrderedDict' objects}
+        2    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/io/pyarrow.py:284(__init__)
+        3    0.000    0.000    0.000    0.000 {built-in method builtins.all}
+        5    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/avro/resolver.py:471(visit_integer)
+       12    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/utils/properties.py:69(get_first_property_value)
+        8    0.000    0.000    0.000    0.000 /usr/lib/python3.10/threading.py:1301(_make_invoke_excepthook)
+        2    0.000    0.000    0.000    0.000 <frozen importlib._bootstrap>:1053(_handle_fromlist)
+        1    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/transforms.py:715(__init__)
+        4    0.000    0.000    0.000    0.000 <frozen importlib._bootstrap>:198(cb)
+        2    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/schema.py:1193(by_name)
+        8    0.000    0.000    0.000    0.000 /usr/lib/python3.10/weakref.py:370(remove)
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.10/typing.py:953(__call__)
+        1    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/types.py:81(<dictcomp>)
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.10/codecs.py:1006(getreader)
+        1    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/avro/reader.py:427(__init__)
+        1    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/table/metadata.py:516(check_schemas)
+        9    0.000    0.000    0.000    0.000 /usr/lib/python3.10/typing.py:1427(<genexpr>)
+        3    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/avro/resolver.py:513(visit_binary)
+        4    0.000    0.000    0.000    0.000 <string>:1(<lambda>)
+       41    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/utils/singleton.py:36(<genexpr>)
+       22    0.000    0.000    0.000    0.000 {method '_is_owned' of '_thread.RLock' objects}
+        3    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/avro/resolver.py:415(<dictcomp>)
+       10    0.000    0.000    0.000    0.000 {built-in method builtins.setattr}
+        1    0.000    0.000    0.000    0.000 {method 'search' of 're.Pattern' objects}
+       16    0.000    0.000    0.000    0.000 /usr/lib/python3.10/threading.py:1183(daemon)
+        3    0.000    0.000    0.000    0.000 /usr/lib/python3.10/os.py:755(encode)
+       22    0.000    0.000    0.000    0.000 {method 'add' of 'set' objects}
+        2    0.000    0.000    0.000    0.000 {method 'match' of 're.Pattern' objects}
+       22    0.000    0.000    0.000    0.000 {built-in method builtins.max}
+       24    0.000    0.000    0.000    0.000 {built-in method _thread.get_ident}
+       10    0.000    0.000    0.000    0.000 <string>:2(__hash__)
+        2    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/avro/reader.py:230(read)
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.10/codecs.py:423(__init__)
+        1    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/table/metadata.py:81(check_schemas)
+        2    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/avro/resolver.py:468(visit_boolean)
+       26    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/schema.py:1190(primitive)
+        8    0.000    0.000    0.000    0.000 {method 'difference_update' of 'set' objects}
+       22    0.000    0.000    0.000    0.000 {method 'join' of 'str' objects}
+        1    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/table/metadata.py:512(cleanup_snapshot_id)
+        6    0.000    0.000    0.000    0.000 {built-in method __new__ of type object at 0x62335fe249a0}
+       24    0.000    0.000    0.000    0.000 {method 'replace' of 'str' objects}
+        2    0.000    0.000    0.000    0.000 <frozen importlib._bootstrap>:165(__init__)
+        2    0.000    0.000    0.000    0.000 <frozen importlib._bootstrap>:968(_sanity_check)
+        2    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/schema.py:1107(__init__)
+        1    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/serializers.py:33(get_compressor)
+        1    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/table/metadata.py:520(check_partition_specs)
+        3    0.000    0.000    0.000    0.000 /usr/lib/python3.10/os.py:759(decode)
+       10    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/utils/schema_conversion.py:183(<lambda>)
+       16    0.000    0.000    0.000    0.000 /usr/lib/python3.10/threading.py:553(is_set)
+        2    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyarrow/fs.py:73(__getattr__)
+        2    0.000    0.000    0.000    0.000 /usr/lib/python3.10/urllib/parse.py:427(_checknetloc)
+        8    0.000    0.000    0.000    0.000 {method 'find' of 'str' objects}
+        3    0.000    0.000    0.000    0.000 {built-in method _abc._abc_subclasscheck}
+        1    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/avro/reader.py:388(__init__)
+        3    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/avro/resolver.py:427(<setcomp>)
+        2    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/avro/resolver.py:387(__init__)
+        1    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/table/metadata.py:524(check_sort_orders)
+        1    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/table/metadata.py:528(construct_refs)
+        2    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/utils/properties.py:56(property_as_bool)
+        1    0.000    0.000    0.000    0.000 {built-in method _codecs.lookup}
+        1    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/schema.py:1156(list)
+        2    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/partitioning.py:108(map_source_ids_onto_source_id)
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.10/typing.py:306(inner)
+        8    0.000    0.000    0.000    0.000 {built-in method _imp.acquire_lock}
+       28    0.000    0.000    0.000    0.000 {method 'locked' of '_thread.lock' objects}
+        2    0.000    0.000    0.000    0.000 {method 'split' of 'str' objects}
+        2    0.000    0.000    0.000    0.000 {built-in method builtins.min}
+        1    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/catalog/__init__.py:364(__init__)
+        8    0.000    0.000    0.000    0.000 {built-in method _imp.release_lock}
+        1    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/table/metadata.py:92(check_partition_specs)
+        8    0.000    0.000    0.000    0.000 /usr/lib/python3.10/urllib/parse.py:112(_noop)
+        1    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/avro/file.py:155(__init__)
+        3    0.000    0.000    0.000    0.000 {method 'keys' of 'mappingproxy' objects}
+        3    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/schema.py:132(check_schema)
+        1    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/table/metadata.py:72(cleanup_snapshot_id)
+        3    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/types.py:554(__len__)
+        1    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/table/metadata.py:118(construct_refs)
+        2    0.000    0.000    0.000    0.000 {method 'endswith' of 'str' objects}
+        4    0.000    0.000    0.000    0.000 {built-in method posix.fspath}
+        4    0.000    0.000    0.000    0.000 {method 'lstrip' of 'str' objects}
+        2    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/table/refs.py:48(check_min_snapshots_to_keep)
+        1    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/schema.py:112(__len__)
+        1    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/schema.py:490(before_map_value)
+        8    0.000    0.000    0.000    0.000 {built-in method builtins.callable}
+        2    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/io/__init__.py:277(__init__)
+        1    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/schema.py:1124(before_list_element)
+        4    0.000    0.000    0.000    0.000 {method 'strip' of 'str' objects}
+        2    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/io/__init__.py:184(__init__)
+        3    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/avro/file.py:76(meta)
+        2    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/types.py:566(__eq__)
+        1    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/schema.py:486(after_map_key)
+        1    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/schema.py:1130(after_list_element)
+        1    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/io/__init__.py:191(location)
+        1    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/table/metadata.py:104(check_sort_orders)
+        8    0.000    0.000    0.000    0.000 {method 'discard' of 'set' objects}
+        1    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/avro/resolver.py:555(map_value_partner)
+        1    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/schema.py:482(before_map_key)
+        1    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/schema.py:494(after_map_value)
+        2    0.000    0.000    0.000    0.000 {method 'lower' of 'str' objects}
+        1    0.000    0.000    0.000    0.000 {method 'group' of 're.Match' objects}
+        1    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/avro/resolver.py:549(map_key_partner)
+        1    0.000    0.000    0.000    0.000 <string>:2(__init__)
+        3    0.000    0.000    0.000    0.000 {method 'encode' of 'str' objects}
+        1    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/schema.py:474(before_list_element)
+        3    0.000    0.000    0.000    0.000 {method 'decode' of 'bytes' objects}
+        1    0.000    0.000    0.000    0.000 {method 'disable' of '_lsprof.Profiler' objects}
+        1    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/schema.py:478(after_list_element)
+        1    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/avro/resolver.py:543(list_element_partner)
+        1    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/avro/file.py:80(sync)
+        2    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/table/refs.py:54(check_max_snapshot_age_ms)
+        1    0.000    0.000    0.000    0.000 {method 'removeprefix' of 'str' objects}
+        2    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/types.py:297(__len__)
+        2    0.000    0.000    0.000    0.000 {method 'copy' of 'dict' objects}
+        2    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/avro/reader.py:512(__hash__)
+        4    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/avro/reader.py:412(__hash__)
+        2    0.000    0.000    0.000    0.000 {method 'end' of 're.Match' objects}
+        1    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/avro/resolver.py:267(__init__)
+        3    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/schema.py:1148(struct)
+        3    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/avro/reader.py:378(__hash__)
+        1    0.000    0.000    0.000    0.000 {method 'reverse' of 'list' objects}
+        2    0.000    0.000    0.000    0.000 {method 'isascii' of 'str' objects}
+        2    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/avro/reader.py:236(__len__)
+        3    0.000    0.000    0.000    0.000 {method 'keys' of 'dict' objects}
+        1    0.000    0.000    0.000    0.000 {method 'values' of 'dict' objects}
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.10/concurrent/futures/_base.py:645(__enter__)
+        1    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/serializers.py:58(stream_decompressor)
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.10/enum.py:353(__bool__)
+        2    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/schema.py:1145(schema)
+        1    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/avro/file.py:188(__iter__)
+        1    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/avro/file.py:185(__exit__)
+        1    0.000    0.000    0.000    0.000 /usr/local/lib/python3.10/dist-packages/pyiceberg/avro/resolver.py:396(schema)
+
+

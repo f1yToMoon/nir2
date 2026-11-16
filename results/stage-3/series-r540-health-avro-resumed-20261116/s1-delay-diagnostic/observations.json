@@ -1,0 +1,24 @@
+[
+  {
+    "index": 7,
+    "metadata_location": "s3://warehouse/bench/events/metadata/00485-234ef9ac-7df3-4de8-8dca-acf8fd0386ea.metadata.json",
+    "snapshot_id": 7278105133985483646,
+    "manifests": 87,
+    "new_manifests": 87,
+    "new_manifest_bytes": 2496234,
+    "elapsed_s": 0.901586242999656,
+    "process_cpu_s": 0.8065961389999998,
+    "partitions": 240
+  },
+  {
+    "index": 8,
+    "metadata_location": "s3://warehouse/bench/events/metadata/00550-073f5a4a-7220-4ead-b5d4-71ae3472d86b.metadata.json",
+    "snapshot_id": 5823056435617985856,
+    "manifests": 53,
+    "new_manifests": 53,
+    "new_manifest_bytes": 2326331,
+    "elapsed_s": 0.7655282839996289,
+    "process_cpu_s": 0.7757989539999999,
+    "partitions": 240
+  }
+]

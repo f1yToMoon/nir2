@@ -1,0 +1,32 @@
+[
+  {
+    "container": "/nir-runner-1",
+    "image": "nir/spark:dev",
+    "digest": "sha256:e08a8356e5b7502461ffea19cc309cd35a3718a66ca08aa6fe8f520257d7f7ef"
+  },
+  {
+    "container": "/nir-catalog-1",
+    "image": "apache/iceberg-rest-fixture:latest@sha256:db8de90b5b7693d4ac334c336f91d9bbe320d7b19f4f514d26de84cdfbcbfe8d",
+    "digest": "sha256:7ea2ad86a944938e5508721416e7c3f2b9b0b1bdfd63392d475bdaacba9a3cee"
+  },
+  {
+    "container": "/nir-spark-master-1",
+    "image": "nir/spark:dev",
+    "digest": "sha256:e08a8356e5b7502461ffea19cc309cd35a3718a66ca08aa6fe8f520257d7f7ef"
+  },
+  {
+    "container": "/nir-spark-worker-1-1",
+    "image": "nir/spark:dev",
+    "digest": "sha256:e08a8356e5b7502461ffea19cc309cd35a3718a66ca08aa6fe8f520257d7f7ef"
+  },
+  {
+    "container": "/nir-spark-worker-2-1",
+    "image": "nir/spark:dev",
+    "digest": "sha256:e08a8356e5b7502461ffea19cc309cd35a3718a66ca08aa6fe8f520257d7f7ef"
+  },
+  {
+    "container": "/nir-flink-jobmanager-1",
+    "image": "nir/flink:dev",
+    "digest": "sha256:1a65d2a8311eae563b497299917f3a5d604a692320adcbe8506407e01a37591b"
+  }
+]

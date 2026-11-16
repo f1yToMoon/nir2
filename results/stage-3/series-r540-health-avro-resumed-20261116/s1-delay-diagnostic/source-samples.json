@@ -1,0 +1,178 @@
+[
+  {
+    "run_id": "stage3-S1-P0-mid-s11-r540-health-avro-20261116",
+    "table_name": "bench.events",
+    "at": "2026-11-16 17:59:00.122694+00:00",
+    "snapshots": 1,
+    "metadata_bytes": 8819,
+    "current_snapshot_id": 6712778488404766195,
+    "metadata_location": "s3://warehouse/bench/events/metadata/00042-66505b83-41f6-4d1e-b8ec-e41c589cd4c4.metadata.json",
+    "sample_started_at": "2026-11-16 17:58:59.725101+00:00",
+    "metadata_observed_at": "2026-11-16 17:58:59.728128+00:00"
+  },
+  {
+    "run_id": "stage3-S1-P0-mid-s11-r540-health-avro-20261116",
+    "table_name": "bench.events",
+    "at": "2026-11-16 17:59:29.788990+00:00",
+    "snapshots": 48,
+    "metadata_bytes": 61938,
+    "current_snapshot_id": 8254548505972389640,
+    "metadata_location": "s3://warehouse/bench/events/metadata/00089-0bb645b2-5fad-4551-9200-072980995fe5.metadata.json",
+    "sample_started_at": "2026-11-16 17:59:29.725208+00:00",
+    "metadata_observed_at": "2026-11-16 17:59:29.729397+00:00"
+  },
+  {
+    "run_id": "stage3-S1-P0-mid-s11-r540-health-avro-20261116",
+    "table_name": "bench.events",
+    "at": "2026-11-16 18:00:00.188115+00:00",
+    "snapshots": 114,
+    "metadata_bytes": 128727,
+    "current_snapshot_id": 3573908024928428067,
+    "metadata_location": "s3://warehouse/bench/events/metadata/00155-9b4c50b3-201d-4704-9701-0cbf6b1a0702.metadata.json",
+    "sample_started_at": "2026-11-16 17:59:59.725595+00:00",
+    "metadata_observed_at": "2026-11-16 17:59:59.732052+00:00"
+  },
+  {
+    "run_id": "stage3-S1-P0-mid-s11-r540-health-avro-20261116",
+    "table_name": "bench.events",
+    "at": "2026-11-16 18:00:30.122572+00:00",
+    "snapshots": 180,
+    "metadata_bytes": 193938,
+    "current_snapshot_id": 5047189469009737866,
+    "metadata_location": "s3://warehouse/bench/events/metadata/00221-72556444-b5e0-4ac4-b1d3-8334e2ba06a2.metadata.json",
+    "sample_started_at": "2026-11-16 18:00:29.725214+00:00",
+    "metadata_observed_at": "2026-11-16 18:00:29.733719+00:00"
+  },
+  {
+    "run_id": "stage3-S1-P0-mid-s11-r540-health-avro-20261116",
+    "table_name": "bench.events",
+    "at": "2026-11-16 18:00:59.846908+00:00",
+    "snapshots": 246,
+    "metadata_bytes": 259178,
+    "current_snapshot_id": 7901643977308179947,
+    "metadata_location": "s3://warehouse/bench/events/metadata/00287-2480a993-b3b0-4db9-863a-c43b255379e6.metadata.json",
+    "sample_started_at": "2026-11-16 18:00:59.725186+00:00",
+    "metadata_observed_at": "2026-11-16 18:00:59.736172+00:00"
+  },
+  {
+    "run_id": "stage3-S1-P0-mid-s11-r540-health-avro-20261116",
+    "table_name": "bench.events",
+    "at": "2026-11-16 18:01:30.262848+00:00",
+    "snapshots": 312,
+    "metadata_bytes": 324425,
+    "current_snapshot_id": 8014670295931291132,
+    "metadata_location": "s3://warehouse/bench/events/metadata/00353-a019428b-e212-40f1-a40c-e2f6852ccb0f.metadata.json",
+    "sample_started_at": "2026-11-16 18:01:29.725241+00:00",
+    "metadata_observed_at": "2026-11-16 18:01:29.734640+00:00"
+  },
+  {
+    "run_id": "stage3-S1-P0-mid-s11-r540-health-avro-20261116",
+    "table_name": "bench.events",
+    "at": "2026-11-16 18:02:00.272906+00:00",
+    "snapshots": 378,
+    "metadata_bytes": 389631,
+    "current_snapshot_id": 717901128927276648,
+    "metadata_location": "s3://warehouse/bench/events/metadata/00419-c03610db-4e8c-4241-882d-65dc218aa136.metadata.json",
+    "sample_started_at": "2026-11-16 18:01:59.725209+00:00",
+    "metadata_observed_at": "2026-11-16 18:01:59.736610+00:00"
+  },
+  {
+    "run_id": "stage3-S1-P0-mid-s11-r540-health-avro-20261116",
+    "table_name": "bench.events",
+    "at": "2026-11-16 18:02:29.819462+00:00",
+    "snapshots": 444,
+    "metadata_bytes": 454864,
+    "current_snapshot_id": 7278105133985483646,
+    "metadata_location": "s3://warehouse/bench/events/metadata/00485-234ef9ac-7df3-4de8-8dca-acf8fd0386ea.metadata.json",
+    "sample_started_at": "2026-11-16 18:02:29.725221+00:00",
+    "metadata_observed_at": "2026-11-16 18:02:29.738834+00:00"
+  },
+  {
+    "run_id": "stage3-S1-P0-mid-s11-r540-health-avro-20261116",
+    "table_name": "bench.events",
+    "at": "2026-11-16 18:03:00.913501+00:00",
+    "snapshots": 509,
+    "metadata_bytes": 519119,
+    "current_snapshot_id": 5823056435617985856,
+    "metadata_location": "s3://warehouse/bench/events/metadata/00550-073f5a4a-7220-4ead-b5d4-71ae3472d86b.metadata.json",
+    "sample_started_at": "2026-11-16 18:02:59.725190+00:00",
+    "metadata_observed_at": "2026-11-16 18:02:59.750418+00:00"
+  },
+  {
+    "run_id": "stage3-S1-P0-mid-s11-r540-health-avro-20261116",
+    "table_name": "bench.events",
+    "at": "2026-11-16 18:03:30.139286+00:00",
+    "snapshots": 577,
+    "metadata_bytes": 586377,
+    "current_snapshot_id": 5679892956527944473,
+    "metadata_location": "s3://warehouse/bench/events/metadata/00618-4ccedbcd-9a3e-46ef-a0d0-cadd12848faa.metadata.json",
+    "sample_started_at": "2026-11-16 18:03:29.725198+00:00",
+    "metadata_observed_at": "2026-11-16 18:03:29.739737+00:00"
+  },
+  {
+    "run_id": "stage3-S1-P0-mid-s11-r540-health-avro-20261116",
+    "table_name": "bench.events",
+    "at": "2026-11-16 18:03:59.837376+00:00",
+    "snapshots": 643,
+    "metadata_bytes": 651613,
+    "current_snapshot_id": 3655976888092857638,
+    "metadata_location": "s3://warehouse/bench/events/metadata/00684-9946dc9c-09b6-4728-8b89-f459f630045b.metadata.json",
+    "sample_started_at": "2026-11-16 18:03:59.725177+00:00",
+    "metadata_observed_at": "2026-11-16 18:03:59.749089+00:00"
+  },
+  {
+    "run_id": "stage3-S1-P0-mid-s11-r540-health-avro-20261116",
+    "table_name": "bench.events",
+    "at": "2026-11-16 18:04:30.267577+00:00",
+    "snapshots": 709,
+    "metadata_bytes": 716840,
+    "current_snapshot_id": 4051739833098778430,
+    "metadata_location": "s3://warehouse/bench/events/metadata/00750-637aa7d2-5f93-460d-b35b-e94fc53addc2.metadata.json",
+    "sample_started_at": "2026-11-16 18:04:29.725217+00:00",
+    "metadata_observed_at": "2026-11-16 18:04:29.741936+00:00"
+  },
+  {
+    "run_id": "stage3-S1-P0-mid-s11-r540-health-avro-20261116",
+    "table_name": "bench.events",
+    "at": "2026-11-16 18:05:00.563451+00:00",
+    "snapshots": 776,
+    "metadata_bytes": 783125,
+    "current_snapshot_id": 6507823251252221239,
+    "metadata_location": "s3://warehouse/bench/events/metadata/00817-90fef544-a46c-4a46-ac46-94be68bd0e1c.metadata.json",
+    "sample_started_at": "2026-11-16 18:04:59.725201+00:00",
+    "metadata_observed_at": "2026-11-16 18:04:59.746882+00:00"
+  },
+  {
+    "run_id": "stage3-S1-P0-mid-s11-r540-health-avro-20261116",
+    "table_name": "bench.events",
+    "at": "2026-11-16 18:05:29.834036+00:00",
+    "snapshots": 842,
+    "metadata_bytes": 848357,
+    "current_snapshot_id": 4382252103109961880,
+    "metadata_location": "s3://warehouse/bench/events/metadata/00883-04db724a-07be-45a5-aa05-6b88037a8688.metadata.json",
+    "sample_started_at": "2026-11-16 18:05:29.725221+00:00",
+    "metadata_observed_at": "2026-11-16 18:05:29.746507+00:00"
+  },
+  {
+    "run_id": "stage3-S1-P0-mid-s11-r540-health-avro-20261116",
+    "table_name": "bench.events",
+    "at": "2026-11-16 18:06:00.352242+00:00",
+    "snapshots": 908,
+    "metadata_bytes": 913577,
+    "current_snapshot_id": 7110543678907092340,
+    "metadata_location": "s3://warehouse/bench/events/metadata/00949-7372f291-5520-487c-ac63-5bc8bee4a258.metadata.json",
+    "sample_started_at": "2026-11-16 18:05:59.725200+00:00",
+    "metadata_observed_at": "2026-11-16 18:05:59.749396+00:00"
+  },
+  {
+    "run_id": "stage3-S1-P0-mid-s11-r540-health-avro-20261116",
+    "table_name": "bench.events",
+    "at": "2026-11-16 18:06:30.248509+00:00",
+    "snapshots": 974,
+    "metadata_bytes": 978816,
+    "current_snapshot_id": 7927469148837569556,
+    "metadata_location": "s3://warehouse/bench/events/metadata/01015-94717b5b-e55f-4cf7-bb48-5346ded90265.metadata.json",
+    "sample_started_at": "2026-11-16 18:06:29.725215+00:00",
+    "metadata_observed_at": "2026-11-16 18:06:29.748880+00:00"
+  }
+]
