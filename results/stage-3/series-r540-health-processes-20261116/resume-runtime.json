@@ -1,0 +1,19 @@
+{
+  "python": "3.10.12 (main, Aug 15 2025, 14:32:43) [GCC 11.4.0]",
+  "pyspark": "4.0.1",
+  "dependencies": {
+    "pyiceberg": "0.12.0",
+    "pyarrow": "25.0.1",
+    "fastavro": "1.12.2",
+    "numpy": "2.2.6",
+    "pandas": "2.3.3"
+  },
+  "resources": {
+    "spark_master": "spark://spark-master:7077",
+    "executor_memory": "2g",
+    "driver_memory": "3g",
+    "executor_cores": "2",
+    "cores_max": "8"
+  },
+  "flink_version": "1.20.3"
+}

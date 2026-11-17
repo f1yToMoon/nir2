@@ -1,0 +1,32 @@
+{
+  "run_id": "stage3-S5-P0-mid-s11-r540-health-processes-20261116",
+  "baseline_unchanged": true,
+  "baseline": {
+    "commit_attempts": 214,
+    "commit_events": 186,
+    "ops": 53,
+    "current_snapshot_id": 1928630960493689178
+  },
+  "primary_artifact": "/workspace/results/stage-3/integration/stage3-it-1794938498799813652/invariants_fault_injection.json",
+  "primary_types": [
+    "aborted_row",
+    "duplicate_row",
+    "extra_update",
+    "lineage",
+    "lost_row"
+  ],
+  "standalone_artifact": "/workspace/results/stage-3/retained-health-processes-20261116/retained_deleted_fixture.json",
+  "standalone_types": [
+    "retained_deleted_row"
+  ],
+  "all_types": [
+    "aborted_row",
+    "duplicate_row",
+    "extra_update",
+    "lineage",
+    "lost_row",
+    "retained_deleted_row"
+  ],
+  "n_types": 6,
+  "primary_probe_requests": 24
+}

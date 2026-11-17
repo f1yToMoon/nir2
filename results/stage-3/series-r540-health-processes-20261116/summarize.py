@@ -5,7 +5,7 @@ from datetime import datetime
 from pathlib import Path
 
 root = Path(__file__).resolve().parent
-plan = json.loads((root / "plan.json").read_text())
+plan = json.loads((root / "plan-amendment.json").read_text())
 verified = json.loads((root / "verification.json").read_text())
 out = {}
 for run in plan["runs"]:

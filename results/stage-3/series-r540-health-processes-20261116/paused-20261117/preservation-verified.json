@@ -1,0 +1,94 @@
+{
+  "at": "2026-11-17T22:53:38.155430+03:00",
+  "runs": {
+    "stage3-S4-P0-mid-s11-r540-health-processes-20261116": {
+      "verified_files": 235,
+      "stream_events": 3425200,
+      "metadata_versions": 149,
+      "metadata_bytes_upper_bound": 63558,
+      "health": {
+        "ok": true,
+        "samples": 60,
+        "interval_s": 30,
+        "jitter_budget_s": 1.0,
+        "max_gap_s": 30.634019,
+        "missed_intervals": 0,
+        "invalid_timestamps": []
+      }
+    },
+    "stage3-S5-P0-mid-s11-r540-health-processes-20261116": {
+      "verified_files": 282,
+      "stream_events": 3357800,
+      "metadata_versions": 207,
+      "metadata_bytes_upper_bound": 85450,
+      "health": {
+        "ok": true,
+        "samples": 59,
+        "interval_s": 30,
+        "jitter_budget_s": 1.0,
+        "max_gap_s": 30.349017,
+        "missed_intervals": 0,
+        "invalid_timestamps": []
+      }
+    },
+    "stage3-S0-P0-mid-s1-r540-health-processes-20261116": {
+      "verified_files": 259,
+      "stream_events": 1674100,
+      "metadata_versions": 201,
+      "metadata_bytes_upper_bound": 83125,
+      "health": {
+        "ok": true,
+        "samples": 59,
+        "interval_s": 30,
+        "jitter_budget_s": 1.0,
+        "max_gap_s": 30.428166,
+        "missed_intervals": 0,
+        "invalid_timestamps": []
+      }
+    },
+    "stage3-S0-P0-mid-s1-rep-r540-health-processes-20261116": {
+      "verified_files": 258,
+      "stream_events": 1674300,
+      "metadata_versions": 200,
+      "metadata_bytes_upper_bound": 83148,
+      "health": {
+        "ok": true,
+        "samples": 59,
+        "interval_s": 30,
+        "jitter_budget_s": 1.0,
+        "max_gap_s": 30.285675,
+        "missed_intervals": 0,
+        "invalid_timestamps": []
+      }
+    },
+    "stage3-S1-P0-mid-s11-r540-health-processes-20261116": {
+      "verified_files": 3934,
+      "stream_events": 5369200,
+      "metadata_versions": 3866,
+      "metadata_bytes_upper_bound": 1334899,
+      "health": {
+        "ok": true,
+        "samples": 58,
+        "interval_s": 30,
+        "jitter_budget_s": 1.0,
+        "max_gap_s": 30.793191,
+        "missed_intervals": 0,
+        "invalid_timestamps": []
+      }
+    }
+  },
+  "verified_complete_run_files": 4968,
+  "verified_partial_files": 139,
+  "partial_counts": {
+    "runs": 1,
+    "ops": 28,
+    "commit_attempts": 108,
+    "commit_events": 94,
+    "commit_partitions": 2094,
+    "table_health": 6720,
+    "table_meta": 28,
+    "orphan_scan": 0,
+    "run_summary": 0
+  },
+  "partial_snapshot": 7534423856391059834
+}

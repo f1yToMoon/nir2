@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 
 root = Path(__file__).resolve().parent
-plan = json.loads((root / "plan.json").read_text())
+plan = json.loads((root / "plan-amendment.json").read_text())
 rid = next(r["run_id"] for r in plan["runs"] if r["scenario"].startswith("S2_"))
 result = json.loads((root.parent / "runs" / f"{rid}.json").read_text())
 assert result["validation"]["ok"] is True

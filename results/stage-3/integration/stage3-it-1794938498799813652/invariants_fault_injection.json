@@ -1,0 +1,760 @@
+{
+ "run_id": "stage3-S5-P0-mid-s11-r540-health-processes-20261116",
+ "telemetry_run_id": "stage3-it-1794938498799813652",
+ "clean": {
+  "ledger_row_counts": {
+   "ok": true,
+   "partitions_checked": 287,
+   "mismatches": {},
+   "n_mismatches": 0,
+   "rows_by_origin": {
+    "stream": 3357800,
+    "golden": 30000000,
+    "merge": 54000
+   },
+   "journal_physical_records": 33411800,
+   "snapshot_total_records": 33411800,
+   "table_live_rows": 33411800,
+   "journal_commits": 186
+  },
+  "no_duplicate_event_ids": {
+   "ok": true,
+   "duplicates": 0,
+   "rows": 33411800
+  },
+  "committed_ops_in_lineage": {
+   "ok": true,
+   "lineage_len": 186,
+   "lineage_error": null,
+   "committed_checked": 17,
+   "missing": [],
+   "n_missing": 0
+  },
+  "aborted_ops_absent": {
+   "ok": true,
+   "failed_ops": 8,
+   "snapshots_in_lineage": [],
+   "aborted_rows_checked": 24000,
+   "aborted_rows_present": 0,
+   "lineage_error": null
+  },
+  "version_monotonic": {
+   "ok": true,
+   "rows_checked": 33411800,
+   "rows_expected_updated": 213092,
+   "mismatches": 0
+  },
+  "ok": true
+ },
+ "detected": {
+  "duplicate_row": [
+   "aborted_ops_absent",
+   "committed_ops_in_lineage",
+   "ledger_row_counts",
+   "no_duplicate_event_ids"
+  ],
+  "lost_row": [
+   "aborted_ops_absent",
+   "committed_ops_in_lineage",
+   "ledger_row_counts"
+  ],
+  "extra_update": [
+   "aborted_ops_absent",
+   "committed_ops_in_lineage",
+   "ledger_row_counts",
+   "version_monotonic"
+  ],
+  "aborted_row": [
+   "aborted_ops_absent",
+   "committed_ops_in_lineage",
+   "ledger_row_counts"
+  ],
+  "lineage": [
+   "committed_ops_in_lineage",
+   "ledger_row_counts",
+   "version_monotonic"
+  ]
+ },
+ "details": {
+  "duplicate_row": {
+   "ledger_row_counts": {
+    "ok": false,
+    "partitions_checked": 287,
+    "mismatches": {
+     "dt=2026-11-02/key_bucket=6|golden": {
+      "expected": 124609,
+      "actual": 124610
+     }
+    },
+    "n_mismatches": 1,
+    "rows_by_origin": {
+     "stream": 3357800,
+     "golden": 30000001,
+     "merge": 54000
+    },
+    "journal_physical_records": 30000000,
+    "snapshot_total_records": 33411801,
+    "table_live_rows": 33411801,
+    "journal_commits": 0
+   },
+   "no_duplicate_event_ids": {
+    "ok": false,
+    "duplicates": 1,
+    "rows": 33411801
+   },
+   "committed_ops_in_lineage": {
+    "ok": false,
+    "lineage_len": 0,
+    "lineage_error": "snapshot 6428260340936412966 not in the proxy journal",
+    "committed_checked": 17,
+    "missing": [
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-processes-20261116-cdc_merge-0000",
+      "snapshot_id": 2598457215637482036
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-processes-20261116-compaction-0000",
+      "snapshot_id": 7971991787119275835
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-processes-20261116-cdc_merge-0001",
+      "snapshot_id": 2277082058517254192
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-processes-20261116-compaction-0001",
+      "snapshot_id": 3902439556379532812
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-processes-20261116-cdc_merge-0002",
+      "snapshot_id": 957474835406153411
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-processes-20261116-compaction-0002",
+      "snapshot_id": 948014494493374029
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-processes-20261116-cdc_merge-0004",
+      "snapshot_id": 8360605918806679987
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-processes-20261116-compaction-0003",
+      "snapshot_id": 5466952630637211635
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-processes-20261116-compaction-0004",
+      "snapshot_id": 460062166001308031
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-processes-20261116-cdc_merge-0005",
+      "snapshot_id": 8862049527657492632
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-processes-20261116-cdc_merge-0006",
+      "snapshot_id": 6494066012309324617
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-processes-20261116-compaction-0005",
+      "snapshot_id": 8856465873165203549
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-processes-20261116-cdc_merge-0008",
+      "snapshot_id": 1557718078913222383
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-processes-20261116-cdc_merge-0010",
+      "snapshot_id": 7989553536389149944
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-processes-20261116-compaction-0006",
+      "snapshot_id": 2959933499571955584
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-processes-20261116-compaction-0007",
+      "snapshot_id": 4915059355674730491
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-processes-20261116-cdc_merge-0011",
+      "snapshot_id": 9103935343648706010
+     }
+    ],
+    "n_missing": 17
+   },
+   "aborted_ops_absent": {
+    "ok": false,
+    "failed_ops": 8,
+    "snapshots_in_lineage": [],
+    "aborted_rows_checked": 24000,
+    "aborted_rows_present": 0,
+    "lineage_error": "snapshot 6428260340936412966 not in the proxy journal"
+   },
+   "version_monotonic": {
+    "ok": true,
+    "rows_checked": 33411801,
+    "rows_expected_updated": 213092,
+    "mismatches": 0
+   },
+   "ok": false
+  },
+  "lost_row": {
+   "ledger_row_counts": {
+    "ok": false,
+    "partitions_checked": 287,
+    "mismatches": {
+     "dt=2026-11-30/key_bucket=2|stream": {
+      "expected": 399267,
+      "actual": 399266
+     }
+    },
+    "n_mismatches": 1,
+    "rows_by_origin": {
+     "stream": 3357799,
+     "golden": 30000000,
+     "merge": 54000
+    },
+    "journal_physical_records": 30000000,
+    "snapshot_total_records": 33411799,
+    "table_live_rows": 33411799,
+    "journal_commits": 0
+   },
+   "no_duplicate_event_ids": {
+    "ok": true,
+    "duplicates": 0,
+    "rows": 33411799
+   },
+   "committed_ops_in_lineage": {
+    "ok": false,
+    "lineage_len": 0,
+    "lineage_error": "snapshot 7124860496823985896 not in the proxy journal",
+    "committed_checked": 17,
+    "missing": [
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-processes-20261116-cdc_merge-0000",
+      "snapshot_id": 2598457215637482036
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-processes-20261116-compaction-0000",
+      "snapshot_id": 7971991787119275835
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-processes-20261116-cdc_merge-0001",
+      "snapshot_id": 2277082058517254192
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-processes-20261116-compaction-0001",
+      "snapshot_id": 3902439556379532812
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-processes-20261116-cdc_merge-0002",
+      "snapshot_id": 957474835406153411
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-processes-20261116-compaction-0002",
+      "snapshot_id": 948014494493374029
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-processes-20261116-cdc_merge-0004",
+      "snapshot_id": 8360605918806679987
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-processes-20261116-compaction-0003",
+      "snapshot_id": 5466952630637211635
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-processes-20261116-compaction-0004",
+      "snapshot_id": 460062166001308031
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-processes-20261116-cdc_merge-0005",
+      "snapshot_id": 8862049527657492632
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-processes-20261116-cdc_merge-0006",
+      "snapshot_id": 6494066012309324617
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-processes-20261116-compaction-0005",
+      "snapshot_id": 8856465873165203549
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-processes-20261116-cdc_merge-0008",
+      "snapshot_id": 1557718078913222383
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-processes-20261116-cdc_merge-0010",
+      "snapshot_id": 7989553536389149944
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-processes-20261116-compaction-0006",
+      "snapshot_id": 2959933499571955584
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-processes-20261116-compaction-0007",
+      "snapshot_id": 4915059355674730491
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-processes-20261116-cdc_merge-0011",
+      "snapshot_id": 9103935343648706010
+     }
+    ],
+    "n_missing": 17
+   },
+   "aborted_ops_absent": {
+    "ok": false,
+    "failed_ops": 8,
+    "snapshots_in_lineage": [],
+    "aborted_rows_checked": 24000,
+    "aborted_rows_present": 0,
+    "lineage_error": "snapshot 7124860496823985896 not in the proxy journal"
+   },
+   "version_monotonic": {
+    "ok": true,
+    "rows_checked": 33411799,
+    "rows_expected_updated": 213092,
+    "mismatches": 0
+   },
+   "ok": false
+  },
+  "extra_update": {
+   "ledger_row_counts": {
+    "ok": false,
+    "partitions_checked": 287,
+    "mismatches": {},
+    "n_mismatches": 0,
+    "rows_by_origin": {
+     "stream": 3357800,
+     "golden": 30000000,
+     "merge": 54000
+    },
+    "journal_physical_records": 30000000,
+    "snapshot_total_records": 33411800,
+    "table_live_rows": 33411800,
+    "journal_commits": 0
+   },
+   "no_duplicate_event_ids": {
+    "ok": true,
+    "duplicates": 0,
+    "rows": 33411800
+   },
+   "committed_ops_in_lineage": {
+    "ok": false,
+    "lineage_len": 0,
+    "lineage_error": "snapshot 6553356131164961643 not in the proxy journal",
+    "committed_checked": 17,
+    "missing": [
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-processes-20261116-cdc_merge-0000",
+      "snapshot_id": 2598457215637482036
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-processes-20261116-compaction-0000",
+      "snapshot_id": 7971991787119275835
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-processes-20261116-cdc_merge-0001",
+      "snapshot_id": 2277082058517254192
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-processes-20261116-compaction-0001",
+      "snapshot_id": 3902439556379532812
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-processes-20261116-cdc_merge-0002",
+      "snapshot_id": 957474835406153411
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-processes-20261116-compaction-0002",
+      "snapshot_id": 948014494493374029
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-processes-20261116-cdc_merge-0004",
+      "snapshot_id": 8360605918806679987
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-processes-20261116-compaction-0003",
+      "snapshot_id": 5466952630637211635
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-processes-20261116-compaction-0004",
+      "snapshot_id": 460062166001308031
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-processes-20261116-cdc_merge-0005",
+      "snapshot_id": 8862049527657492632
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-processes-20261116-cdc_merge-0006",
+      "snapshot_id": 6494066012309324617
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-processes-20261116-compaction-0005",
+      "snapshot_id": 8856465873165203549
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-processes-20261116-cdc_merge-0008",
+      "snapshot_id": 1557718078913222383
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-processes-20261116-cdc_merge-0010",
+      "snapshot_id": 7989553536389149944
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-processes-20261116-compaction-0006",
+      "snapshot_id": 2959933499571955584
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-processes-20261116-compaction-0007",
+      "snapshot_id": 4915059355674730491
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-processes-20261116-cdc_merge-0011",
+      "snapshot_id": 9103935343648706010
+     }
+    ],
+    "n_missing": 17
+   },
+   "aborted_ops_absent": {
+    "ok": false,
+    "failed_ops": 8,
+    "snapshots_in_lineage": [],
+    "aborted_rows_checked": 24000,
+    "aborted_rows_present": 0,
+    "lineage_error": "snapshot 6553356131164961643 not in the proxy journal"
+   },
+   "version_monotonic": {
+    "ok": false,
+    "rows_checked": 33411800,
+    "rows_expected_updated": 213092,
+    "mismatches": 1
+   },
+   "ok": false
+  },
+  "aborted_row": {
+   "ledger_row_counts": {
+    "ok": false,
+    "partitions_checked": 287,
+    "mismatches": {
+     "dt=2026-11-02/key_bucket=6|agent": {
+      "expected": 0,
+      "actual": 1
+     }
+    },
+    "n_mismatches": 1,
+    "rows_by_origin": {
+     "stream": 3357800,
+     "golden": 30000000,
+     "merge": 54000,
+     "agent": 1
+    },
+    "journal_physical_records": 30000000,
+    "snapshot_total_records": 33411801,
+    "table_live_rows": 33411801,
+    "journal_commits": 0
+   },
+   "no_duplicate_event_ids": {
+    "ok": true,
+    "duplicates": 0,
+    "rows": 33411801
+   },
+   "committed_ops_in_lineage": {
+    "ok": false,
+    "lineage_len": 0,
+    "lineage_error": "snapshot 7109454997322647790 not in the proxy journal",
+    "committed_checked": 17,
+    "missing": [
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-processes-20261116-cdc_merge-0000",
+      "snapshot_id": 2598457215637482036
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-processes-20261116-compaction-0000",
+      "snapshot_id": 7971991787119275835
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-processes-20261116-cdc_merge-0001",
+      "snapshot_id": 2277082058517254192
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-processes-20261116-compaction-0001",
+      "snapshot_id": 3902439556379532812
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-processes-20261116-cdc_merge-0002",
+      "snapshot_id": 957474835406153411
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-processes-20261116-compaction-0002",
+      "snapshot_id": 948014494493374029
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-processes-20261116-cdc_merge-0004",
+      "snapshot_id": 8360605918806679987
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-processes-20261116-compaction-0003",
+      "snapshot_id": 5466952630637211635
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-processes-20261116-compaction-0004",
+      "snapshot_id": 460062166001308031
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-processes-20261116-cdc_merge-0005",
+      "snapshot_id": 8862049527657492632
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-processes-20261116-cdc_merge-0006",
+      "snapshot_id": 6494066012309324617
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-processes-20261116-compaction-0005",
+      "snapshot_id": 8856465873165203549
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-processes-20261116-cdc_merge-0008",
+      "snapshot_id": 1557718078913222383
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-processes-20261116-cdc_merge-0010",
+      "snapshot_id": 7989553536389149944
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-processes-20261116-compaction-0006",
+      "snapshot_id": 2959933499571955584
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-processes-20261116-compaction-0007",
+      "snapshot_id": 4915059355674730491
+     },
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-processes-20261116-cdc_merge-0011",
+      "snapshot_id": 9103935343648706010
+     }
+    ],
+    "n_missing": 17
+   },
+   "aborted_ops_absent": {
+    "ok": false,
+    "failed_ops": 8,
+    "snapshots_in_lineage": [],
+    "aborted_rows_checked": 24001,
+    "aborted_rows_present": 1,
+    "lineage_error": "snapshot 7109454997322647790 not in the proxy journal"
+   },
+   "version_monotonic": {
+    "ok": true,
+    "rows_checked": 33411801,
+    "rows_expected_updated": 213092,
+    "mismatches": 0
+   },
+   "ok": false
+  },
+  "lineage": {
+   "ledger_row_counts": {
+    "ok": false,
+    "partitions_checked": 287,
+    "mismatches": {
+     "dt=2026-11-29/key_bucket=5|stream": {
+      "expected": 10447,
+      "actual": 10185
+     },
+     "dt=2026-11-30/key_bucket=6|stream": {
+      "expected": 399108,
+      "actual": 388924
+     },
+     "dt=2026-11-28/key_bucket=5|stream": {
+      "expected": 10533,
+      "actual": 10251
+     },
+     "dt=2026-11-30/key_bucket=5|stream": {
+      "expected": 398147,
+      "actual": 387981
+     },
+     "dt=2026-11-29/key_bucket=2|stream": {
+      "expected": 10403,
+      "actual": 10131
+     },
+     "dt=2026-11-29/key_bucket=3|stream": {
+      "expected": 10453,
+      "actual": 10179
+     },
+     "dt=2026-11-28/key_bucket=0|merge": {
+      "expected": 4500,
+      "actual": 3000
+     },
+     "dt=2026-11-29/key_bucket=1|stream": {
+      "expected": 10541,
+      "actual": 10261
+     },
+     "dt=2026-11-28/key_bucket=6|stream": {
+      "expected": 10444,
+      "actual": 10170
+     },
+     "dt=2026-11-28/key_bucket=0|stream": {
+      "expected": 10673,
+      "actual": 10411
+     },
+     "dt=2026-11-29/key_bucket=7|stream": {
+      "expected": 10518,
+      "actual": 10262
+     },
+     "dt=2026-11-30/key_bucket=3|stream": {
+      "expected": 400467,
+      "actual": 390341
+     },
+     "dt=2026-11-29/key_bucket=2|merge": {
+      "expected": 1500,
+      "actual": 0
+     },
+     "dt=2026-11-28/key_bucket=2|stream": {
+      "expected": 10500,
+      "actual": 10214
+     },
+     "dt=2026-11-28/key_bucket=7|stream": {
+      "expected": 10437,
+      "actual": 10156
+     },
+     "dt=2026-11-30/key_bucket=4|stream": {
+      "expected": 398693,
+      "actual": 388319
+     },
+     "dt=2026-11-28/key_bucket=4|merge": {
+      "expected": 2500,
+      "actual": 1000
+     },
+     "dt=2026-11-29/key_bucket=4|stream": {
+      "expected": 10395,
+      "actual": 10110
+     },
+     "dt=2026-11-29/key_bucket=0|stream": {
+      "expected": 10418,
+      "actual": 10159
+     },
+     "dt=2026-11-28/key_bucket=4|stream": {
+      "expected": 10218,
+      "actual": 9942
+     },
+     "dt=2026-11-30/key_bucket=7|stream": {
+      "expected": 398469,
+      "actual": 388143
+     },
+     "dt=2026-11-30/key_bucket=0|stream": {
+      "expected": 398396,
+      "actual": 388373
+     },
+     "dt=2026-11-28/key_bucket=3|merge": {
+      "expected": 2500,
+      "actual": 1000
+     },
+     "dt=2026-11-28/key_bucket=1|stream": {
+      "expected": 10535,
+      "actual": 10253
+     },
+     "dt=2026-11-30/key_bucket=1|stream": {
+      "expected": 397828,
+      "actual": 387562
+     },
+     "dt=2026-11-30/key_bucket=2|stream": {
+      "expected": 399267,
+      "actual": 389085
+     },
+     "dt=2026-11-29/key_bucket=6|stream": {
+      "expected": 10442,
+      "actual": 10180
+     },
+     "dt=2026-11-28/key_bucket=3|stream": {
+      "expected": 10468,
+      "actual": 10208
+     }
+    },
+    "n_mismatches": 28,
+    "rows_by_origin": {
+     "stream": 3271800,
+     "golden": 30000000,
+     "merge": 48000
+    },
+    "journal_physical_records": 33319800,
+    "snapshot_total_records": 33319800,
+    "table_live_rows": 33319800,
+    "journal_commits": 180
+   },
+   "no_duplicate_event_ids": {
+    "ok": true,
+    "duplicates": 0,
+    "rows": 33319800
+   },
+   "committed_ops_in_lineage": {
+    "ok": false,
+    "lineage_len": 180,
+    "lineage_error": null,
+    "committed_checked": 17,
+    "missing": [
+     {
+      "op_id": "stage3-S5-P0-mid-s11-r540-health-processes-20261116-cdc_merge-0011",
+      "snapshot_id": 9103935343648706010
+     }
+    ],
+    "n_missing": 1
+   },
+   "aborted_ops_absent": {
+    "ok": true,
+    "failed_ops": 8,
+    "snapshots_in_lineage": [],
+    "aborted_rows_checked": 24000,
+    "aborted_rows_present": 0,
+    "lineage_error": null
+   },
+   "version_monotonic": {
+    "ok": false,
+    "rows_checked": 33319800,
+    "rows_expected_updated": 213092,
+    "mismatches": 24000
+   },
+   "ok": false
+  }
+ },
+ "after_restore": {
+  "ledger_row_counts": {
+   "ok": true,
+   "partitions_checked": 287,
+   "mismatches": {},
+   "n_mismatches": 0,
+   "rows_by_origin": {
+    "stream": 3357800,
+    "golden": 30000000,
+    "merge": 54000
+   },
+   "journal_physical_records": 33411800,
+   "snapshot_total_records": 33411800,
+   "table_live_rows": 33411800,
+   "journal_commits": 186
+  },
+  "no_duplicate_event_ids": {
+   "ok": true,
+   "duplicates": 0,
+   "rows": 33411800
+  },
+  "committed_ops_in_lineage": {
+   "ok": true,
+   "lineage_len": 186,
+   "lineage_error": null,
+   "committed_checked": 17,
+   "missing": [],
+   "n_missing": 0
+  },
+  "aborted_ops_absent": {
+   "ok": true,
+   "failed_ops": 8,
+   "snapshots_in_lineage": [],
+   "aborted_rows_checked": 24000,
+   "aborted_rows_present": 0,
+   "lineage_error": null
+  },
+  "version_monotonic": {
+   "ok": true,
+   "rows_checked": 33411800,
+   "rows_expected_updated": 213092,
+   "mismatches": 0
+  },
+  "ok": true
+ }
+}

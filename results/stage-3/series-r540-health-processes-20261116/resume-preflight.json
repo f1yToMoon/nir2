@@ -1,0 +1,18 @@
+{
+  "snapshot": 1928630960493689178,
+  "runs": [
+    {
+      "run_id": "stage3-S4-P0-mid-s11-r540-health-processes-20261116",
+      "status": "finished",
+      "invariants_ok": true
+    },
+    {
+      "run_id": "stage3-S5-P0-mid-s11-r540-health-processes-20261116",
+      "status": "finished",
+      "invariants_ok": true
+    }
+  ],
+  "active_spark_apps": [],
+  "active_flink_jobs": [],
+  "routing": "proxy"
+}

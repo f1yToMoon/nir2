@@ -84,3 +84,71 @@ diff измерительного кода, сохранить исходный 
 SHA для оставшихся пяти прогонов; согласовать проверки postprocessing с каждым
 фактическим SHA без удаления assert и без повторения завершённых S4/S5.
 Пауза остаётся в силе; эксперименты и независимое ревью не возобновлены.
+
+## Возобновление 2026-11-17T18:00:40.360667+00:00
+
+HEAD main:0eb96739069cd1033e34fbb7f7c3b8b50bfccf3a, резервный коммит автора;
+дерево при старте чистое. Измерительный код идентичен3dd6ecd, исходный plan.json
+сохранён. Plan-amendment.json фиксирует2SHA дляS4/S5 иоставшихся5прогонов;
+postprocessing проверяеткаждыйSHA иэквивалентностькода, все прежниепороги сохранены.
+Повторно517файлов/ledger проверены;послеmakeup snapshotS5 совпал, activeSpark/Flink0.
+Pipeline continue_after_pause.py exec35473:before/integration/after→S0×2/S1–S3→post.
+Старыеexec2618/functions147 завершены, не переиспользовать. Новыйpoller указать ниже.
+HEAD/sourcepaths не менятьдоокончаниясерии. Reviewиспользован1/3,следующий2.
+
+Единственный poller functions13. Ждать functions.wait13; exec35473 параллельно не опрашивать.
+
+## Интеграция после паузы завершена
+
+27passed/209deselected/347,12с, 2 предупреждения об asyncio в синхронных тестах.
+Шесть типов подтверждены (5наS5+1отдельныйretained_deleted_row).
+MeasuredS5 восстановлен:214attempts/186events/53ops/snapshot1928630960493689178.
+Доказательство fault-coverage.json и injection-after.log. Запущен первый полныйS0.
+HEAD0eb9673/source неизменны. Exec35473/poller13; после пятипрогонов встроенныйpost.
+
+## Первый S0 после паузы завершён
+
+stage3-S0-P0-mid-s1-r540-health-processes-20261116: validation=true,
+11committed,59health/0missed/maxgap30,428166с;1674100/1674100freshness.
+Контроллер выполняет S0-повтор, затем S1–S3 и post_series.sh.
+Результатов3/7. HEAD0eb9673/source не менять. Единственныйpollerfunctions13,
+pipelineexec35473. Ревью1/3; следующий2 после полного отчёта/чистого коммита.
+
+## S0-повтор завершён, начался S1 (17.11.2026, 19:04 UTC)
+
+S0-rep: validation=true/5инвариантов,11committed,59health/0missed,
+maxgap30,285675с;1674300/1674300freshness. Готовы4/7 полных результатов.
+Контроллер35473/poller13 выполняет S1, затем S2/S3 и post_series.sh.
+HEAD0eb9673/source по-прежнему закреплены. Прошлая пауза PAUSED.json историческая.
+
+## Полный S1 завершён, начался S2 (17.11.2026, 19:34 UTC)
+
+S1: validation=true/5инвариантов,13committed,58health/0missed,
+maxgap30,793191с; metadata upper1334899Б;5369200/5369200freshness.
+Flink:0restored/0failed checkpoints;агенты3349успехов/0ошибок.
+Готовы5/7 полных результатов. Остались S2/S3 и встроенная постобработка.
+Exec35473/functions13; HEAD0eb9673/source закреплены. Review1/3, следующий2.
+
+## АКТУАЛЬНАЯ ПАУЗА 17.11.2026 по запросу автора
+
+См. paused-20261117/PAUSED.json и отчёт§29. Корневой PAUSED.json от16.11
+исторический. Измерительный HEAD0eb96739069cd1033e34fbb7f7c3b8b50bfccf3a;
+резервный коммитпаузы — его потомок с документами/результатами, source не менялся.
+
+Завершены5/7: S4/S5/S0×2/S1. Проверки78/78, детерминизм11/11intents/следов.
+Экспорт4968файлов/15500600freshness, всеSHA/CSV/p95/metadata/ledger проверены.
+ЧастичныйS2 прерван SIGINT (оставалось>10минут):139файлов,28ops/108attempts/
+94events/2094partitions/6720health/28meta;100metadata/max87505Б.
+S2failed,безfinalJSON/ledger/финальныхинвариантов, диагностический.
+Снимок7534423856391059834. Spark/Flinkactive0,slots={},holds=[];тома/данные/Kafka сохранены.
+Exec35473 завершён1, functions13 закрыт. S3/postprocessing не начинались.
+18полныхжурналов сжатыбезпотерь; автоматического продолжения нет.
+
+При новом поручении: verifyHEAD/source/hashes; сохранить5готовыхпрогонов.
+Новое дополнениеплана с новымS2ID(+ -resume1) и незапущеннымS3, фактическимиSHA.
+Исходныеplan/plan-amendment и partialS2 не перезаписывать. Старыеrun_series.sh/
+continue_after_pause.py сначаланезапускать. Новыйограниченныйконтроллер S2/S3,
+адаптироватьpostprocessing с сохранением всехassert/порогов. После7 — полные
+checks/export/Parquet/time/metadata/plot, основные§§3–8/ответы/CHANGELOG/commit,
+свежий установленныйstage-reviewer раунда2. Review1/3. ПослеPASS tag/push/remoteSHA,
+стопперед4. ПредложениеR1кREVIEWER — решениеавтора, файлыприёмкинеизменны.

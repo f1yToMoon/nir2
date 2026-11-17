@@ -22,7 +22,7 @@ root = Path(__file__).resolve().parent
 repo = root.parents[2]
 output = root / "verification.json"
 assert not output.exists(), "preserve the existing verification"
-plan = json.loads((root / "plan.json").read_text())
+plan = json.loads((root / "plan-amendment.json").read_text())
 manifest = json.loads((root / "evidence/manifest.json").read_text())
 assert set(manifest) == {r["run_id"] for r in plan["runs"]}
 out = {}

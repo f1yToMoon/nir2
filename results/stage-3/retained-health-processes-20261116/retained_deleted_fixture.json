@@ -1,0 +1,687 @@
+{
+  "run_id": "stage3-retained-1794938468511270049",
+  "table": "stage3_it.retained_1794938468511270049",
+  "git_sha": "0eb96739069cd1033e34fbb7f7c3b8b50bfccf3a",
+  "case": "retained_deleted_row",
+  "standalone_control": true,
+  "golden_snapshot_id": 621184641333108471,
+  "delete_snapshot_id": 7545907883702384340,
+  "delete_metadata": {
+    "format-version": 2,
+    "table-uuid": "814e26c8-e72d-4d7a-8b23-ba1d5baa734f",
+    "location": "s3://warehouse/stage3_it/retained_1794938468511270049",
+    "last-sequence-number": 2,
+    "last-updated-ms": 1794938475842,
+    "last-column-id": 4,
+    "current-schema-id": 0,
+    "schemas": [
+      {
+        "type": "struct",
+        "schema-id": 0,
+        "fields": [
+          {
+            "id": 1,
+            "name": "event_id",
+            "required": false,
+            "type": "long"
+          },
+          {
+            "id": 2,
+            "name": "key",
+            "required": false,
+            "type": "long"
+          },
+          {
+            "id": 3,
+            "name": "dt",
+            "required": false,
+            "type": "date"
+          },
+          {
+            "id": 4,
+            "name": "version",
+            "required": false,
+            "type": "int"
+          }
+        ]
+      }
+    ],
+    "default-spec-id": 0,
+    "partition-specs": [
+      {
+        "spec-id": 0,
+        "fields": [
+          {
+            "name": "dt",
+            "transform": "identity",
+            "source-id": 3,
+            "field-id": 1000
+          },
+          {
+            "name": "key_bucket",
+            "transform": "bucket[1]",
+            "source-id": 2,
+            "field-id": 1001
+          }
+        ]
+      }
+    ],
+    "last-partition-id": 1001,
+    "default-sort-order-id": 0,
+    "sort-orders": [
+      {
+        "order-id": 0,
+        "fields": []
+      }
+    ],
+    "properties": {
+      "owner": "root",
+      "write.delete.mode": "copy-on-write",
+      "write.parquet.compression-codec": "zstd"
+    },
+    "current-snapshot-id": 7545907883702384340,
+    "refs": {
+      "main": {
+        "snapshot-id": 7545907883702384340,
+        "type": "branch"
+      }
+    },
+    "snapshots": [
+      {
+        "sequence-number": 1,
+        "snapshot-id": 621184641333108471,
+        "timestamp-ms": 1794938472412,
+        "summary": {
+          "operation": "append",
+          "spark.app.id": "app-20261117180108-0003",
+          "manifests-created": "1",
+          "manifests-kept": "0",
+          "manifests-replaced": "0",
+          "added-data-files": "1",
+          "added-records": "2",
+          "added-files-size": "1241",
+          "changed-partition-count": "1",
+          "total-records": "2",
+          "total-files-size": "1241",
+          "total-data-files": "1",
+          "total-delete-files": "0",
+          "total-position-deletes": "0",
+          "total-equality-deletes": "0",
+          "engine-version": "4.0.1",
+          "app-id": "app-20261117180108-0003",
+          "engine-name": "spark",
+          "iceberg-version": "Apache Iceberg 1.12.0 (commit 212aa894e919ff9fdf89160da4aadcbe6858ac01)",
+          "app-name": "stage3-retained-1794938468511270049"
+        },
+        "manifest-list": "s3://warehouse/stage3_it/retained_1794938468511270049/metadata/snap-621184641333108471-1-30775754-63c4-4236-8a97-0191f06c3237.avro",
+        "schema-id": 0
+      },
+      {
+        "sequence-number": 2,
+        "snapshot-id": 7545907883702384340,
+        "parent-snapshot-id": 621184641333108471,
+        "timestamp-ms": 1794938475838,
+        "summary": {
+          "operation": "overwrite",
+          "spark.app.id": "app-20261117180108-0003",
+          "manifests-created": "2",
+          "manifests-kept": "0",
+          "manifests-replaced": "1",
+          "added-data-files": "1",
+          "deleted-data-files": "1",
+          "added-records": "1",
+          "deleted-records": "2",
+          "added-files-size": "1169",
+          "removed-files-size": "1241",
+          "changed-partition-count": "1",
+          "total-records": "1",
+          "total-files-size": "1169",
+          "total-data-files": "1",
+          "total-delete-files": "0",
+          "total-position-deletes": "0",
+          "total-equality-deletes": "0",
+          "engine-version": "4.0.1",
+          "app-id": "app-20261117180108-0003",
+          "engine-name": "spark",
+          "iceberg-version": "Apache Iceberg 1.12.0 (commit 212aa894e919ff9fdf89160da4aadcbe6858ac01)",
+          "app-name": "stage3-retained-1794938468511270049"
+        },
+        "manifest-list": "s3://warehouse/stage3_it/retained_1794938468511270049/metadata/snap-7545907883702384340-1-9ec1e27d-0646-4d7f-82a1-96125106e03c.avro",
+        "schema-id": 0
+      }
+    ],
+    "statistics": [],
+    "partition-statistics": [],
+    "snapshot-log": [
+      {
+        "timestamp-ms": 1794938472412,
+        "snapshot-id": 621184641333108471
+      },
+      {
+        "timestamp-ms": 1794938475838,
+        "snapshot-id": 7545907883702384340
+      }
+    ],
+    "metadata-log": [
+      {
+        "timestamp-ms": 1794938468618,
+        "metadata-file": "s3://warehouse/stage3_it/retained_1794938468511270049/metadata/00000-952884d8-e5e7-47ca-9398-b6a510b4484a.metadata.json"
+      },
+      {
+        "timestamp-ms": 1794938472417,
+        "metadata-file": "s3://warehouse/stage3_it/retained_1794938468511270049/metadata/00001-3f712d2f-5581-45b5-8fec-c0c6b4f1592b.metadata.json"
+      }
+    ]
+  },
+  "clean": {
+    "ledger_row_counts": {
+      "ok": true,
+      "partitions_checked": 1,
+      "mismatches": {},
+      "n_mismatches": 0,
+      "rows_by_origin": {
+        "golden": 1
+      },
+      "journal_physical_records": 1,
+      "snapshot_total_records": 1,
+      "table_live_rows": 1,
+      "journal_commits": 1
+    },
+    "no_duplicate_event_ids": {
+      "ok": true,
+      "duplicates": 0,
+      "rows": 1
+    },
+    "committed_ops_in_lineage": {
+      "ok": true,
+      "lineage_len": 1,
+      "lineage_error": null,
+      "committed_checked": 1,
+      "missing": [],
+      "n_missing": 0
+    },
+    "aborted_ops_absent": {
+      "ok": true,
+      "failed_ops": 0,
+      "snapshots_in_lineage": [],
+      "aborted_rows_checked": 0,
+      "aborted_rows_present": 0,
+      "lineage_error": null
+    },
+    "version_monotonic": {
+      "ok": true,
+      "rows_checked": 1,
+      "rows_expected_updated": 0,
+      "mismatches": 0
+    },
+    "ok": true
+  },
+  "injected_metadata": {
+    "format-version": 2,
+    "table-uuid": "814e26c8-e72d-4d7a-8b23-ba1d5baa734f",
+    "location": "s3://warehouse/stage3_it/retained_1794938468511270049",
+    "last-sequence-number": 3,
+    "last-updated-ms": 1794938480555,
+    "last-column-id": 4,
+    "current-schema-id": 0,
+    "schemas": [
+      {
+        "type": "struct",
+        "schema-id": 0,
+        "fields": [
+          {
+            "id": 1,
+            "name": "event_id",
+            "required": false,
+            "type": "long"
+          },
+          {
+            "id": 2,
+            "name": "key",
+            "required": false,
+            "type": "long"
+          },
+          {
+            "id": 3,
+            "name": "dt",
+            "required": false,
+            "type": "date"
+          },
+          {
+            "id": 4,
+            "name": "version",
+            "required": false,
+            "type": "int"
+          }
+        ]
+      }
+    ],
+    "default-spec-id": 0,
+    "partition-specs": [
+      {
+        "spec-id": 0,
+        "fields": [
+          {
+            "name": "dt",
+            "transform": "identity",
+            "source-id": 3,
+            "field-id": 1000
+          },
+          {
+            "name": "key_bucket",
+            "transform": "bucket[1]",
+            "source-id": 2,
+            "field-id": 1001
+          }
+        ]
+      }
+    ],
+    "last-partition-id": 1001,
+    "default-sort-order-id": 0,
+    "sort-orders": [
+      {
+        "order-id": 0,
+        "fields": []
+      }
+    ],
+    "properties": {
+      "owner": "root",
+      "write.delete.mode": "copy-on-write",
+      "write.parquet.compression-codec": "zstd"
+    },
+    "current-snapshot-id": 2774835963106945924,
+    "refs": {
+      "main": {
+        "snapshot-id": 2774835963106945924,
+        "type": "branch"
+      }
+    },
+    "snapshots": [
+      {
+        "sequence-number": 1,
+        "snapshot-id": 621184641333108471,
+        "timestamp-ms": 1794938472412,
+        "summary": {
+          "operation": "append",
+          "spark.app.id": "app-20261117180108-0003",
+          "manifests-created": "1",
+          "manifests-kept": "0",
+          "manifests-replaced": "0",
+          "added-data-files": "1",
+          "added-records": "2",
+          "added-files-size": "1241",
+          "changed-partition-count": "1",
+          "total-records": "2",
+          "total-files-size": "1241",
+          "total-data-files": "1",
+          "total-delete-files": "0",
+          "total-position-deletes": "0",
+          "total-equality-deletes": "0",
+          "engine-version": "4.0.1",
+          "app-id": "app-20261117180108-0003",
+          "engine-name": "spark",
+          "iceberg-version": "Apache Iceberg 1.12.0 (commit 212aa894e919ff9fdf89160da4aadcbe6858ac01)",
+          "app-name": "stage3-retained-1794938468511270049"
+        },
+        "manifest-list": "s3://warehouse/stage3_it/retained_1794938468511270049/metadata/snap-621184641333108471-1-30775754-63c4-4236-8a97-0191f06c3237.avro",
+        "schema-id": 0
+      },
+      {
+        "sequence-number": 2,
+        "snapshot-id": 7545907883702384340,
+        "parent-snapshot-id": 621184641333108471,
+        "timestamp-ms": 1794938475838,
+        "summary": {
+          "operation": "overwrite",
+          "spark.app.id": "app-20261117180108-0003",
+          "manifests-created": "2",
+          "manifests-kept": "0",
+          "manifests-replaced": "1",
+          "added-data-files": "1",
+          "deleted-data-files": "1",
+          "added-records": "1",
+          "deleted-records": "2",
+          "added-files-size": "1169",
+          "removed-files-size": "1241",
+          "changed-partition-count": "1",
+          "total-records": "1",
+          "total-files-size": "1169",
+          "total-data-files": "1",
+          "total-delete-files": "0",
+          "total-position-deletes": "0",
+          "total-equality-deletes": "0",
+          "engine-version": "4.0.1",
+          "app-id": "app-20261117180108-0003",
+          "engine-name": "spark",
+          "iceberg-version": "Apache Iceberg 1.12.0 (commit 212aa894e919ff9fdf89160da4aadcbe6858ac01)",
+          "app-name": "stage3-retained-1794938468511270049"
+        },
+        "manifest-list": "s3://warehouse/stage3_it/retained_1794938468511270049/metadata/snap-7545907883702384340-1-9ec1e27d-0646-4d7f-82a1-96125106e03c.avro",
+        "schema-id": 0
+      },
+      {
+        "sequence-number": 3,
+        "snapshot-id": 2774835963106945924,
+        "parent-snapshot-id": 7545907883702384340,
+        "timestamp-ms": 1794938480551,
+        "summary": {
+          "operation": "append",
+          "spark.app.id": "app-20261117180108-0003",
+          "manifests-created": "1",
+          "manifests-kept": "1",
+          "manifests-replaced": "0",
+          "added-data-files": "1",
+          "added-records": "1",
+          "added-files-size": "1169",
+          "changed-partition-count": "1",
+          "total-records": "2",
+          "total-files-size": "2338",
+          "total-data-files": "2",
+          "total-delete-files": "0",
+          "total-position-deletes": "0",
+          "total-equality-deletes": "0",
+          "engine-version": "4.0.1",
+          "app-id": "app-20261117180108-0003",
+          "engine-name": "spark",
+          "iceberg-version": "Apache Iceberg 1.12.0 (commit 212aa894e919ff9fdf89160da4aadcbe6858ac01)",
+          "app-name": "stage3-retained-1794938468511270049"
+        },
+        "manifest-list": "s3://warehouse/stage3_it/retained_1794938468511270049/metadata/snap-2774835963106945924-1-dd38c4cf-23ed-483d-8b65-44bcc7e9f449.avro",
+        "schema-id": 0
+      }
+    ],
+    "statistics": [],
+    "partition-statistics": [],
+    "snapshot-log": [
+      {
+        "timestamp-ms": 1794938472412,
+        "snapshot-id": 621184641333108471
+      },
+      {
+        "timestamp-ms": 1794938475838,
+        "snapshot-id": 7545907883702384340
+      },
+      {
+        "timestamp-ms": 1794938480551,
+        "snapshot-id": 2774835963106945924
+      }
+    ],
+    "metadata-log": [
+      {
+        "timestamp-ms": 1794938468618,
+        "metadata-file": "s3://warehouse/stage3_it/retained_1794938468511270049/metadata/00000-952884d8-e5e7-47ca-9398-b6a510b4484a.metadata.json"
+      },
+      {
+        "timestamp-ms": 1794938472417,
+        "metadata-file": "s3://warehouse/stage3_it/retained_1794938468511270049/metadata/00001-3f712d2f-5581-45b5-8fec-c0c6b4f1592b.metadata.json"
+      },
+      {
+        "timestamp-ms": 1794938475842,
+        "metadata-file": "s3://warehouse/stage3_it/retained_1794938468511270049/metadata/00002-e372b5ad-a887-4c25-9d54-bac460683322.metadata.json"
+      }
+    ]
+  },
+  "injected": {
+    "ledger_row_counts": {
+      "ok": false,
+      "partitions_checked": 1,
+      "mismatches": {
+        "dt=2026-11-01/key_bucket=0|golden": {
+          "expected": 1,
+          "actual": 2
+        }
+      },
+      "n_mismatches": 1,
+      "rows_by_origin": {
+        "golden": 2
+      },
+      "journal_physical_records": 2,
+      "snapshot_total_records": 2,
+      "table_live_rows": 2,
+      "journal_commits": 2
+    },
+    "no_duplicate_event_ids": {
+      "ok": true,
+      "duplicates": 0,
+      "rows": 2
+    },
+    "committed_ops_in_lineage": {
+      "ok": true,
+      "lineage_len": 2,
+      "lineage_error": null,
+      "committed_checked": 1,
+      "missing": [],
+      "n_missing": 0
+    },
+    "aborted_ops_absent": {
+      "ok": true,
+      "failed_ops": 0,
+      "snapshots_in_lineage": [],
+      "aborted_rows_checked": 0,
+      "aborted_rows_present": 0,
+      "lineage_error": null
+    },
+    "version_monotonic": {
+      "ok": true,
+      "rows_checked": 2,
+      "rows_expected_updated": 0,
+      "mismatches": 0
+    },
+    "ok": false
+  },
+  "after_restore": {
+    "ledger_row_counts": {
+      "ok": true,
+      "partitions_checked": 1,
+      "mismatches": {},
+      "n_mismatches": 0,
+      "rows_by_origin": {
+        "golden": 1
+      },
+      "journal_physical_records": 1,
+      "snapshot_total_records": 1,
+      "table_live_rows": 1,
+      "journal_commits": 1
+    },
+    "no_duplicate_event_ids": {
+      "ok": true,
+      "duplicates": 0,
+      "rows": 1
+    },
+    "committed_ops_in_lineage": {
+      "ok": true,
+      "lineage_len": 1,
+      "lineage_error": null,
+      "committed_checked": 1,
+      "missing": [],
+      "n_missing": 0
+    },
+    "aborted_ops_absent": {
+      "ok": true,
+      "failed_ops": 0,
+      "snapshots_in_lineage": [],
+      "aborted_rows_checked": 0,
+      "aborted_rows_present": 0,
+      "lineage_error": null
+    },
+    "version_monotonic": {
+      "ok": true,
+      "rows_checked": 1,
+      "rows_expected_updated": 0,
+      "mismatches": 0
+    },
+    "ok": true
+  },
+  "commit_attempts": [
+    {
+      "attempt_id": 71059,
+      "run_id": "stage3-retained-1794938468511270049",
+      "op_id": null,
+      "slot": null,
+      "writer_class": "user",
+      "table_name": "stage3_it.retained_1794938468511270049",
+      "idempotency_key": null,
+      "received_at": "2026-11-17 18:01:12.413580+00:00",
+      "forwarded_at": "2026-11-17 18:01:12.413744+00:00",
+      "responded_at": "2026-11-17 18:01:12.424514+00:00",
+      "hold_ms": 0,
+      "hold_reason": null,
+      "http_status": 200,
+      "base_snapshot_id": null,
+      "new_snapshot_id": 621184641333108471,
+      "sequence_number": 1,
+      "iceberg_op": "append",
+      "op_class": "append",
+      "summary": {
+        "app-id": "app-20261117180108-0003",
+        "app-name": "stage3-retained-1794938468511270049",
+        "operation": "append",
+        "engine-name": "spark",
+        "spark.app.id": "app-20261117180108-0003",
+        "added-records": "2",
+        "total-records": "2",
+        "engine-version": "4.0.1",
+        "manifests-kept": "0",
+        "iceberg-version": "Apache Iceberg 1.12.0 (commit 212aa894e919ff9fdf89160da4aadcbe6858ac01)",
+        "added-data-files": "1",
+        "added-files-size": "1241",
+        "total-data-files": "1",
+        "total-files-size": "1241",
+        "manifests-created": "1",
+        "manifests-replaced": "0",
+        "total-delete-files": "0",
+        "total-equality-deletes": "0",
+        "total-position-deletes": "0",
+        "changed-partition-count": "1"
+      },
+      "error_type": null,
+      "op_class_body": "append",
+      "op_class_ambiguity": "data_files_added_only",
+      "op_class_source": "body",
+      "removed_snapshot_ids": null
+    },
+    {
+      "attempt_id": 71060,
+      "run_id": "stage3-retained-1794938468511270049",
+      "op_id": null,
+      "slot": null,
+      "writer_class": "user",
+      "table_name": "stage3_it.retained_1794938468511270049",
+      "idempotency_key": null,
+      "received_at": "2026-11-17 18:01:15.839062+00:00",
+      "forwarded_at": "2026-11-17 18:01:15.839216+00:00",
+      "responded_at": "2026-11-17 18:01:15.849613+00:00",
+      "hold_ms": 0,
+      "hold_reason": null,
+      "http_status": 200,
+      "base_snapshot_id": 621184641333108471,
+      "new_snapshot_id": 7545907883702384340,
+      "sequence_number": 2,
+      "iceberg_op": "overwrite",
+      "op_class": "cow_dml",
+      "summary": {
+        "app-id": "app-20261117180108-0003",
+        "app-name": "stage3-retained-1794938468511270049",
+        "operation": "overwrite",
+        "engine-name": "spark",
+        "spark.app.id": "app-20261117180108-0003",
+        "added-records": "1",
+        "total-records": "1",
+        "engine-version": "4.0.1",
+        "manifests-kept": "0",
+        "deleted-records": "2",
+        "iceberg-version": "Apache Iceberg 1.12.0 (commit 212aa894e919ff9fdf89160da4aadcbe6858ac01)",
+        "added-data-files": "1",
+        "added-files-size": "1169",
+        "total-data-files": "1",
+        "total-files-size": "1169",
+        "manifests-created": "2",
+        "deleted-data-files": "1",
+        "manifests-replaced": "1",
+        "removed-files-size": "1241",
+        "total-delete-files": "0",
+        "total-equality-deletes": "0",
+        "total-position-deletes": "0",
+        "changed-partition-count": "1"
+      },
+      "error_type": null,
+      "op_class_body": "cow_dml",
+      "op_class_ambiguity": "overwrite_by_filter",
+      "op_class_source": "body",
+      "removed_snapshot_ids": null
+    },
+    {
+      "attempt_id": 71061,
+      "run_id": "stage3-retained-1794938468511270049",
+      "op_id": null,
+      "slot": null,
+      "writer_class": "user",
+      "table_name": "stage3_it.retained_1794938468511270049",
+      "idempotency_key": null,
+      "received_at": "2026-11-17 18:01:20.552477+00:00",
+      "forwarded_at": "2026-11-17 18:01:20.552628+00:00",
+      "responded_at": "2026-11-17 18:01:20.563255+00:00",
+      "hold_ms": 0,
+      "hold_reason": null,
+      "http_status": 200,
+      "base_snapshot_id": 7545907883702384340,
+      "new_snapshot_id": 2774835963106945924,
+      "sequence_number": 3,
+      "iceberg_op": "append",
+      "op_class": "append",
+      "summary": {
+        "app-id": "app-20261117180108-0003",
+        "app-name": "stage3-retained-1794938468511270049",
+        "operation": "append",
+        "engine-name": "spark",
+        "spark.app.id": "app-20261117180108-0003",
+        "added-records": "1",
+        "total-records": "2",
+        "engine-version": "4.0.1",
+        "manifests-kept": "1",
+        "iceberg-version": "Apache Iceberg 1.12.0 (commit 212aa894e919ff9fdf89160da4aadcbe6858ac01)",
+        "added-data-files": "1",
+        "added-files-size": "1169",
+        "total-data-files": "2",
+        "total-files-size": "2338",
+        "manifests-created": "1",
+        "manifests-replaced": "0",
+        "total-delete-files": "0",
+        "total-equality-deletes": "0",
+        "total-position-deletes": "0",
+        "changed-partition-count": "1"
+      },
+      "error_type": null,
+      "op_class_body": "append",
+      "op_class_ambiguity": "data_files_added_only",
+      "op_class_source": "body",
+      "removed_snapshot_ids": null
+    },
+    {
+      "attempt_id": 71062,
+      "run_id": "stage3-retained-1794938468511270049",
+      "op_id": null,
+      "slot": null,
+      "writer_class": "user",
+      "table_name": "stage3_it.retained_1794938468511270049",
+      "idempotency_key": null,
+      "received_at": "2026-11-17 18:01:22.708121+00:00",
+      "forwarded_at": "2026-11-17 18:01:22.708225+00:00",
+      "responded_at": "2026-11-17 18:01:22.718565+00:00",
+      "hold_ms": 0,
+      "hold_reason": null,
+      "http_status": 200,
+      "base_snapshot_id": 2774835963106945924,
+      "new_snapshot_id": null,
+      "sequence_number": null,
+      "iceberg_op": null,
+      "op_class": "metadata",
+      "summary": null,
+      "error_type": null,
+      "op_class_body": "metadata",
+      "op_class_ambiguity": null,
+      "op_class_source": "body",
+      "removed_snapshot_ids": null
+    }
+  ]
+}
