@@ -1,0 +1,86 @@
+{
+  "results/stage-3/series-r540-health-processes-20261116/resume-20261121/make-up.log": {
+    "archive": "results/stage-3/series-r540-health-processes-20261116/resume-20261121/logs/resume/make-up.log.gz",
+    "bytes": 2655,
+    "raw_sha256": "6d07b6d23efab280b5da30a55d08d5911cf94a3378cbf9bf3a423e75b6cedf2e",
+    "archive_sha256": "2f5160c325a65b2f39d4b803420983b649a5c986388c61a1757bd194d72cc66c"
+  },
+  "results/stage-3/series-r540-health-processes-20261116/resume-20261121/pipeline.log": {
+    "archive": "results/stage-3/series-r540-health-processes-20261116/resume-20261121/logs/resume/pipeline.log.gz",
+    "bytes": 1811,
+    "raw_sha256": "5a9ec54ba24ca08ad829489d71258e9d5c5822fcd910be3d7bdecc448c2c23b2",
+    "archive_sha256": "d58a954affa443590f21e3798450931552e476b25b319e284e3868d94a527815"
+  },
+  "results/stage-3/series-r540-health-processes-20261116/resume-20261121/preflight-after-restart.log": {
+    "archive": "results/stage-3/series-r540-health-processes-20261116/resume-20261121/logs/resume/preflight-after-restart.log.gz",
+    "bytes": 0,
+    "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "archive_sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64"
+  },
+  "results/stage-3/series-r540-health-processes-20261116/resume-20261121/final-selfcheck.log": {
+    "archive": "results/stage-3/series-r540-health-processes-20261116/resume-20261121/logs/resume/final-selfcheck.log.gz",
+    "bytes": 1010,
+    "raw_sha256": "12e18667a6f83b76c4d5bc4a9caf80599fada6a2eb368b80471255f982bb94f3",
+    "archive_sha256": "6e0c2e7971f0c5d6559c1a19fd92808ce4cbc80b8279ec85d73d252a9fd680be"
+  },
+  "results/stage-3/series-r540-health-processes-20261116/resume-20261121/preflight-v3.log": {
+    "archive": "results/stage-3/series-r540-health-processes-20261116/resume-20261121/logs/resume/preflight-v3.log.gz",
+    "bytes": 0,
+    "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "archive_sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64"
+  },
+  "results/stage-3/series-r540-health-processes-20261116/postprocessing.log": {
+    "archive": "results/stage-3/series-r540-health-processes-20261116/resume-20261121/logs/postprocessing.log.gz",
+    "bytes": 0,
+    "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "archive_sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64"
+  },
+  "results/stage-3/series-r540-health-processes-20261116/checks.log": {
+    "archive": "results/stage-3/series-r540-health-processes-20261116/resume-20261121/logs/checks.log.gz",
+    "bytes": 10507,
+    "raw_sha256": "c5780525471802b7e88b26d5723f08d4dc7ebbcf7888197493c180b56422ff4c",
+    "archive_sha256": "b09bab90bcb835223c6044cf769788829ee6de92d97f770838260f13d035c7ec"
+  },
+  "results/stage-3/series-r540-health-processes-20261116/export.log": {
+    "archive": "results/stage-3/series-r540-health-processes-20261116/resume-20261121/logs/export.log.gz",
+    "bytes": 931,
+    "raw_sha256": "31345ca86978a45681c41d6d9d5d647c84c332b1ccb98caa765c2ba0d1ec3c5d",
+    "archive_sha256": "f4a116c302eed7030ba603d4d8b63fc45fb8d3f6f88067d1265f0225086c453c"
+  },
+  "results/stage-3/series-r540-health-processes-20261116/verification.log": {
+    "archive": "results/stage-3/series-r540-health-processes-20261116/resume-20261121/logs/verification.log.gz",
+    "bytes": 29068,
+    "raw_sha256": "4236a7c3e0a635e0986c002c985ebd17a22ea55feaeaa4a67eef6dd81ce6780c",
+    "archive_sha256": "ebf5b4a543edc72caf8435a4a7adf5c4b4a545f85c5072b3e0a46b95c6e33189"
+  },
+  "results/stage-3/series-r540-health-processes-20261116/summary-table.log": {
+    "archive": "results/stage-3/series-r540-health-processes-20261116/resume-20261121/logs/summary-table.log.gz",
+    "bytes": 1219,
+    "raw_sha256": "045cb6f3c1507d8e7135477d308fbf0f150c0ce59d4e1a304fdfad01e12b84fb",
+    "archive_sha256": "f5681e0fb135f2ddbe1cdaecf837a5d18035bd7e7330daa87c89518a2f65cf87"
+  },
+  "results/stage-3/series-r540-health-processes-20261116/maintenance-summary.log": {
+    "archive": "results/stage-3/series-r540-health-processes-20261116/resume-20261121/logs/maintenance-summary.log.gz",
+    "bytes": 3278,
+    "raw_sha256": "b243548c1819915a0ba4293c73198193a2d98463a86be678beb38e9f4bad9e8f",
+    "archive_sha256": "9d707d6779a64c93fd1bb3de2dc9994a1a49266b90d1afdb974f6118c96edff2"
+  },
+  "results/stage-3/series-r540-health-processes-20261116/plot-timeline.log": {
+    "archive": "results/stage-3/series-r540-health-processes-20261116/resume-20261121/logs/plot-timeline.log.gz",
+    "bytes": 93,
+    "raw_sha256": "f4abb297985d630e7e059b81e7e10a769e468f80dc6874c3c583a64c4ff04ba3",
+    "archive_sha256": "bab2b6293c699198883558789107ebe7d7da36bbda5538908405b8f5b4068324"
+  },
+  "results/stage-3/stage3-S2-P0-mid-s11-r540-health-processes-20261116-resume1.log": {
+    "archive": "results/stage-3/series-r540-health-processes-20261116/resume-20261121/logs/runs/stage3-S2-P0-mid-s11-r540-health-processes-20261116-resume1.log.gz",
+    "bytes": 361171,
+    "raw_sha256": "29ce072c0c63ec56a07c4e8cb39a3c758928004690f4f7681bdb485c3ef623c8",
+    "archive_sha256": "c7fdf896993526536af0b54847254a78d0d8ad64ae5bfce44c9e6e2ada19978e"
+  },
+  "results/stage-3/stage3-S3-P0-mid-s11-r540-health-processes-20261116.log": {
+    "archive": "results/stage-3/series-r540-health-processes-20261116/resume-20261121/logs/runs/stage3-S3-P0-mid-s11-r540-health-processes-20261116.log.gz",
+    "bytes": 347604,
+    "raw_sha256": "85f3055e7f249c86e45153db76e92d0c5034143d0aa0f8a5c7bafe16a942bd8f",
+    "archive_sha256": "15f007645db2fcc4d3b9df9e6d00e760309a35a3e761d3db489e919a9f4dc21e"
+  }
+}

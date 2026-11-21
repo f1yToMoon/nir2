@@ -6,7 +6,7 @@ from datetime import datetime
 from pathlib import Path
 
 root = Path(sys.argv[1])
-plan = json.loads((root / 'plan-amendment.json').read_text())
+plan = json.loads((root / 'plan-amendment-20261121.json').read_text())
 out = {}
 
 

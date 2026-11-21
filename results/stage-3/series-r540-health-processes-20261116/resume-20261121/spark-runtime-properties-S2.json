@@ -1,0 +1,13 @@
+{
+  "application_id": "app-20261121121550-0000",
+  "name": "capl-stage3-S2-P0-mid-s11-r540-health-processes-20261116-resume1",
+  "spark_properties": {
+    "spark.master": "spark://spark-master:7077",
+    "spark.executor.memory": "2g",
+    "spark.driver.memory": "3g",
+    "spark.executor.cores": "2",
+    "spark.cores.max": "8",
+    "spark.scheduler.mode": "FAIR",
+    "spark.sql.session.timeZone": "UTC"
+  }
+}

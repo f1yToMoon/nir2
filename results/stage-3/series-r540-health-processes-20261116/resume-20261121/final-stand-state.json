@@ -1,0 +1,44 @@
+{
+  "runs": [
+    {
+      "run_id": "stage3-S4-P0-mid-s11-r540-health-processes-20261116",
+      "status": "finished",
+      "invariants_ok": true
+    },
+    {
+      "run_id": "stage3-S5-P0-mid-s11-r540-health-processes-20261116",
+      "status": "finished",
+      "invariants_ok": true
+    },
+    {
+      "run_id": "stage3-S0-P0-mid-s1-r540-health-processes-20261116",
+      "status": "finished",
+      "invariants_ok": true
+    },
+    {
+      "run_id": "stage3-S0-P0-mid-s1-rep-r540-health-processes-20261116",
+      "status": "finished",
+      "invariants_ok": true
+    },
+    {
+      "run_id": "stage3-S1-P0-mid-s11-r540-health-processes-20261116",
+      "status": "finished",
+      "invariants_ok": true
+    },
+    {
+      "run_id": "stage3-S2-P0-mid-s11-r540-health-processes-20261116-resume1",
+      "status": "finished",
+      "invariants_ok": true
+    },
+    {
+      "run_id": "stage3-S3-P0-mid-s11-r540-health-processes-20261116",
+      "status": "finished",
+      "invariants_ok": true
+    }
+  ],
+  "current_snapshot_id": 4552900369334534838,
+  "active_spark_apps": [],
+  "active_flink_jobs": [],
+  "slots": {},
+  "holds": []
+}

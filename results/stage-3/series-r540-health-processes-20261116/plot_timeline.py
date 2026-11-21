@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 
 root = Path(__file__).resolve().parent
-plan = json.loads((root / "plan-amendment.json").read_text())
+plan = json.loads((root / "plan-amendment-20261121.json").read_text())
 rid = next(r["run_id"] for r in plan["runs"] if r["scenario"].startswith("S2_"))
 result = json.loads((root.parent / "runs" / f"{rid}.json").read_text())
 assert result["validation"]["ok"] is True
@@ -52,7 +52,7 @@ failures, _ = np.histogram(fail_times, bins)
 assert int(counts.sum()) == len(commits)
 assert int(failures.sum()) == len(fail_times) > 0
 with (root / "timeline-S2-bins.csv").open("w", newline="") as fh:
-    writer = csv.writer(fh)
+    writer = csv.writer(fh, lineterminator="\n")
     writer.writerow(["start_s", "end_s", "committed_snapshots", "data_conflicts"])
     writer.writerows(zip(bins[:-1], bins[1:], counts, failures))
 

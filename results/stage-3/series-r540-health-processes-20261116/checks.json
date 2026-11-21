@@ -1,0 +1,1547 @@
+{
+ "runs": {
+  "stage3-S4-P0-mid-s11-r540-health-processes-20261116": {
+   "scenario": "S4_merge_vs_stream_serializable",
+   "status": "finished",
+   "invariants_ok": true,
+   "git_sha": "3dd6ecd7339d04b11fdc4a6108f3ce745598d523",
+   "n_ops": 35,
+   "k2": 23,
+   "k1_fail": 0,
+   "k1_with_409": 0,
+   "outcomes": {
+    "committed": 12,
+    "data_conflict": 23
+   },
+   "background_expire": {
+    "n": 29,
+    "cpu_s": 57.452,
+    "outcomes": {
+     "committed": 29
+    },
+    "late_max_s": 10.2,
+    "d_exec_max_s": 9.713627,
+    "d_exec_p50_s": 6.275051
+   },
+   "commit_rate_per_s": 0.07953176543272564,
+   "R_s": 540.0,
+   "I_s": 60.0
+  },
+  "stage3-S5-P0-mid-s11-r540-health-processes-20261116": {
+   "scenario": "S5_compliance_delete",
+   "status": "finished",
+   "invariants_ok": true,
+   "git_sha": "3dd6ecd7339d04b11fdc4a6108f3ce745598d523",
+   "n_ops": 25,
+   "k2": 8,
+   "k1_fail": 0,
+   "k1_with_409": 0,
+   "outcomes": {
+    "committed": 17,
+    "data_conflict": 8
+   },
+   "background_expire": {
+    "n": 28,
+    "cpu_s": 59.961,
+    "outcomes": {
+     "committed": 28
+    },
+    "late_max_s": 7.1,
+    "d_exec_max_s": 6.487127,
+    "d_exec_p50_s": 1.196405
+   },
+   "commit_rate_per_s": 0.11607241442695325,
+   "R_s": 540.0,
+   "I_s": 60.0
+  },
+  "stage3-S0-P0-mid-s1-r540-health-processes-20261116": {
+   "scenario": "S0_baseline",
+   "status": "finished",
+   "invariants_ok": true,
+   "git_sha": "0eb96739069cd1033e34fbb7f7c3b8b50bfccf3a",
+   "n_ops": 11,
+   "k2": 0,
+   "k1_fail": 0,
+   "k1_with_409": 1,
+   "outcomes": {
+    "committed": 11
+   },
+   "background_expire": {
+    "n": 28,
+    "cpu_s": 51.357,
+    "outcomes": {
+     "committed": 28
+    },
+    "late_max_s": 7.0,
+    "d_exec_max_s": 6.431222,
+    "d_exec_p50_s": 1.0959835
+   },
+   "commit_rate_per_s": 0.11254886181548315,
+   "R_s": 540.0,
+   "I_s": 60.0
+  },
+  "stage3-S0-P0-mid-s1-rep-r540-health-processes-20261116": {
+   "scenario": "S0_baseline",
+   "status": "finished",
+   "invariants_ok": true,
+   "git_sha": "0eb96739069cd1033e34fbb7f7c3b8b50bfccf3a",
+   "n_ops": 11,
+   "k2": 0,
+   "k1_fail": 0,
+   "k1_with_409": 0,
+   "outcomes": {
+    "committed": 11
+   },
+   "background_expire": {
+    "n": 28,
+    "cpu_s": 50.552,
+    "outcomes": {
+     "committed": 28
+    },
+    "late_max_s": 7.1,
+    "d_exec_max_s": 6.561522,
+    "d_exec_p50_s": 1.0700954999999999
+   },
+   "commit_rate_per_s": 0.11257622332486028,
+   "R_s": 540.0,
+   "I_s": 60.0
+  },
+  "stage3-S1-P0-mid-s11-r540-health-processes-20261116": {
+   "scenario": "S1_compaction_vs_stream_append",
+   "status": "finished",
+   "invariants_ok": true,
+   "git_sha": "0eb96739069cd1033e34fbb7f7c3b8b50bfccf3a",
+   "n_ops": 13,
+   "k2": 0,
+   "k1_fail": 0,
+   "k1_with_409": 12,
+   "outcomes": {
+    "committed": 13
+   },
+   "background_expire": {
+    "n": 28,
+    "cpu_s": 329.203,
+    "outcomes": {
+     "committed": 28
+    },
+    "late_max_s": 12.7,
+    "d_exec_max_s": 12.163364,
+    "d_exec_p50_s": 10.0194805
+   },
+   "commit_rate_per_s": 2.207139486000047,
+   "R_s": 540.0,
+   "I_s": 60.0
+  },
+  "stage3-S2-P0-mid-s11-r540-health-processes-20261116-resume1": {
+   "scenario": "S2_compaction_vs_cdc_merge",
+   "status": "finished",
+   "invariants_ok": true,
+   "git_sha": "17243da29a64dc9263211d2ebea0cfe888701eb3",
+   "n_ops": 28,
+   "k2": 7,
+   "k1_fail": 0,
+   "k1_with_409": 3,
+   "outcomes": {
+    "committed": 21,
+    "data_conflict": 7
+   },
+   "background_expire": {
+    "n": 28,
+    "cpu_s": 65.723,
+    "outcomes": {
+     "committed": 28
+    },
+    "late_max_s": 8.4,
+    "d_exec_max_s": 8.115335,
+    "d_exec_p50_s": 1.7195580000000001
+   },
+   "commit_rate_per_s": 0.11861870161069135,
+   "R_s": 540.0,
+   "I_s": 60.0
+  },
+  "stage3-S3-P0-mid-s11-r540-health-processes-20261116": {
+   "scenario": "S3_compaction_vs_mor_dml",
+   "status": "finished",
+   "invariants_ok": true,
+   "git_sha": "17243da29a64dc9263211d2ebea0cfe888701eb3",
+   "n_ops": 50,
+   "k2": 9,
+   "k1_fail": 0,
+   "k1_with_409": 0,
+   "outcomes": {
+    "noop": 1,
+    "committed": 40,
+    "data_conflict": 9
+   },
+   "background_expire": {
+    "n": 28,
+    "cpu_s": 67.135,
+    "outcomes": {
+     "committed": 28
+    },
+    "late_max_s": 7.1,
+    "d_exec_max_s": 6.554272,
+    "d_exec_p50_s": 1.4530525
+   },
+   "commit_rate_per_s": 0.12994097721531073,
+   "R_s": 540.0,
+   "I_s": 60.0
+  }
+ },
+ "checks": {
+  "stage3-S4-P0-mid-s11-r540-health-processes-20261116: finished, invariants_ok": {
+   "ok": true,
+   "invariants": {
+    "ledger_row_counts": true,
+    "no_duplicate_event_ids": true,
+    "committed_ops_in_lineage": true,
+    "aborted_ops_absent": true,
+    "version_monotonic": true,
+    "ok": true
+   }
+  },
+  "stage3-S4-P0-mid-s11-r540-health-processes-20261116: validation.ok": {
+   "ok": true,
+   "validation": {
+    "ok": true,
+    "incomplete_cost": [],
+    "runner_errors": []
+   }
+  },
+  "stage3-S4-P0-mid-s11-r540-health-processes-20261116: stream freshness fully observed": {
+   "ok": true,
+   "freshness": {
+    "complete": true,
+    "n_expected": 3425200,
+    "n_samples": 3425200,
+    "missing": 0,
+    "p95_s": 14.564079093933106,
+    "errors": [],
+    "unresolved_snapshots": {},
+    "n_snapshots": 115,
+    "observer_cpu_s": 13.389819741000018,
+    "clock": "producer UTC time.time → successful commit_attempts.responded_at"
+   }
+  },
+  "stage3-S4-P0-mid-s11-r540-health-processes-20261116: sum cpu_ms <= app cpu": {
+   "ok": true,
+   "ops_cpu_ms": 569643,
+   "app_cpu_ms": 6407209,
+   "workers_cgroup_cpu_ms": 12727040,
+   "share_of_app": 0.089
+  },
+  "stage3-S4-P0-mid-s11-r540-health-processes-20261116: app cpu <= workers cgroup cpu": {
+   "ok": true,
+   "app_cpu_ms": 6407209,
+   "workers_cgroup_cpu_ms": 12727040
+  },
+  "stage3-S4-P0-mid-s11-r540-health-processes-20261116: complete cost for every executed operation": {
+   "ok": true,
+   "incomplete": []
+  },
+  "stage3-S4-P0-mid-s11-r540-health-processes-20261116: footprint_executed ⊆ requested": {
+   "ok": true,
+   "committed": 12,
+   "with_executed": 12,
+   "violations": []
+  },
+  "stage3-S4-P0-mid-s11-r540-health-processes-20261116: K2+K1 > 0 and class K2": {
+   "ok": true,
+   "k2": 23,
+   "k1_with_409": 0,
+   "k1_fail": 0,
+   "n_ops": 35,
+   "share": 0.657
+  },
+  "stage3-S4-P0-mid-s11-r540-health-processes-20261116: complete history timing coverage": {
+   "ok": true,
+   "expected": 35,
+   "observed": 35,
+   "missing_or_invalid": []
+  },
+  "stage3-S4-P0-mid-s11-r540-health-processes-20261116: no operation older than R (or counted)": {
+   "ok": true,
+   "R_s": 540.0,
+   "over_r": [],
+   "n_over_r": 0,
+   "base_expired": 0,
+   "history_unresolved": 0,
+   "errors": 0
+  },
+  "stage3-S4-P0-mid-s11-r540-health-processes-20261116: no runner/infrastructure errors": {
+   "ok": true,
+   "errors": []
+  },
+  "stage3-S4-P0-mid-s11-r540-health-processes-20261116: complete health sampling coverage": {
+   "ok": true,
+   "coverage": {
+    "ok": true,
+    "samples": 60,
+    "interval_s": 30.0,
+    "jitter_budget_s": 1.0,
+    "max_gap_s": 30.634019,
+    "missed_intervals": 0,
+    "gaps_s": [
+     29.632196,
+     29.994197,
+     29.998426,
+     30.016262,
+     29.983947,
+     30.000795,
+     30.000057,
+     30.000608,
+     30.286355,
+     29.746813,
+     29.99187,
+     30.010259,
+     29.997925,
+     29.969268,
+     29.996886,
+     30.336772,
+     29.69498,
+     30.022558,
+     29.987295,
+     30.003029,
+     29.956778,
+     30.001998,
+     30.522058,
+     30.021542,
+     29.689484,
+     29.801104,
+     29.991086,
+     30.39661,
+     30.006059,
+     29.577348,
+     30.000854,
+     30.011291,
+     30.00424,
+     30.201998,
+     30.000912,
+     29.852514,
+     29.944198,
+     30.0157,
+     29.967676,
+     30.55477,
+     29.466773,
+     29.99006,
+     30.006528,
+     30.010396,
+     29.988248,
+     29.987522,
+     30.376387,
+     30.050835,
+     29.949791,
+     30.634019,
+     29.002283,
+     30.008112,
+     30.348026,
+     29.633448,
+     30.000964,
+     30.017149,
+     29.996488,
+     29.967967,
+     20.792014,
+     0.396575,
+     0.005645
+    ],
+    "invalid_timestamps": []
+   }
+  },
+  "stage3-S4-P0-mid-s11-r540-health-processes-20261116: complete metadata version byte bound": {
+   "ok": true,
+   "complete": true,
+   "max_bytes": 63558,
+   "error": null
+  },
+  "stage3-S4-P0-mid-s11-r540-health-processes-20261116: history <= verified point (1452 / 1.51 MB)": {
+   "ok": true,
+   "max_snapshots": 47,
+   "max_metadata_bytes": 63558,
+   "B": [
+    1800,
+    1880000
+   ]
+  },
+  "stage3-S4-P0-mid-s11-r540-health-processes-20261116: dense history upper bound <= 1452": {
+   "ok": true,
+   "unique_additions": 127,
+   "unique_removals": 87,
+   "lower": {
+    "peak_snapshots": 47,
+    "at": "2026-11-16 19:26:26.950892+00:00",
+    "final_snapshots": 41
+   },
+   "upper": {
+    "peak_snapshots": 47,
+    "at": "2026-11-16 19:26:26.930500+00:00",
+    "final_snapshots": 41
+   }
+  },
+  "stage3-S5-P0-mid-s11-r540-health-processes-20261116: finished, invariants_ok": {
+   "ok": true,
+   "invariants": {
+    "ledger_row_counts": true,
+    "no_duplicate_event_ids": true,
+    "committed_ops_in_lineage": true,
+    "aborted_ops_absent": true,
+    "version_monotonic": true,
+    "ok": true
+   }
+  },
+  "stage3-S5-P0-mid-s11-r540-health-processes-20261116: validation.ok": {
+   "ok": true,
+   "validation": {
+    "ok": true,
+    "incomplete_cost": [],
+    "runner_errors": []
+   }
+  },
+  "stage3-S5-P0-mid-s11-r540-health-processes-20261116: stream freshness fully observed": {
+   "ok": true,
+   "freshness": {
+    "complete": true,
+    "n_expected": 3357800,
+    "n_samples": 3357800,
+    "missing": 0,
+    "p95_s": 9.711221468448638,
+    "errors": [],
+    "unresolved_snapshots": {},
+    "n_snapshots": 169,
+    "observer_cpu_s": 9.42558644599998,
+    "clock": "producer UTC time.time → successful commit_attempts.responded_at"
+   }
+  },
+  "stage3-S5-P0-mid-s11-r540-health-processes-20261116: sum cpu_ms <= app cpu": {
+   "ok": true,
+   "ops_cpu_ms": 396015,
+   "app_cpu_ms": 1668930,
+   "workers_cgroup_cpu_ms": 2369369,
+   "share_of_app": 0.237
+  },
+  "stage3-S5-P0-mid-s11-r540-health-processes-20261116: app cpu <= workers cgroup cpu": {
+   "ok": true,
+   "app_cpu_ms": 1668930,
+   "workers_cgroup_cpu_ms": 2369369
+  },
+  "stage3-S5-P0-mid-s11-r540-health-processes-20261116: complete cost for every executed operation": {
+   "ok": true,
+   "incomplete": []
+  },
+  "stage3-S5-P0-mid-s11-r540-health-processes-20261116: footprint_executed ⊆ requested": {
+   "ok": true,
+   "committed": 17,
+   "with_executed": 17,
+   "violations": []
+  },
+  "stage3-S5-P0-mid-s11-r540-health-processes-20261116: K2+K1 > 0 and class K2": {
+   "ok": true,
+   "k2": 8,
+   "k1_with_409": 0,
+   "k1_fail": 0,
+   "n_ops": 25,
+   "share": 0.32
+  },
+  "stage3-S5-P0-mid-s11-r540-health-processes-20261116: complete history timing coverage": {
+   "ok": true,
+   "expected": 25,
+   "observed": 25,
+   "missing_or_invalid": []
+  },
+  "stage3-S5-P0-mid-s11-r540-health-processes-20261116: no operation older than R (or counted)": {
+   "ok": true,
+   "R_s": 540.0,
+   "over_r": [],
+   "n_over_r": 0,
+   "base_expired": 0,
+   "history_unresolved": 0,
+   "errors": 0
+  },
+  "stage3-S5-P0-mid-s11-r540-health-processes-20261116: no runner/infrastructure errors": {
+   "ok": true,
+   "errors": []
+  },
+  "stage3-S5-P0-mid-s11-r540-health-processes-20261116: complete health sampling coverage": {
+   "ok": true,
+   "coverage": {
+    "ok": true,
+    "samples": 59,
+    "interval_s": 30.0,
+    "jitter_budget_s": 1.0,
+    "max_gap_s": 30.349017,
+    "missed_intervals": 0,
+    "gaps_s": [
+     29.619933,
+     29.997981,
+     30.000791,
+     29.997174,
+     29.997715,
+     30.005836,
+     30.1672,
+     29.830648,
+     30.050459,
+     30.100897,
+     29.846895,
+     30.005357,
+     30.272376,
+     29.72399,
+     29.998369,
+     30.287615,
+     29.751485,
+     30.086575,
+     29.874178,
+     30.001164,
+     29.999877,
+     30.114665,
+     29.902685,
+     30.264709,
+     29.718902,
+     30.004321,
+     30.153611,
+     30.019372,
+     29.816382,
+     30.001262,
+     29.999568,
+     30.002407,
+     29.997611,
+     30.220642,
+     29.821097,
+     30.038107,
+     29.954922,
+     29.967564,
+     29.997465,
+     30.349017,
+     29.651599,
+     30.001425,
+     30.236328,
+     29.763724,
+     29.99884,
+     30.177032,
+     29.823631,
+     30.000453,
+     29.998581,
+     30.002023,
+     30.023759,
+     30.146194,
+     29.82874,
+     30.000044,
+     30.000373,
+     30.01725,
+     29.978755,
+     7.066594,
+     0.410117,
+     0.005245
+    ],
+    "invalid_timestamps": []
+   }
+  },
+  "stage3-S5-P0-mid-s11-r540-health-processes-20261116: complete metadata version byte bound": {
+   "ok": true,
+   "complete": true,
+   "max_bytes": 85450,
+   "error": null
+  },
+  "stage3-S5-P0-mid-s11-r540-health-processes-20261116: history <= verified point (1452 / 1.51 MB)": {
+   "ok": true,
+   "max_snapshots": 69,
+   "max_metadata_bytes": 85450,
+   "B": [
+    1800,
+    1880000
+   ]
+  },
+  "stage3-S5-P0-mid-s11-r540-health-processes-20261116: dense history upper bound <= 1452": {
+   "ok": true,
+   "unique_additions": 186,
+   "unique_removals": 124,
+   "lower": {
+    "peak_snapshots": 69,
+    "at": "2026-11-16 19:49:39.184290+00:00",
+    "final_snapshots": 63
+   },
+   "upper": {
+    "peak_snapshots": 69,
+    "at": "2026-11-16 19:49:39.173722+00:00",
+    "final_snapshots": 63
+   }
+  },
+  "stage3-S0-P0-mid-s1-r540-health-processes-20261116: finished, invariants_ok": {
+   "ok": true,
+   "invariants": {
+    "ledger_row_counts": true,
+    "no_duplicate_event_ids": true,
+    "committed_ops_in_lineage": true,
+    "aborted_ops_absent": true,
+    "version_monotonic": true,
+    "ok": true
+   }
+  },
+  "stage3-S0-P0-mid-s1-r540-health-processes-20261116: validation.ok": {
+   "ok": true,
+   "validation": {
+    "ok": true,
+    "incomplete_cost": [],
+    "runner_errors": []
+   }
+  },
+  "stage3-S0-P0-mid-s1-r540-health-processes-20261116: stream freshness fully observed": {
+   "ok": true,
+   "freshness": {
+    "complete": true,
+    "n_expected": 1674100,
+    "n_samples": 1674100,
+    "missing": 0,
+    "p95_s": 9.653082239627837,
+    "errors": [],
+    "unresolved_snapshots": {},
+    "n_snapshots": 169,
+    "observer_cpu_s": 6.826994676999999,
+    "clock": "producer UTC time.time → successful commit_attempts.responded_at"
+   }
+  },
+  "stage3-S0-P0-mid-s1-r540-health-processes-20261116: sum cpu_ms <= app cpu": {
+   "ok": true,
+   "ops_cpu_ms": 158746,
+   "app_cpu_ms": 790973,
+   "workers_cgroup_cpu_ms": 1280097,
+   "share_of_app": 0.201
+  },
+  "stage3-S0-P0-mid-s1-r540-health-processes-20261116: app cpu <= workers cgroup cpu": {
+   "ok": true,
+   "app_cpu_ms": 790973,
+   "workers_cgroup_cpu_ms": 1280097
+  },
+  "stage3-S0-P0-mid-s1-r540-health-processes-20261116: complete cost for every executed operation": {
+   "ok": true,
+   "incomplete": []
+  },
+  "stage3-S0-P0-mid-s1-r540-health-processes-20261116: footprint_executed ⊆ requested": {
+   "ok": true,
+   "committed": 11,
+   "with_executed": 11,
+   "violations": []
+  },
+  "stage3-S0-P0-mid-s1-r540-health-processes-20261116: complete history timing coverage": {
+   "ok": true,
+   "expected": 11,
+   "observed": 11,
+   "missing_or_invalid": []
+  },
+  "stage3-S0-P0-mid-s1-r540-health-processes-20261116: no operation older than R (or counted)": {
+   "ok": true,
+   "R_s": 540.0,
+   "over_r": [],
+   "n_over_r": 0,
+   "base_expired": 0,
+   "history_unresolved": 0,
+   "errors": 0
+  },
+  "stage3-S0-P0-mid-s1-r540-health-processes-20261116: no runner/infrastructure errors": {
+   "ok": true,
+   "errors": []
+  },
+  "stage3-S0-P0-mid-s1-r540-health-processes-20261116: complete health sampling coverage": {
+   "ok": true,
+   "coverage": {
+    "ok": true,
+    "samples": 59,
+    "interval_s": 30.0,
+    "jitter_budget_s": 1.0,
+    "max_gap_s": 30.428166,
+    "missed_intervals": 0,
+    "gaps_s": [
+     29.638086,
+     29.99299,
+     30.015668,
+     29.984491,
+     29.99796,
+     30.002542,
+     29.997815,
+     30.428166,
+     29.824004,
+     29.750335,
+     29.998274,
+     30.005606,
+     30.214178,
+     29.894308,
+     29.886087,
+     30.005046,
+     29.995145,
+     30.004562,
+     30.165527,
+     29.828952,
+     29.996831,
+     30.188004,
+     29.812145,
+     30.199808,
+     29.800161,
+     30.003428,
+     29.997428,
+     30.001864,
+     29.999801,
+     30.002578,
+     30.162748,
+     29.834861,
+     29.997675,
+     30.172924,
+     29.828717,
+     30.000811,
+     29.997446,
+     30.003546,
+     29.996559,
+     30.002563,
+     29.997662,
+     30.002879,
+     29.997451,
+     30.163144,
+     29.836641,
+     30.002991,
+     29.997267,
+     30.165175,
+     29.835048,
+     30.15727,
+     29.84089,
+     30.003125,
+     29.997023,
+     30.172745,
+     29.827627,
+     30.000908,
+     29.997423,
+     2.548369,
+     0.393684,
+     0.005396
+    ],
+    "invalid_timestamps": []
+   }
+  },
+  "stage3-S0-P0-mid-s1-r540-health-processes-20261116: complete metadata version byte bound": {
+   "ok": true,
+   "complete": true,
+   "max_bytes": 83125,
+   "error": null
+  },
+  "stage3-S0-P0-mid-s1-r540-health-processes-20261116: history <= verified point (1452 / 1.51 MB)": {
+   "ok": true,
+   "max_snapshots": 67,
+   "max_metadata_bytes": 83125,
+   "B": [
+    1800,
+    1880000
+   ]
+  },
+  "stage3-S0-P0-mid-s1-r540-health-processes-20261116: dense history upper bound <= 1452": {
+   "ok": true,
+   "unique_additions": 180,
+   "unique_removals": 122,
+   "lower": {
+    "peak_snapshots": 67,
+    "at": "2026-11-17 18:18:00.111430+00:00",
+    "final_snapshots": 59
+   },
+   "upper": {
+    "peak_snapshots": 67,
+    "at": "2026-11-17 18:18:00.096491+00:00",
+    "final_snapshots": 59
+   }
+  },
+  "stage3-S0-P0-mid-s1-rep-r540-health-processes-20261116: finished, invariants_ok": {
+   "ok": true,
+   "invariants": {
+    "ledger_row_counts": true,
+    "no_duplicate_event_ids": true,
+    "committed_ops_in_lineage": true,
+    "aborted_ops_absent": true,
+    "version_monotonic": true,
+    "ok": true
+   }
+  },
+  "stage3-S0-P0-mid-s1-rep-r540-health-processes-20261116: validation.ok": {
+   "ok": true,
+   "validation": {
+    "ok": true,
+    "incomplete_cost": [],
+    "runner_errors": []
+   }
+  },
+  "stage3-S0-P0-mid-s1-rep-r540-health-processes-20261116: stream freshness fully observed": {
+   "ok": true,
+   "freshness": {
+    "complete": true,
+    "n_expected": 1674300,
+    "n_samples": 1674300,
+    "missing": 0,
+    "p95_s": 9.622866880893707,
+    "errors": [],
+    "unresolved_snapshots": {},
+    "n_snapshots": 168,
+    "observer_cpu_s": 6.426421593000005,
+    "clock": "producer UTC time.time → successful commit_attempts.responded_at"
+   }
+  },
+  "stage3-S0-P0-mid-s1-rep-r540-health-processes-20261116: sum cpu_ms <= app cpu": {
+   "ok": true,
+   "ops_cpu_ms": 160089,
+   "app_cpu_ms": 786545,
+   "workers_cgroup_cpu_ms": 1270460,
+   "share_of_app": 0.204
+  },
+  "stage3-S0-P0-mid-s1-rep-r540-health-processes-20261116: app cpu <= workers cgroup cpu": {
+   "ok": true,
+   "app_cpu_ms": 786545,
+   "workers_cgroup_cpu_ms": 1270460
+  },
+  "stage3-S0-P0-mid-s1-rep-r540-health-processes-20261116: complete cost for every executed operation": {
+   "ok": true,
+   "incomplete": []
+  },
+  "stage3-S0-P0-mid-s1-rep-r540-health-processes-20261116: footprint_executed ⊆ requested": {
+   "ok": true,
+   "committed": 11,
+   "with_executed": 11,
+   "violations": []
+  },
+  "stage3-S0-P0-mid-s1-rep-r540-health-processes-20261116: complete history timing coverage": {
+   "ok": true,
+   "expected": 11,
+   "observed": 11,
+   "missing_or_invalid": []
+  },
+  "stage3-S0-P0-mid-s1-rep-r540-health-processes-20261116: no operation older than R (or counted)": {
+   "ok": true,
+   "R_s": 540.0,
+   "over_r": [],
+   "n_over_r": 0,
+   "base_expired": 0,
+   "history_unresolved": 0,
+   "errors": 0
+  },
+  "stage3-S0-P0-mid-s1-rep-r540-health-processes-20261116: no runner/infrastructure errors": {
+   "ok": true,
+   "errors": []
+  },
+  "stage3-S0-P0-mid-s1-rep-r540-health-processes-20261116: complete health sampling coverage": {
+   "ok": true,
+   "coverage": {
+    "ok": true,
+    "samples": 59,
+    "interval_s": 30.0,
+    "jitter_budget_s": 1.0,
+    "max_gap_s": 30.285675,
+    "missed_intervals": 0,
+    "gaps_s": [
+     29.619264,
+     29.995429,
+     30.011562,
+     29.986821,
+     30.000207,
+     30.00161,
+     29.998451,
+     30.285675,
+     29.940609,
+     29.776041,
+     29.997472,
+     30.002374,
+     30.203027,
+     29.914794,
+     29.898663,
+     29.984873,
+     29.997276,
+     30.001579,
+     30.166749,
+     29.829056,
+     29.998653,
+     30.185466,
+     29.814848,
+     30.183025,
+     29.817573,
+     30.000521,
+     29.998899,
+     30.001055,
+     29.999226,
+     30.000839,
+     30.164412,
+     29.836409,
+     29.998574,
+     30.167828,
+     29.831896,
+     30.001677,
+     29.998501,
+     30.001297,
+     29.99865,
+     30.002389,
+     29.997501,
+     30.002794,
+     29.99833,
+     30.165884,
+     29.833205,
+     30.001216,
+     29.999646,
+     30.1625,
+     29.836925,
+     30.190059,
+     29.809266,
+     30.001062,
+     29.998442,
+     30.174811,
+     29.825311,
+     30.001948,
+     29.997722,
+     2.489509,
+     0.408988,
+     0.005682
+    ],
+    "invalid_timestamps": []
+   }
+  },
+  "stage3-S0-P0-mid-s1-rep-r540-health-processes-20261116: complete metadata version byte bound": {
+   "ok": true,
+   "complete": true,
+   "max_bytes": 83148,
+   "error": null
+  },
+  "stage3-S0-P0-mid-s1-rep-r540-health-processes-20261116: history <= verified point (1452 / 1.51 MB)": {
+   "ok": true,
+   "max_snapshots": 67,
+   "max_metadata_bytes": 83148,
+   "B": [
+    1800,
+    1880000
+   ]
+  },
+  "stage3-S0-P0-mid-s1-rep-r540-health-processes-20261116: dense history upper bound <= 1452": {
+   "ok": true,
+   "unique_additions": 179,
+   "unique_removals": 121,
+   "lower": {
+    "peak_snapshots": 67,
+    "at": "2026-11-17 18:47:03.381914+00:00",
+    "final_snapshots": 59
+   },
+   "upper": {
+    "peak_snapshots": 67,
+    "at": "2026-11-17 18:47:03.371575+00:00",
+    "final_snapshots": 59
+   }
+  },
+  "stage3-S1-P0-mid-s11-r540-health-processes-20261116: finished, invariants_ok": {
+   "ok": true,
+   "invariants": {
+    "ledger_row_counts": true,
+    "no_duplicate_event_ids": true,
+    "committed_ops_in_lineage": true,
+    "aborted_ops_absent": true,
+    "version_monotonic": true,
+    "ok": true
+   }
+  },
+  "stage3-S1-P0-mid-s11-r540-health-processes-20261116: validation.ok": {
+   "ok": true,
+   "validation": {
+    "ok": true,
+    "incomplete_cost": [],
+    "runner_errors": []
+   }
+  },
+  "stage3-S1-P0-mid-s11-r540-health-processes-20261116: stream freshness fully observed": {
+   "ok": true,
+   "freshness": {
+    "complete": true,
+    "n_expected": 5369200,
+    "n_samples": 5369200,
+    "missing": 0,
+    "p95_s": 5.0475926995277405,
+    "errors": [],
+    "unresolved_snapshots": {},
+    "n_snapshots": 3686,
+    "observer_cpu_s": 199.4763407149997,
+    "clock": "producer UTC time.time → successful commit_attempts.responded_at"
+   }
+  },
+  "stage3-S1-P0-mid-s11-r540-health-processes-20261116: sum cpu_ms <= app cpu": {
+   "ok": true,
+   "ops_cpu_ms": 629199,
+   "app_cpu_ms": 1323636,
+   "workers_cgroup_cpu_ms": 5619715,
+   "share_of_app": 0.475
+  },
+  "stage3-S1-P0-mid-s11-r540-health-processes-20261116: app cpu <= workers cgroup cpu": {
+   "ok": true,
+   "app_cpu_ms": 1323636,
+   "workers_cgroup_cpu_ms": 5619715
+  },
+  "stage3-S1-P0-mid-s11-r540-health-processes-20261116: complete cost for every executed operation": {
+   "ok": true,
+   "incomplete": []
+  },
+  "stage3-S1-P0-mid-s11-r540-health-processes-20261116: footprint_executed ⊆ requested": {
+   "ok": true,
+   "committed": 13,
+   "with_executed": 13,
+   "violations": []
+  },
+  "stage3-S1-P0-mid-s11-r540-health-processes-20261116: K2+K1 > 0 and class K1": {
+   "ok": true,
+   "k2": 0,
+   "k1_with_409": 12,
+   "k1_fail": 0,
+   "n_ops": 13,
+   "share": 0.923
+  },
+  "stage3-S1-P0-mid-s11-r540-health-processes-20261116: complete history timing coverage": {
+   "ok": true,
+   "expected": 13,
+   "observed": 13,
+   "missing_or_invalid": []
+  },
+  "stage3-S1-P0-mid-s11-r540-health-processes-20261116: no operation older than R (or counted)": {
+   "ok": true,
+   "R_s": 540.0,
+   "over_r": [],
+   "n_over_r": 0,
+   "base_expired": 0,
+   "history_unresolved": 0,
+   "errors": 0
+  },
+  "stage3-S1-P0-mid-s11-r540-health-processes-20261116: no runner/infrastructure errors": {
+   "ok": true,
+   "errors": []
+  },
+  "stage3-S1-P0-mid-s11-r540-health-processes-20261116: complete health sampling coverage": {
+   "ok": true,
+   "coverage": {
+    "ok": true,
+    "samples": 58,
+    "interval_s": 30.0,
+    "jitter_budget_s": 1.0,
+    "max_gap_s": 30.793191,
+    "missed_intervals": 0,
+    "gaps_s": [
+     29.643708,
+     30.322024,
+     29.926648,
+     29.762362,
+     30.390705,
+     30.112966,
+     29.490077,
+     30.793191,
+     29.610487,
+     29.620749,
+     30.441442,
+     30.271345,
+     29.274851,
+     30.432988,
+     29.875497,
+     30.225686,
+     29.779757,
+     30.042533,
+     29.705806,
+     30.407853,
+     29.85145,
+     29.72215,
+     30.275381,
+     30.337879,
+     29.362907,
+     30.311747,
+     30.007361,
+     30.080213,
+     29.898743,
+     30.06648,
+     29.629507,
+     30.579486,
+     29.645847,
+     29.801084,
+     30.320757,
+     30.046364,
+     29.606904,
+     30.435492,
+     29.911694,
+     30.219778,
+     29.713226,
+     30.098631,
+     29.661045,
+     30.435804,
+     29.848665,
+     29.690649,
+     30.328902,
+     30.152173,
+     29.938021,
+     29.943902,
+     30.0056,
+     30.004605,
+     29.925563,
+     30.066564,
+     29.622225,
+     30.613174,
+     26.026448,
+     0.410704,
+     0.007515
+    ],
+    "invalid_timestamps": []
+   }
+  },
+  "stage3-S1-P0-mid-s11-r540-health-processes-20261116: complete metadata version byte bound": {
+   "ok": true,
+   "complete": true,
+   "max_bytes": 1334899,
+   "error": null
+  },
+  "stage3-S1-P0-mid-s11-r540-health-processes-20261116: history <= verified point (1452 / 1.51 MB)": {
+   "ok": true,
+   "max_snapshots": 1327,
+   "max_metadata_bytes": 1334899,
+   "B": [
+    1800,
+    1880000
+   ]
+  },
+  "stage3-S1-P0-mid-s11-r540-health-processes-20261116: dense history upper bound <= 1452": {
+   "ok": true,
+   "unique_additions": 3699,
+   "unique_removals": 2497,
+   "lower": {
+    "peak_snapshots": 1327,
+    "at": "2026-11-17 19:18:23.068255+00:00",
+    "final_snapshots": 1203
+   },
+   "upper": {
+    "peak_snapshots": 1327,
+    "at": "2026-11-17 19:18:23.032590+00:00",
+    "final_snapshots": 1203
+   }
+  },
+  "stage3-S2-P0-mid-s11-r540-health-processes-20261116-resume1: finished, invariants_ok": {
+   "ok": true,
+   "invariants": {
+    "ledger_row_counts": true,
+    "no_duplicate_event_ids": true,
+    "committed_ops_in_lineage": true,
+    "aborted_ops_absent": true,
+    "version_monotonic": true,
+    "ok": true
+   }
+  },
+  "stage3-S2-P0-mid-s11-r540-health-processes-20261116-resume1: validation.ok": {
+   "ok": true,
+   "validation": {
+    "ok": true,
+    "incomplete_cost": [],
+    "runner_errors": []
+   }
+  },
+  "stage3-S2-P0-mid-s11-r540-health-processes-20261116-resume1: stream freshness fully observed": {
+   "ok": true,
+   "freshness": {
+    "complete": true,
+    "n_expected": 3348200,
+    "n_samples": 3348200,
+    "missing": 0,
+    "p95_s": 9.677265417575835,
+    "errors": [],
+    "unresolved_snapshots": {},
+    "n_snapshots": 168,
+    "observer_cpu_s": 12.068894571000001,
+    "clock": "producer UTC time.time → successful commit_attempts.responded_at"
+   }
+  },
+  "stage3-S2-P0-mid-s11-r540-health-processes-20261116-resume1: sum cpu_ms <= app cpu": {
+   "ok": true,
+   "ops_cpu_ms": 329378,
+   "app_cpu_ms": 3429327,
+   "workers_cgroup_cpu_ms": 7018779,
+   "share_of_app": 0.096
+  },
+  "stage3-S2-P0-mid-s11-r540-health-processes-20261116-resume1: app cpu <= workers cgroup cpu": {
+   "ok": true,
+   "app_cpu_ms": 3429327,
+   "workers_cgroup_cpu_ms": 7018779
+  },
+  "stage3-S2-P0-mid-s11-r540-health-processes-20261116-resume1: complete cost for every executed operation": {
+   "ok": true,
+   "incomplete": []
+  },
+  "stage3-S2-P0-mid-s11-r540-health-processes-20261116-resume1: footprint_executed ⊆ requested": {
+   "ok": true,
+   "committed": 21,
+   "with_executed": 21,
+   "violations": []
+  },
+  "stage3-S2-P0-mid-s11-r540-health-processes-20261116-resume1: K2+K1 > 0 and class K2": {
+   "ok": true,
+   "k2": 7,
+   "k1_with_409": 3,
+   "k1_fail": 0,
+   "n_ops": 28,
+   "share": 0.357
+  },
+  "stage3-S2-P0-mid-s11-r540-health-processes-20261116-resume1: complete history timing coverage": {
+   "ok": true,
+   "expected": 28,
+   "observed": 28,
+   "missing_or_invalid": []
+  },
+  "stage3-S2-P0-mid-s11-r540-health-processes-20261116-resume1: no operation older than R (or counted)": {
+   "ok": true,
+   "R_s": 540.0,
+   "over_r": [],
+   "n_over_r": 0,
+   "base_expired": 0,
+   "history_unresolved": 0,
+   "errors": 0
+  },
+  "stage3-S2-P0-mid-s11-r540-health-processes-20261116-resume1: no runner/infrastructure errors": {
+   "ok": true,
+   "errors": []
+  },
+  "stage3-S2-P0-mid-s11-r540-health-processes-20261116-resume1: complete health sampling coverage": {
+   "ok": true,
+   "coverage": {
+    "ok": true,
+    "samples": 59,
+    "interval_s": 30.0,
+    "jitter_budget_s": 1.0,
+    "max_gap_s": 30.388655,
+    "missed_intervals": 0,
+    "gaps_s": [
+     29.596149,
+     29.990388,
+     30.017074,
+     29.984658,
+     29.997235,
+     30.003493,
+     30.33798,
+     29.710278,
+     30.274639,
+     30.062971,
+     29.642904,
+     30.026276,
+     29.941791,
+     30.20797,
+     29.827986,
+     30.291696,
+     29.714414,
+     29.961314,
+     30.089322,
+     29.909126,
+     30.090982,
+     29.986237,
+     30.194638,
+     30.007607,
+     30.045192,
+     29.70884,
+     29.960698,
+     30.002201,
+     30.155752,
+     29.843141,
+     30.341656,
+     30.038556,
+     29.646509,
+     30.335166,
+     29.636619,
+     30.388655,
+     29.611759,
+     30.001758,
+     30.156685,
+     29.844266,
+     29.997935,
+     30.001171,
+     29.998128,
+     30.1792,
+     29.820555,
+     30.002459,
+     29.997863,
+     30.002799,
+     30.152799,
+     29.847461,
+     30.30033,
+     29.738855,
+     29.970525,
+     30.351796,
+     29.635297,
+     30.001429,
+     29.997912,
+     2.531523,
+     0.440509,
+     0.005576
+    ],
+    "invalid_timestamps": []
+   }
+  },
+  "stage3-S2-P0-mid-s11-r540-health-processes-20261116-resume1: complete metadata version byte bound": {
+   "ok": true,
+   "complete": true,
+   "max_bytes": 87657,
+   "error": null
+  },
+  "stage3-S2-P0-mid-s11-r540-health-processes-20261116-resume1: history <= verified point (1452 / 1.51 MB)": {
+   "ok": true,
+   "max_snapshots": 71,
+   "max_metadata_bytes": 87657,
+   "B": [
+    1800,
+    1880000
+   ]
+  },
+  "stage3-S2-P0-mid-s11-r540-health-processes-20261116-resume1: dense history upper bound <= 1452": {
+   "ok": true,
+   "unique_additions": 189,
+   "unique_removals": 128,
+   "lower": {
+    "peak_snapshots": 71,
+    "at": "2026-11-21 12:28:52.623065+00:00",
+    "final_snapshots": 62
+   },
+   "upper": {
+    "peak_snapshots": 71,
+    "at": "2026-11-21 12:28:52.596449+00:00",
+    "final_snapshots": 62
+   }
+  },
+  "stage3-S3-P0-mid-s11-r540-health-processes-20261116: finished, invariants_ok": {
+   "ok": true,
+   "invariants": {
+    "ledger_row_counts": true,
+    "no_duplicate_event_ids": true,
+    "committed_ops_in_lineage": true,
+    "aborted_ops_absent": true,
+    "version_monotonic": true,
+    "ok": true
+   }
+  },
+  "stage3-S3-P0-mid-s11-r540-health-processes-20261116: validation.ok": {
+   "ok": true,
+   "validation": {
+    "ok": true,
+    "incomplete_cost": [],
+    "runner_errors": []
+   }
+  },
+  "stage3-S3-P0-mid-s11-r540-health-processes-20261116: stream freshness fully observed": {
+   "ok": true,
+   "freshness": {
+    "complete": true,
+    "n_expected": 3348600,
+    "n_samples": 3348600,
+    "missing": 0,
+    "p95_s": 9.679415750503539,
+    "errors": [],
+    "unresolved_snapshots": {},
+    "n_snapshots": 168,
+    "observer_cpu_s": 8.057184105000001,
+    "clock": "producer UTC time.time → successful commit_attempts.responded_at"
+   }
+  },
+  "stage3-S3-P0-mid-s11-r540-health-processes-20261116: sum cpu_ms <= app cpu": {
+   "ok": true,
+   "ops_cpu_ms": 231770,
+   "app_cpu_ms": 370602,
+   "workers_cgroup_cpu_ms": 867589,
+   "share_of_app": 0.625
+  },
+  "stage3-S3-P0-mid-s11-r540-health-processes-20261116: app cpu <= workers cgroup cpu": {
+   "ok": true,
+   "app_cpu_ms": 370602,
+   "workers_cgroup_cpu_ms": 867589
+  },
+  "stage3-S3-P0-mid-s11-r540-health-processes-20261116: complete cost for every executed operation": {
+   "ok": true,
+   "incomplete": []
+  },
+  "stage3-S3-P0-mid-s11-r540-health-processes-20261116: footprint_executed ⊆ requested": {
+   "ok": true,
+   "committed": 40,
+   "with_executed": 40,
+   "violations": []
+  },
+  "stage3-S3-P0-mid-s11-r540-health-processes-20261116: K2+K1 > 0 and class K2": {
+   "ok": true,
+   "k2": 9,
+   "k1_with_409": 0,
+   "k1_fail": 0,
+   "n_ops": 50,
+   "share": 0.18
+  },
+  "stage3-S3-P0-mid-s11-r540-health-processes-20261116: complete history timing coverage": {
+   "ok": true,
+   "expected": 49,
+   "observed": 49,
+   "missing_or_invalid": []
+  },
+  "stage3-S3-P0-mid-s11-r540-health-processes-20261116: no operation older than R (or counted)": {
+   "ok": true,
+   "R_s": 540.0,
+   "over_r": [],
+   "n_over_r": 0,
+   "base_expired": 0,
+   "history_unresolved": 0,
+   "errors": 0
+  },
+  "stage3-S3-P0-mid-s11-r540-health-processes-20261116: no runner/infrastructure errors": {
+   "ok": true,
+   "errors": []
+  },
+  "stage3-S3-P0-mid-s11-r540-health-processes-20261116: complete health sampling coverage": {
+   "ok": true,
+   "coverage": {
+    "ok": true,
+    "samples": 59,
+    "interval_s": 30.0,
+    "jitter_budget_s": 1.0,
+    "max_gap_s": 30.172745,
+    "missed_intervals": 0,
+    "gaps_s": [
+     29.596815,
+     29.997259,
+     30.00961,
+     29.988618,
+     29.998072,
+     30.002231,
+     29.997955,
+     30.006886,
+     30.136035,
+     29.923272,
+     29.942913,
+     29.999873,
+     29.992852,
+     30.16423,
+     29.835065,
+     30.003252,
+     29.99743,
+     30.001911,
+     30.123321,
+     29.882896,
+     29.996306,
+     30.004697,
+     30.083832,
+     29.926425,
+     29.98114,
+     30.037046,
+     29.963375,
+     30.014925,
+     29.992077,
+     29.994467,
+     29.998382,
+     30.007962,
+     29.991866,
+     30.10942,
+     29.892347,
+     29.999078,
+     29.999184,
+     30.002127,
+     30.013997,
+     29.986128,
+     29.997248,
+     30.004344,
+     29.998496,
+     30.007179,
+     29.989988,
+     30.001486,
+     30.000021,
+     30.011259,
+     30.074402,
+     29.918554,
+     29.994151,
+     30.006428,
+     29.994358,
+     30.172745,
+     29.824262,
+     30.000486,
+     29.99555,
+     2.465112,
+     0.434495,
+     0.004965
+    ],
+    "invalid_timestamps": []
+   }
+  },
+  "stage3-S3-P0-mid-s11-r540-health-processes-20261116: complete metadata version byte bound": {
+   "ok": true,
+   "complete": true,
+   "max_bytes": 100485,
+   "error": null
+  },
+  "stage3-S3-P0-mid-s11-r540-health-processes-20261116: history <= verified point (1452 / 1.51 MB)": {
+   "ok": true,
+   "max_snapshots": 81,
+   "max_metadata_bytes": 100485,
+   "B": [
+    1800,
+    1880000
+   ]
+  },
+  "stage3-S3-P0-mid-s11-r540-health-processes-20261116: dense history upper bound <= 1452": {
+   "ok": true,
+   "unique_additions": 208,
+   "unique_removals": 138,
+   "lower": {
+    "peak_snapshots": 81,
+    "at": "2026-11-21 13:02:13.954735+00:00",
+    "final_snapshots": 71
+   },
+   "upper": {
+    "peak_snapshots": 81,
+    "at": "2026-11-21 13:02:13.942987+00:00",
+    "final_snapshots": 71
+   }
+  },
+  "determinism: identical intents": {
+   "ok": true,
+   "n_a": 11,
+   "n_b": 11,
+   "resolved_footprint_jaccard_mean": 1.0,
+   "resolved_identical": 11,
+   "resolved_n": 11
+  },
+  "retention: nonempty timing coverage": {
+   "ok": true,
+   "n_observed": 172
+  },
+  "retention: measured lower bound <= configured R": {
+   "ok": true,
+   "lower_s": 373.5,
+   "configured_R_s": 540.0
+  },
+  "retention: configured R <= measured upper bound": {
+   "ok": true,
+   "configured_R_s": 540.0,
+   "upper_s": 597.9
+  },
+  "retention: D_max <= 349 s (else author decision)": {
+   "ok": true,
+   "d_max_s": 36.8
+  }
+ },
+ "retention": {
+  "d_max_s": 36.8,
+  "d_max_op": "stage3-S4-P0-mid-s11-r540-health-processes-20261116-batch_merge-0015",
+  "d_max_run": "stage3-S4-P0-mid-s11-r540-health-processes-20261116",
+  "top5": [
+   [
+    36.8,
+    "stage3-S4-P0-mid-s11-r540-health-processes-20261116-batch_merge-0015"
+   ],
+   [
+    36.6,
+    "stage3-S4-P0-mid-s11-r540-health-processes-20261116-batch_merge-0019"
+   ],
+   [
+    36.3,
+    "stage3-S4-P0-mid-s11-r540-health-processes-20261116-batch_merge-0012"
+   ],
+   [
+    35.2,
+    "stage3-S4-P0-mid-s11-r540-health-processes-20261116-batch_merge-0029"
+   ],
+   [
+    32.2,
+    "stage3-S4-P0-mid-s11-r540-health-processes-20261116-batch_merge-0007"
+   ]
+  ],
+  "num_retries": 4,
+  "R_low_s (2·D_max + (n+1)·hold)": 373.5,
+  "R_low_single_hold_s": 133.5,
+  "S1_commit_rate_per_s": 2.207139486000047,
+  "R_high_verified_point_s": 597.9,
+  "R_high_B_s": 755.5,
+  "author_stop (D_max > 349 s)": false
+ },
+ "failed": []
+}

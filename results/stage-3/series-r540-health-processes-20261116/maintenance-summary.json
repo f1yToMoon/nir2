@@ -1,0 +1,211 @@
+{
+  "stage3-S4-P0-mid-s11-r540-health-processes-20261116": {
+    "n_background": 29,
+    "background_cpu_s": 57.452,
+    "controlled_cpu_s": 512.191,
+    "unexecuted_empty_footprint_noops": 0,
+    "duration_max_s": 9.713627,
+    "start_lag_max_s": 0.194281,
+    "finish_lag_max_s": 9.907908,
+    "overlapping_background_pairs": 0,
+    "background_controlled_overlap_pairs": [
+      {
+        "background_op": "stage3-S4-P0-mid-s11-r540-health-processes-20261116-bg_expire-0008",
+        "controlled_op": "stage3-S4-P0-mid-s11-r540-health-processes-20261116-batch_merge-0003",
+        "controlled_type": "cow_dml",
+        "seconds": 3.524815
+      },
+      {
+        "background_op": "stage3-S4-P0-mid-s11-r540-health-processes-20261116-bg_expire-0009",
+        "controlled_op": "stage3-S4-P0-mid-s11-r540-health-processes-20261116-batch_merge-0004",
+        "controlled_type": "cow_dml",
+        "seconds": 7.383719
+      },
+      {
+        "background_op": "stage3-S4-P0-mid-s11-r540-health-processes-20261116-bg_expire-0011",
+        "controlled_op": "stage3-S4-P0-mid-s11-r540-health-processes-20261116-batch_merge-0007",
+        "controlled_type": "cow_dml",
+        "seconds": 5.982952
+      },
+      {
+        "background_op": "stage3-S4-P0-mid-s11-r540-health-processes-20261116-bg_expire-0013",
+        "controlled_op": "stage3-S4-P0-mid-s11-r540-health-processes-20261116-batch_merge-0010",
+        "controlled_type": "cow_dml",
+        "seconds": 1.668661
+      },
+      {
+        "background_op": "stage3-S4-P0-mid-s11-r540-health-processes-20261116-bg_expire-0016",
+        "controlled_op": "stage3-S4-P0-mid-s11-r540-health-processes-20261116-batch_merge-0012",
+        "controlled_type": "cow_dml",
+        "seconds": 6.147698
+      },
+      {
+        "background_op": "stage3-S4-P0-mid-s11-r540-health-processes-20261116-bg_expire-0017",
+        "controlled_op": "stage3-S4-P0-mid-s11-r540-health-processes-20261116-batch_merge-0014",
+        "controlled_type": "cow_dml",
+        "seconds": 8.954478
+      },
+      {
+        "background_op": "stage3-S4-P0-mid-s11-r540-health-processes-20261116-bg_expire-0018",
+        "controlled_op": "stage3-S4-P0-mid-s11-r540-health-processes-20261116-batch_merge-0015",
+        "controlled_type": "cow_dml",
+        "seconds": 1.730386
+      },
+      {
+        "background_op": "stage3-S4-P0-mid-s11-r540-health-processes-20261116-bg_expire-0020",
+        "controlled_op": "stage3-S4-P0-mid-s11-r540-health-processes-20261116-batch_merge-0019",
+        "controlled_type": "cow_dml",
+        "seconds": 8.141483
+      },
+      {
+        "background_op": "stage3-S4-P0-mid-s11-r540-health-processes-20261116-bg_expire-0022",
+        "controlled_op": "stage3-S4-P0-mid-s11-r540-health-processes-20261116-batch_merge-0021",
+        "controlled_type": "cow_dml",
+        "seconds": 1.874216
+      },
+      {
+        "background_op": "stage3-S4-P0-mid-s11-r540-health-processes-20261116-bg_expire-0023",
+        "controlled_op": "stage3-S4-P0-mid-s11-r540-health-processes-20261116-batch_merge-0023",
+        "controlled_type": "cow_dml",
+        "seconds": 6.275051
+      },
+      {
+        "background_op": "stage3-S4-P0-mid-s11-r540-health-processes-20261116-bg_expire-0024",
+        "controlled_op": "stage3-S4-P0-mid-s11-r540-health-processes-20261116-batch_merge-0025",
+        "controlled_type": "cow_dml",
+        "seconds": 9.713627
+      },
+      {
+        "background_op": "stage3-S4-P0-mid-s11-r540-health-processes-20261116-bg_expire-0025",
+        "controlled_op": "stage3-S4-P0-mid-s11-r540-health-processes-20261116-batch_merge-0027",
+        "controlled_type": "cow_dml",
+        "seconds": 1.920182
+      },
+      {
+        "background_op": "stage3-S4-P0-mid-s11-r540-health-processes-20261116-bg_expire-0026",
+        "controlled_op": "stage3-S4-P0-mid-s11-r540-health-processes-20261116-batch_merge-0029",
+        "controlled_type": "cow_dml",
+        "seconds": 6.802474
+      }
+    ],
+    "pairwise_overlap_seconds": 70.119742,
+    "note": "Pairwise intersections may overlap each other; no causal slowdown is inferred."
+  },
+  "stage3-S5-P0-mid-s11-r540-health-processes-20261116": {
+    "n_background": 28,
+    "background_cpu_s": 59.961,
+    "controlled_cpu_s": 336.054,
+    "unexecuted_empty_footprint_noops": 0,
+    "duration_max_s": 6.487127,
+    "start_lag_max_s": 0.027489,
+    "finish_lag_max_s": 6.497047,
+    "overlapping_background_pairs": 0,
+    "background_controlled_overlap_pairs": [],
+    "pairwise_overlap_seconds": 0,
+    "note": "Pairwise intersections may overlap each other; no causal slowdown is inferred."
+  },
+  "stage3-S0-P0-mid-s1-r540-health-processes-20261116": {
+    "n_background": 28,
+    "background_cpu_s": 51.357,
+    "controlled_cpu_s": 107.389,
+    "unexecuted_empty_footprint_noops": 0,
+    "duration_max_s": 6.431222,
+    "start_lag_max_s": 0.021355,
+    "finish_lag_max_s": 6.443534,
+    "overlapping_background_pairs": 0,
+    "background_controlled_overlap_pairs": [],
+    "pairwise_overlap_seconds": 0,
+    "note": "Pairwise intersections may overlap each other; no causal slowdown is inferred."
+  },
+  "stage3-S0-P0-mid-s1-rep-r540-health-processes-20261116": {
+    "n_background": 28,
+    "background_cpu_s": 50.552,
+    "controlled_cpu_s": 109.537,
+    "unexecuted_empty_footprint_noops": 0,
+    "duration_max_s": 6.561522,
+    "start_lag_max_s": 0.015729,
+    "finish_lag_max_s": 6.571236,
+    "overlapping_background_pairs": 0,
+    "background_controlled_overlap_pairs": [],
+    "pairwise_overlap_seconds": 0,
+    "note": "Pairwise intersections may overlap each other; no causal slowdown is inferred."
+  },
+  "stage3-S1-P0-mid-s11-r540-health-processes-20261116": {
+    "n_background": 28,
+    "background_cpu_s": 329.203,
+    "controlled_cpu_s": 299.996,
+    "unexecuted_empty_footprint_noops": 0,
+    "duration_max_s": 12.163364,
+    "start_lag_max_s": 0.086845,
+    "finish_lag_max_s": 12.200236,
+    "overlapping_background_pairs": 0,
+    "background_controlled_overlap_pairs": [
+      {
+        "background_op": "stage3-S1-P0-mid-s11-r540-health-processes-20261116-bg_expire-0003",
+        "controlled_op": "stage3-S1-P0-mid-s11-r540-health-processes-20261116-compaction_hot-0000",
+        "controlled_type": "rewrite_data",
+        "seconds": 4.324299
+      },
+      {
+        "background_op": "stage3-S1-P0-mid-s11-r540-health-processes-20261116-bg_expire-0023",
+        "controlled_op": "stage3-S1-P0-mid-s11-r540-health-processes-20261116-compaction_hot-0010",
+        "controlled_type": "rewrite_data",
+        "seconds": 0.457551
+      },
+      {
+        "background_op": "stage3-S1-P0-mid-s11-r540-health-processes-20261116-bg_expire-0027",
+        "controlled_op": "stage3-S1-P0-mid-s11-r540-health-processes-20261116-compaction_hot-0012",
+        "controlled_type": "rewrite_data",
+        "seconds": 2.733404
+      }
+    ],
+    "pairwise_overlap_seconds": 7.515254,
+    "note": "Pairwise intersections may overlap each other; no causal slowdown is inferred."
+  },
+  "stage3-S2-P0-mid-s11-r540-health-processes-20261116-resume1": {
+    "n_background": 28,
+    "background_cpu_s": 65.723,
+    "controlled_cpu_s": 263.655,
+    "unexecuted_empty_footprint_noops": 0,
+    "duration_max_s": 8.115335,
+    "start_lag_max_s": 0.040238,
+    "finish_lag_max_s": 8.155573,
+    "overlapping_background_pairs": 0,
+    "background_controlled_overlap_pairs": [
+      {
+        "background_op": "stage3-S2-P0-mid-s11-r540-health-processes-20261116-resume1-bg_expire-0010",
+        "controlled_op": "stage3-S2-P0-mid-s11-r540-health-processes-20261116-resume1-cdc_merge-0007",
+        "controlled_type": "cow_dml",
+        "seconds": 0.409088
+      },
+      {
+        "background_op": "stage3-S2-P0-mid-s11-r540-health-processes-20261116-resume1-bg_expire-0011",
+        "controlled_op": "stage3-S2-P0-mid-s11-r540-health-processes-20261116-resume1-cdc_merge-0009",
+        "controlled_type": "cow_dml",
+        "seconds": 1.398468
+      }
+    ],
+    "pairwise_overlap_seconds": 1.807556,
+    "note": "Pairwise intersections may overlap each other; no causal slowdown is inferred."
+  },
+  "stage3-S3-P0-mid-s11-r540-health-processes-20261116": {
+    "n_background": 28,
+    "background_cpu_s": 67.135,
+    "controlled_cpu_s": 164.635,
+    "unexecuted_empty_footprint_noops": 1,
+    "duration_max_s": 6.554272,
+    "start_lag_max_s": 0.02193,
+    "finish_lag_max_s": 6.566954,
+    "overlapping_background_pairs": 0,
+    "background_controlled_overlap_pairs": [
+      {
+        "background_op": "stage3-S3-P0-mid-s11-r540-health-processes-20261116-bg_expire-0004",
+        "controlled_op": "stage3-S3-P0-mid-s11-r540-health-processes-20261116-mor_updates-0001",
+        "controlled_type": "mor_update",
+        "seconds": 1.454546
+      }
+    ],
+    "pairwise_overlap_seconds": 1.454546,
+    "note": "Pairwise intersections may overlap each other; no causal slowdown is inferred."
+  }
+}

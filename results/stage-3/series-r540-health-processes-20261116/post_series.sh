@@ -3,16 +3,17 @@
 set -euo pipefail
 cd /home/an/nir
 capl_root=results/stage-3/series-r540-health-processes-20261116
-mapfile -t capl_runs < <(python3 -c 'import json; print("\n".join(json.load(open("results/stage-3/series-r540-health-processes-20261116/plan-amendment.json"))["run_ids"]))')
+mapfile -t capl_runs < <(python3 -c 'import json; print("\n".join(json.load(open("results/stage-3/series-r540-health-processes-20261116/plan-amendment-20261121.json"))["run_ids"]))')
 python3 - <<'PY'
 import hashlib
 import json
 import subprocess
 from pathlib import Path
 root=Path('results/stage-3/series-r540-health-processes-20261116')
-plan=json.loads((root/'plan-amendment.json').read_text())
+plan=json.loads((root/'plan-amendment-20261121.json').read_text())
 assert len(plan['runs'])==7
 assert hashlib.sha256(Path(plan['original_plan']).read_bytes()).hexdigest()==plan['original_plan_sha256']
+assert hashlib.sha256(Path(plan['previous_amendment']).read_bytes()).hexdigest()==plan['previous_amendment_sha256']
 assert subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()==plan['source_sha']
 for sha in plan['code_equivalent_shas']:
     assert not subprocess.check_output(['git','diff',plan['code_fix_sha'],sha,'--',*plan['code_equivalence_paths']])

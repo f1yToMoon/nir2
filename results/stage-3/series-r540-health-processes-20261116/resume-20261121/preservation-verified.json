@@ -1,0 +1,15 @@
+{
+  "at": "2026-11-21T12:10:08.154601+00:00",
+  "head": "17243da29a64dc9263211d2ebea0cfe888701eb3",
+  "complete_runs": {
+    "stage3-S4-P0-mid-s11-r540-health-processes-20261116": 235,
+    "stage3-S5-P0-mid-s11-r540-health-processes-20261116": 282,
+    "stage3-S0-P0-mid-s1-r540-health-processes-20261116": 259,
+    "stage3-S0-P0-mid-s1-rep-r540-health-processes-20261116": 258,
+    "stage3-S1-P0-mid-s11-r540-health-processes-20261116": 3934
+  },
+  "verified_complete_files": 4968,
+  "verified_partial_files": 139,
+  "ledger_hashes_verified": true,
+  "measurement_code_unchanged": true
+}

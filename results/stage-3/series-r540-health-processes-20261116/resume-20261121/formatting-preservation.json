@@ -1,0 +1,14 @@
+{
+  "results/stage-3/series-r540-health-processes-20261116/timeline-S2-bins.csv": {
+    "original_archive": "results/stage-3/series-r540-health-processes-20261116/resume-20261121/timeline-S2-bins-original-crlf.csv.gz",
+    "original_sha256": "0db29328b1a3bb81158c9276b02cf0f71e02a0243d3a444c6acf91b886cb545c",
+    "normalized_sha256": "7de3aaf626c40ad883b0e595e2e3ffb6618d5ba9e482cc735a3e474e627b82de",
+    "change": "line endings or trailing blank lines only; original bytes retained"
+  },
+  "results/stage-3/series-r540-health-processes-20261116/resume-20261121/historical-primary-sections.md": {
+    "original_archive": "results/stage-3/series-r540-health-processes-20261116/resume-20261121/historical-primary-sections-original.md.gz",
+    "original_sha256": "20686416abb1dc70b9390488b34ddcea98be7c41fd4016dcd03e1d9d64c153c5",
+    "normalized_sha256": "5d3819bd5e9d73230c2c2ae65794b66382f8165b4a4aa5c8320083a492d11621",
+    "change": "line endings or trailing blank lines only; original bytes retained"
+  }
+}

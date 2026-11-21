@@ -1,0 +1,578 @@
+{
+  "stage3-S4-P0-mid-s11-r540-health-processes-20261116": {
+    "scenario": "S4_merge_vs_stream_serializable",
+    "git_sha": "3dd6ecd7339d04b11fdc4a6108f3ce745598d523",
+    "outcomes": {
+      "committed": 12,
+      "data_conflict": 23
+    },
+    "k1_with_409": 0,
+    "k2_without_http_attempt": 23,
+    "total_cpu_s": 569.643,
+    "controlled_cpu_s": 512.191,
+    "background_cpu_s": 57.452,
+    "all_spark_task_cpu_s": 6407.209,
+    "worker_cgroup_cpu_s": 12727.04,
+    "live_rows": 33825200,
+    "rows_by_origin": {
+      "stream": 3425200,
+      "golden": 30000000,
+      "merge": 400000
+    },
+    "versions_checked": 33825200,
+    "rows_expected_updated": 388252,
+    "aborted_rows_checked": 1100000,
+    "dense_peak": 47,
+    "observed_max_snapshots": 47,
+    "observed_max_metadata_bytes": 63558,
+    "metadata_versions": 149,
+    "metadata_bytes_upper_bound": 63558,
+    "health_observations": 60,
+    "max_health_interval_s": 30.634019,
+    "health_missed_intervals": 0,
+    "health_invalid_timestamps": [],
+    "runner_errors": [],
+    "incomplete_cost": [],
+    "n_base_expired": 0,
+    "n_history_unresolved": 0,
+    "cooldown_overrun": [],
+    "d_hist_max_s": 36.752557,
+    "freshness": {
+      "complete": true,
+      "n_expected": 3425200,
+      "n_samples": 3425200,
+      "missing": 0,
+      "p95_s": 14.564079093933106,
+      "errors": [],
+      "unresolved_snapshots": {},
+      "n_snapshots": 115,
+      "observer_cpu_s": 13.389819741000018,
+      "clock": "producer UTC time.time \u2192 successful commit_attempts.responded_at"
+    },
+    "freshness_p99_s": 15.162681362628936,
+    "freshness_max_s": 15.92670488357544,
+    "streams": {
+      "kafka": [
+        {
+          "stream": "ingest",
+          "produced": 3425200,
+          "errors": []
+        }
+      ],
+      "flink": [
+        {
+          "final_lag": 0,
+          "job_id": "2e19508c539c0a6fc16e1f056fa8be28",
+          "checkpoints": {
+            "restored": 0,
+            "total": 117,
+            "in_progress": 0,
+            "completed": 117,
+            "failed": 0
+          }
+        }
+      ],
+      "agents": []
+    },
+    "orphans": {
+      "orphan_files": 0,
+      "orphan_bytes": 0,
+      "old_metadata_json": 46,
+      "listed_since_start": 3136
+    }
+  },
+  "stage3-S5-P0-mid-s11-r540-health-processes-20261116": {
+    "scenario": "S5_compliance_delete",
+    "git_sha": "3dd6ecd7339d04b11fdc4a6108f3ce745598d523",
+    "outcomes": {
+      "committed": 17,
+      "data_conflict": 8
+    },
+    "k1_with_409": 0,
+    "k2_without_http_attempt": 8,
+    "total_cpu_s": 396.015,
+    "controlled_cpu_s": 336.054,
+    "background_cpu_s": 59.961,
+    "all_spark_task_cpu_s": 1668.93,
+    "worker_cgroup_cpu_s": 2369.369,
+    "live_rows": 33411800,
+    "rows_by_origin": {
+      "stream": 3357800,
+      "golden": 30000000,
+      "merge": 54000
+    },
+    "versions_checked": 33411800,
+    "rows_expected_updated": 213092,
+    "aborted_rows_checked": 24000,
+    "dense_peak": 69,
+    "observed_max_snapshots": 69,
+    "observed_max_metadata_bytes": 85450,
+    "metadata_versions": 207,
+    "metadata_bytes_upper_bound": 85450,
+    "health_observations": 59,
+    "max_health_interval_s": 30.349017,
+    "health_missed_intervals": 0,
+    "health_invalid_timestamps": [],
+    "runner_errors": [],
+    "incomplete_cost": [],
+    "n_base_expired": 0,
+    "n_history_unresolved": 0,
+    "cooldown_overrun": [],
+    "d_hist_max_s": 17.831532,
+    "freshness": {
+      "complete": true,
+      "n_expected": 3357800,
+      "n_samples": 3357800,
+      "missing": 0,
+      "p95_s": 9.711221468448638,
+      "errors": [],
+      "unresolved_snapshots": {},
+      "n_snapshots": 169,
+      "observer_cpu_s": 9.42558644599998,
+      "clock": "producer UTC time.time \u2192 successful commit_attempts.responded_at"
+    },
+    "freshness_p99_s": 10.110942602157593,
+    "freshness_max_s": 12.170455694198608,
+    "streams": {
+      "kafka": [
+        {
+          "stream": "ingest",
+          "produced": 3357800,
+          "errors": []
+        }
+      ],
+      "flink": [
+        {
+          "final_lag": 0,
+          "job_id": "c6ec9227cdd0d3e5adba81452228024a",
+          "checkpoints": {
+            "restored": 0,
+            "total": 171,
+            "in_progress": 0,
+            "completed": 171,
+            "failed": 0
+          }
+        }
+      ],
+      "agents": []
+    },
+    "orphans": {
+      "orphan_files": 0,
+      "orphan_bytes": 0,
+      "old_metadata_json": 104,
+      "listed_since_start": 2617
+    }
+  },
+  "stage3-S0-P0-mid-s1-r540-health-processes-20261116": {
+    "scenario": "S0_baseline",
+    "git_sha": "0eb96739069cd1033e34fbb7f7c3b8b50bfccf3a",
+    "outcomes": {
+      "committed": 11
+    },
+    "k1_with_409": 1,
+    "k2_without_http_attempt": 0,
+    "total_cpu_s": 158.746,
+    "controlled_cpu_s": 107.389,
+    "background_cpu_s": 51.357,
+    "all_spark_task_cpu_s": 790.973,
+    "worker_cgroup_cpu_s": 1280.097,
+    "live_rows": 31674100,
+    "rows_by_origin": {
+      "stream": 1674100,
+      "golden": 30000000
+    },
+    "versions_checked": 31674100,
+    "rows_expected_updated": 120000,
+    "aborted_rows_checked": 0,
+    "dense_peak": 67,
+    "observed_max_snapshots": 67,
+    "observed_max_metadata_bytes": 83125,
+    "metadata_versions": 201,
+    "metadata_bytes_upper_bound": 83125,
+    "health_observations": 59,
+    "max_health_interval_s": 30.428166,
+    "health_missed_intervals": 0,
+    "health_invalid_timestamps": [],
+    "runner_errors": [],
+    "incomplete_cost": [],
+    "n_base_expired": 0,
+    "n_history_unresolved": 0,
+    "cooldown_overrun": [],
+    "d_hist_max_s": 14.465701,
+    "freshness": {
+      "complete": true,
+      "n_expected": 1674100,
+      "n_samples": 1674100,
+      "missing": 0,
+      "p95_s": 9.653082239627837,
+      "errors": [],
+      "unresolved_snapshots": {},
+      "n_snapshots": 169,
+      "observer_cpu_s": 6.826994676999999,
+      "clock": "producer UTC time.time \u2192 successful commit_attempts.responded_at"
+    },
+    "freshness_p99_s": 10.05265763759613,
+    "freshness_max_s": 10.544869661331177,
+    "streams": {
+      "kafka": [
+        {
+          "stream": "ingest",
+          "produced": 1674100,
+          "errors": []
+        }
+      ],
+      "flink": [
+        {
+          "final_lag": 0,
+          "job_id": "ec489e34cb6a0ba10e3f9e410eb6f322",
+          "checkpoints": {
+            "restored": 0,
+            "total": 171,
+            "in_progress": 0,
+            "completed": 171,
+            "failed": 0
+          }
+        }
+      ],
+      "agents": []
+    },
+    "orphans": {
+      "orphan_files": 0,
+      "orphan_bytes": 0,
+      "old_metadata_json": 98,
+      "listed_since_start": 1813
+    }
+  },
+  "stage3-S0-P0-mid-s1-rep-r540-health-processes-20261116": {
+    "scenario": "S0_baseline",
+    "git_sha": "0eb96739069cd1033e34fbb7f7c3b8b50bfccf3a",
+    "outcomes": {
+      "committed": 11
+    },
+    "k1_with_409": 0,
+    "k2_without_http_attempt": 0,
+    "total_cpu_s": 160.089,
+    "controlled_cpu_s": 109.537,
+    "background_cpu_s": 50.552,
+    "all_spark_task_cpu_s": 786.545,
+    "worker_cgroup_cpu_s": 1270.46,
+    "live_rows": 31674300,
+    "rows_by_origin": {
+      "stream": 1674300,
+      "golden": 30000000
+    },
+    "versions_checked": 31674300,
+    "rows_expected_updated": 120000,
+    "aborted_rows_checked": 0,
+    "dense_peak": 67,
+    "observed_max_snapshots": 67,
+    "observed_max_metadata_bytes": 83148,
+    "metadata_versions": 200,
+    "metadata_bytes_upper_bound": 83148,
+    "health_observations": 59,
+    "max_health_interval_s": 30.285675,
+    "health_missed_intervals": 0,
+    "health_invalid_timestamps": [],
+    "runner_errors": [],
+    "incomplete_cost": [],
+    "n_base_expired": 0,
+    "n_history_unresolved": 0,
+    "cooldown_overrun": [],
+    "d_hist_max_s": 14.533575,
+    "freshness": {
+      "complete": true,
+      "n_expected": 1674300,
+      "n_samples": 1674300,
+      "missing": 0,
+      "p95_s": 9.622866880893707,
+      "errors": [],
+      "unresolved_snapshots": {},
+      "n_snapshots": 168,
+      "observer_cpu_s": 6.426421593000005,
+      "clock": "producer UTC time.time \u2192 successful commit_attempts.responded_at"
+    },
+    "freshness_p99_s": 10.022945649623871,
+    "freshness_max_s": 10.932588338851929,
+    "streams": {
+      "kafka": [
+        {
+          "stream": "ingest",
+          "produced": 1674300,
+          "errors": []
+        }
+      ],
+      "flink": [
+        {
+          "final_lag": 0,
+          "job_id": "4ba2af6cfa7a6537b2006d8896d66500",
+          "checkpoints": {
+            "restored": 0,
+            "total": 171,
+            "in_progress": 0,
+            "completed": 171,
+            "failed": 0
+          }
+        }
+      ],
+      "agents": []
+    },
+    "orphans": {
+      "orphan_files": 0,
+      "orphan_bytes": 0,
+      "old_metadata_json": 97,
+      "listed_since_start": 1803
+    }
+  },
+  "stage3-S1-P0-mid-s11-r540-health-processes-20261116": {
+    "scenario": "S1_compaction_vs_stream_append",
+    "git_sha": "0eb96739069cd1033e34fbb7f7c3b8b50bfccf3a",
+    "outcomes": {
+      "committed": 13
+    },
+    "k1_with_409": 12,
+    "k2_without_http_attempt": 0,
+    "total_cpu_s": 629.199,
+    "controlled_cpu_s": 299.996,
+    "background_cpu_s": 329.203,
+    "all_spark_task_cpu_s": 1323.636,
+    "worker_cgroup_cpu_s": 5619.715,
+    "live_rows": 35369200,
+    "rows_by_origin": {
+      "agent": 334900,
+      "stream": 5034300,
+      "golden": 30000000
+    },
+    "versions_checked": 35369200,
+    "rows_expected_updated": 0,
+    "aborted_rows_checked": 0,
+    "dense_peak": 1327,
+    "observed_max_snapshots": 1327,
+    "observed_max_metadata_bytes": 1334899,
+    "metadata_versions": 3866,
+    "metadata_bytes_upper_bound": 1334899,
+    "health_observations": 58,
+    "max_health_interval_s": 30.793191,
+    "health_missed_intervals": 0,
+    "health_invalid_timestamps": [],
+    "runner_errors": [],
+    "incomplete_cost": [],
+    "n_base_expired": 0,
+    "n_history_unresolved": 0,
+    "cooldown_overrun": [],
+    "d_hist_max_s": 16.55567,
+    "freshness": {
+      "complete": true,
+      "n_expected": 5369200,
+      "n_samples": 5369200,
+      "missing": 0,
+      "p95_s": 5.0475926995277405,
+      "errors": [],
+      "unresolved_snapshots": {},
+      "n_snapshots": 3686,
+      "observer_cpu_s": 199.4763407149997,
+      "clock": "producer UTC time.time \u2192 successful commit_attempts.responded_at"
+    },
+    "freshness_p99_s": 5.52258373260498,
+    "freshness_max_s": 6.920964479446411,
+    "streams": {
+      "kafka": [
+        {
+          "stream": "ingest_flink",
+          "produced": 5034300,
+          "errors": []
+        }
+      ],
+      "flink": [
+        {
+          "final_lag": 0,
+          "job_id": "782efa71ad40231c7dae7e7962ba9897",
+          "checkpoints": {
+            "restored": 0,
+            "total": 340,
+            "in_progress": 0,
+            "completed": 340,
+            "failed": 0
+          }
+        }
+      ],
+      "agents": [
+        {
+          "stream": "agents",
+          "ok": 3349,
+          "failed": 0,
+          "errors": []
+        }
+      ]
+    },
+    "orphans": {
+      "orphan_files": 0,
+      "orphan_bytes": 0,
+      "old_metadata_json": 3763,
+      "listed_since_start": 39771
+    }
+  },
+  "stage3-S2-P0-mid-s11-r540-health-processes-20261116-resume1": {
+    "scenario": "S2_compaction_vs_cdc_merge",
+    "git_sha": "17243da29a64dc9263211d2ebea0cfe888701eb3",
+    "outcomes": {
+      "committed": 21,
+      "data_conflict": 7
+    },
+    "k1_with_409": 3,
+    "k2_without_http_attempt": 6,
+    "total_cpu_s": 329.378,
+    "controlled_cpu_s": 263.655,
+    "background_cpu_s": 65.723,
+    "all_spark_task_cpu_s": 3429.327,
+    "worker_cgroup_cpu_s": 7018.779,
+    "live_rows": 33458200,
+    "rows_by_origin": {
+      "stream": 3348200,
+      "golden": 30000000,
+      "merge": 110000
+    },
+    "versions_checked": 33458200,
+    "rows_expected_updated": 425749,
+    "aborted_rows_checked": 70000,
+    "dense_peak": 71,
+    "observed_max_snapshots": 71,
+    "observed_max_metadata_bytes": 87657,
+    "metadata_versions": 210,
+    "metadata_bytes_upper_bound": 87657,
+    "health_observations": 59,
+    "max_health_interval_s": 30.388655,
+    "health_missed_intervals": 0,
+    "health_invalid_timestamps": [],
+    "runner_errors": [],
+    "incomplete_cost": [],
+    "n_base_expired": 0,
+    "n_history_unresolved": 0,
+    "cooldown_overrun": [],
+    "d_hist_max_s": 18.505261,
+    "freshness": {
+      "complete": true,
+      "n_expected": 3348200,
+      "n_samples": 3348200,
+      "missing": 0,
+      "p95_s": 9.677265417575835,
+      "errors": [],
+      "unresolved_snapshots": {},
+      "n_snapshots": 168,
+      "observer_cpu_s": 12.068894571000001,
+      "clock": "producer UTC time.time \u2192 successful commit_attempts.responded_at"
+    },
+    "freshness_p99_s": 10.078510763645172,
+    "freshness_max_s": 11.059676885604858,
+    "streams": {
+      "kafka": [
+        {
+          "stream": "ingest",
+          "produced": 3348200,
+          "errors": []
+        }
+      ],
+      "flink": [
+        {
+          "final_lag": 0,
+          "job_id": "ea2aa758cd8713611129eeb338bc4a19",
+          "checkpoints": {
+            "restored": 0,
+            "total": 171,
+            "in_progress": 0,
+            "completed": 171,
+            "failed": 0
+          }
+        }
+      ],
+      "agents": []
+    },
+    "orphans": {
+      "orphan_files": 0,
+      "orphan_bytes": 0,
+      "old_metadata_json": 107,
+      "listed_since_start": 2933
+    }
+  },
+  "stage3-S3-P0-mid-s11-r540-health-processes-20261116": {
+    "scenario": "S3_compaction_vs_mor_dml",
+    "git_sha": "17243da29a64dc9263211d2ebea0cfe888701eb3",
+    "outcomes": {
+      "data_conflict": 9,
+      "committed": 40,
+      "noop": 1
+    },
+    "k1_with_409": 0,
+    "k2_without_http_attempt": 9,
+    "total_cpu_s": 231.77,
+    "controlled_cpu_s": 164.635,
+    "background_cpu_s": 67.135,
+    "all_spark_task_cpu_s": 370.602,
+    "worker_cgroup_cpu_s": 867.589,
+    "live_rows": 33348600,
+    "rows_by_origin": {
+      "stream": 3348600,
+      "golden": 30000000
+    },
+    "versions_checked": 33348600,
+    "rows_expected_updated": 215127,
+    "aborted_rows_checked": 0,
+    "dense_peak": 81,
+    "observed_max_snapshots": 81,
+    "observed_max_metadata_bytes": 100485,
+    "metadata_versions": 229,
+    "metadata_bytes_upper_bound": 100485,
+    "health_observations": 59,
+    "max_health_interval_s": 30.172745,
+    "health_missed_intervals": 0,
+    "health_invalid_timestamps": [],
+    "runner_errors": [],
+    "incomplete_cost": [],
+    "n_base_expired": 0,
+    "n_history_unresolved": 0,
+    "cooldown_overrun": [],
+    "d_hist_max_s": 11.68324,
+    "freshness": {
+      "complete": true,
+      "n_expected": 3348600,
+      "n_samples": 3348600,
+      "missing": 0,
+      "p95_s": 9.679415750503539,
+      "errors": [],
+      "unresolved_snapshots": {},
+      "n_snapshots": 168,
+      "observer_cpu_s": 8.057184105000001,
+      "clock": "producer UTC time.time \u2192 successful commit_attempts.responded_at"
+    },
+    "freshness_p99_s": 10.08013510942459,
+    "freshness_max_s": 10.27652382850647,
+    "streams": {
+      "kafka": [
+        {
+          "stream": "ingest",
+          "produced": 3348600,
+          "errors": []
+        }
+      ],
+      "flink": [
+        {
+          "final_lag": 0,
+          "job_id": "913d50fd04830e9f54b4431fdc9ccfc5",
+          "checkpoints": {
+            "restored": 0,
+            "total": 171,
+            "in_progress": 0,
+            "completed": 171,
+            "failed": 0
+          }
+        }
+      ],
+      "agents": []
+    },
+    "orphans": {
+      "orphan_files": 0,
+      "orphan_bytes": 0,
+      "old_metadata_json": 126,
+      "listed_since_start": 4821
+    }
+  }
+}
